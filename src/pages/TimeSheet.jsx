@@ -6,6 +6,11 @@ import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 
 const GROUPS = ["DDL Excavation", "DDL Logistique", "Groupe DDL"];
+const ADMIN_ROLES = ["Administrateur"];
+
+function getStoredUser() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
+}
 
 export default function TimeSheet() {
   const [entries, setEntries] = useState([]);
@@ -15,6 +20,9 @@ export default function TimeSheet() {
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState("week"); // week | day
   const [selectedDay, setSelectedDay] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [editEntry, setEditEntry] = useState(null);
+  const currentUser = getStoredUser();
+  const isAdmin = currentUser && ADMIN_ROLES.includes(currentUser.role);
 
   const weekStart = startOfWeek(weekDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(weekDate, { weekStartsOn: 0 });
