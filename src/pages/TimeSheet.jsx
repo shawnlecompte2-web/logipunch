@@ -132,7 +132,7 @@ export default function TimeSheet() {
     XLSX.writeFile(wb, `heures_${activeGroup}_${weekStartStr}.xlsx`);
   };
 
-  const groupUsers = getUsersForGroup();
+  const groupUsers = getUsersForGroup().sort((a, b) => getWeekTotal(b.id) - getWeekTotal(a.id));
 
   return (
     <div className="min-h-screen p-4 max-w-7xl mx-auto">
