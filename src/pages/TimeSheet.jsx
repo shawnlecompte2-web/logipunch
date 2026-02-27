@@ -57,23 +57,73 @@ export default function TimeSheet() {
     return getEntriesForUser(userId).reduce((sum, e) => sum + (e.total_hours || 0), 0);
   };
 
-  const exportCSV = () => {
+  const exportXLSX = () => {
     const groupUsers = getUsersForGroup();
-    const headers = ["Nom", "Rôle", "Groupe", ...days.map(d => format(d, "EEE dd/MM", { locale: fr })), "Total Semaine"];
-    const rows = groupUsers.map(user => {
-      const dayTotals = days.map(d => {
-        const day = getDayEntry(user.id, format(d, "yyyy-MM-dd"));
-        return day ? day.totalHours.toFixed(2) : "0";
+    const wb = XLSX.utils.book_new();
+    const wsData = [];
+
+    // Title rows
+    wsData.push([activeGroup.toUpperCase()]);
+    wsData.push([`Semaine du ${format(weekStart, "d MMMM yyyy", { locale: fr })}`]);
+    wsData.push([]); // blank
+
+    groupUsers.forEach(user => {
+      // User name header
+      wsData.push([user.full_name]);
+      // Column headers
+      wsData.push(["Date", "Projet", "No Projet", "Équipement/Plaque", "Arrivée", "Départ", "Dîner (min)", "Total (h)"]);
+
+      const userEntries = getEntriesForUser(user.id);
+      // Group by date
+      const byDate = {};
+      userEntries.forEach(e => {
+        if (!byDate[e.work_date]) byDate[e.work_date] = [];
+        byDate[e.work_date].push(e);
       });
-      return [user.full_name, user.role, user.group, ...dayTotals, getWeekTotal(user.id).toFixed(2)];
+
+      const sortedDates = Object.keys(byDate).sort();
+      let weekTotal = 0;
+
+      sortedDates.forEach(date => {
+        const dayEntries = byDate[date].sort((a, b) => a.punch_in.localeCompare(b.punch_in));
+        let dayTotal = 0;
+        dayEntries.forEach((e, idx) => {
+          const arrivee = e.punch_in ? format(parseISO(e.punch_in), "HH 'h' mm") : "-";
+          const depart = e.punch_out ? format(parseISO(e.punch_out), "HH 'h' mm") : "-";
+          const equip = e.machine || e.plate_number || "-";
+          const hours = e.total_hours || 0;
+          dayTotal += hours;
+          wsData.push([
+            idx === 0 ? date : "",
+            e.project_name || "-",
+            e.project_id || "-",
+            equip,
+            arrivee,
+            depart,
+            e.lunch_break || 0,
+            parseFloat(hours.toFixed(2))
+          ]);
+        });
+        weekTotal += dayTotal;
+        // Day total row
+        wsData.push(["", "", "", "", "", "Total jour", "", parseFloat(dayTotal.toFixed(2))]);
+      });
+
+      // Week total row
+      wsData.push(["", "", "", "", "", "Total semaine", "", parseFloat(weekTotal.toFixed(2))]);
+      wsData.push([]); // blank between users
     });
-    const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `heures_${activeGroup}_${weekStartStr}.csv`;
-    a.click();
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Column widths
+    ws["!cols"] = [
+      { wch: 14 }, { wch: 20 }, { wch: 12 }, { wch: 20 },
+      { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 10 }
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Heures");
+    XLSX.writeFile(wb, `heures_${activeGroup}_${weekStartStr}.xlsx`);
   };
 
   const groupUsers = getUsersForGroup();
