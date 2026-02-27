@@ -146,21 +146,7 @@ export default function Approvals() {
   if (!approverUser) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4">
-        <div className="w-full max-w-sm">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <div className="w-9 h-9 rounded-xl bg-green-500 flex items-center justify-center"><span className="text-white font-black text-base">L</span></div>
-              <span className="text-2xl font-black text-white tracking-tight">LOGIPUNCH</span>
-            </div>
-            <p className="text-zinc-500 text-sm">Approbation des heures</p>
-          </div>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Code d'accès</label>
-            <input type="password" value={pinInput} onChange={e => setPinInput(e.target.value)} onKeyDown={e => e.key === "Enter" && handlePinLogin()} maxLength={4} placeholder="••••" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-center text-2xl font-mono tracking-widest mb-4 focus:outline-none focus:border-green-600" />
-            {pinError && <p className="text-red-400 text-xs text-center mb-3">{pinError}</p>}
-            <button onClick={handlePinLogin} disabled={loading} className="w-full h-12 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl transition-all">{loading ? "Vérification..." : "Accéder"}</button>
-          </div>
-        </div>
+        <p className="text-zinc-500">Accès non autorisé pour votre rôle.</p>
       </div>
     );
   }
