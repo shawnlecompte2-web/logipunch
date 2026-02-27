@@ -35,6 +35,12 @@ export default function MyHours() {
 
   const getWeekTotal = () => entries.reduce((sum, e) => sum + (e.total_hours || 0), 0);
 
+  const handleDelete = async (entryId) => {
+    if (!window.confirm("Supprimer cette entrée?")) return;
+    await base44.entities.PunchEntry.delete(entryId);
+    setEntries(prev => prev.filter(e => e.id !== entryId));
+  };
+
   if (!user) return null;
 
   return (

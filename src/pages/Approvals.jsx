@@ -137,6 +137,12 @@ export default function Approvals() {
     loadData();
   };
 
+  const handleDelete = async (entryId) => {
+    if (!window.confirm("Supprimer cette entrée?")) return;
+    await base44.entities.PunchEntry.delete(entryId);
+    loadData();
+  };
+
   const groupedByUser = {};
   entries.forEach(e => {
     if (!groupedByUser[e.user_id]) groupedByUser[e.user_id] = [];
