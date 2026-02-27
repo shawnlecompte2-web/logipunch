@@ -55,14 +55,14 @@ function PinModal({ onSuccess }) {
   const keys = ["1","2","3","4","5","6","7","8","9","","0","del"];
 
   const dateStr = now.toLocaleDateString("fr-CA", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-  const timeStr = now.toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const timeStr = now.toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" });
 
   return (
     <div className="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col items-center justify-center px-4">
       {/* Date & Time */}
       <div className="mb-8 text-center">
-        <p className="text-5xl font-black text-white tracking-tight tabular-nums">{timeStr}</p>
-        <p className="text-zinc-400 text-sm mt-1 capitalize">{dateStr}</p>
+        <p className="text-3xl font-black text-green-400 tracking-tight tabular-nums">{timeStr}</p>
+        <p className="text-zinc-500 text-xs mt-2 capitalize">{dateStr}</p>
       </div>
 
       <div className="mb-8 text-center">
