@@ -51,6 +51,7 @@ import Punch from './pages/Punch';
 import Approvals from './pages/Approvals';
 import TimeSheet from './pages/TimeSheet';
 import ActiveUsers from './pages/ActiveUsers';
+import Settings from './pages/Settings';
 
 
 export const PAGES = {
@@ -58,6 +59,7 @@ export const PAGES = {
     "Approvals": Approvals,
     "TimeSheet": TimeSheet,
     "ActiveUsers": ActiveUsers,
+    "Settings": Settings,
 }
 
 export const pagesConfig = {
