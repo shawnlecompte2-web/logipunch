@@ -209,6 +209,115 @@ export default function TimeSheet() {
     XLSX.writeFile(wb, `heures_${activeGroup}_${weekStartStr}.xlsx`);
   };
 
+  const printPaySlip = (user) => {
+    const doc = new jsPDF();
+    const userEntries = getEntriesForUser(user.id);
+    const weekTotal = getWeekTotal(user.id);
+    const weekLabel = `${format(weekStart, "d MMMM yyyy", { locale: fr })} – ${format(weekEnd, "d MMMM yyyy", { locale: fr })}`;
+
+    // Header
+    doc.setFillColor(20, 20, 20);
+    doc.rect(0, 0, 210, 40, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("LOGIPUNCH", 14, 18);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Feuille de temps — Slip de paye", 14, 28);
+    doc.text(weekLabel, 14, 36);
+
+    // Employee info
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(user.full_name, 14, 55);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    doc.text(`${user.role} · ${user.group}`, 14, 63);
+
+    // Table header
+    let y = 78;
+    doc.setFillColor(34, 197, 94);
+    doc.rect(14, y - 6, 182, 8, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.text("Date", 16, y);
+    doc.text("Projet", 50, y);
+    doc.text("Arrivée", 120, y);
+    doc.text("Départ", 143, y);
+    doc.text("Dîner", 164, y);
+    doc.text("Total", 183, y);
+
+    // Group entries by date
+    const byDate = {};
+    userEntries.forEach(e => {
+      if (!byDate[e.work_date]) byDate[e.work_date] = [];
+      byDate[e.work_date].push(e);
+    });
+    const sortedDates = Object.keys(byDate).sort();
+
+    y += 10;
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    let rowIdx = 0;
+
+    sortedDates.forEach(date => {
+      const dayEntries = byDate[date].sort((a, b) => a.punch_in.localeCompare(b.punch_in));
+      const dayTotal = dayEntries.reduce((s, e) => s + (e.total_hours || 0), 0);
+
+      dayEntries.forEach((e, idx) => {
+        if (rowIdx % 2 === 0) {
+          doc.setFillColor(245, 245, 245);
+          doc.rect(14, y - 5, 182, 8, "F");
+        }
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        if (idx === 0) doc.text(format(parseISO(date), "EEE d/MM", { locale: fr }), 16, y);
+        const proj = (e.project_name || "-").substring(0, 30);
+        doc.text(proj, 50, y);
+        doc.text(e.punch_in ? format(parseISO(e.punch_in), "HH:mm") : "-", 120, y);
+        doc.text(e.punch_out ? format(parseISO(e.punch_out), "HH:mm") : "-", 143, y);
+        doc.text(`${e.lunch_break || 0}m`, 164, y);
+        doc.text(`${(e.total_hours || 0).toFixed(2)}h`, 183, y);
+        y += 9;
+        rowIdx++;
+      });
+
+      // Day total
+      doc.setFillColor(220, 252, 231);
+      doc.rect(14, y - 5, 182, 7, "F");
+      doc.setTextColor(22, 101, 52);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.text("Total jour", 164, y);
+      doc.text(`${dayTotal.toFixed(2)}h`, 183, y);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(0, 0, 0);
+      y += 10;
+    });
+
+    // Week total
+    y += 4;
+    doc.setFillColor(22, 101, 52);
+    doc.rect(14, y - 6, 182, 10, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("TOTAL SEMAINE", 16, y + 1);
+    doc.text(`${weekTotal.toFixed(2)} heures`, 155, y + 1);
+
+    // Footer
+    doc.setTextColor(150, 150, 150);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Généré le ${format(new Date(), "d MMMM yyyy à HH:mm", { locale: fr })}`, 14, 285);
+
+    doc.save(`slip_paye_${user.full_name.replace(/\s+/g, "_")}_${weekStartStr}.pdf`);
+  };
+
   const groupUsers = getUsersForGroup().sort((a, b) => getWeekTotal(b.id) - getWeekTotal(a.id));
 
   return (
