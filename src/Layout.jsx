@@ -59,10 +59,10 @@ function PinModal({ onSuccess }) {
 
   return (
     <div className="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col items-center justify-center px-4">
-      {/* Date & Time */}
-      <div className="mb-8 text-center">
-        <p className="text-3xl font-black text-green-400 tracking-tight tabular-nums">{timeStr}</p>
-        <p className="text-zinc-500 text-xs mt-2 capitalize">{dateStr}</p>
+      {/* Date & Time - Top Left */}
+      <div className="absolute top-6 left-6">
+        <p className="text-2xl font-black text-green-400 tracking-tight tabular-nums">{timeStr}</p>
+        <p className="text-zinc-600 text-xs mt-1 capitalize">{dateStr}</p>
       </div>
 
       <div className="mb-8 text-center">
