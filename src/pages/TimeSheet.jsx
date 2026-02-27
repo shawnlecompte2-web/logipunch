@@ -95,6 +95,9 @@ export default function TimeSheet() {
   const [selectedDay, setSelectedDay] = useState(format(new Date(), "yyyy-MM-dd"));
   const [editEntry, setEditEntry] = useState(null);
   const currentUser = getStoredUser();
+  const isAdmin = currentUser?.role === "Administrateur";
+  const [editEntry, setEditEntry] = useState(null);
+  const currentUser = getStoredUser();
   const isAdmin = currentUser && ADMIN_ROLES.includes(currentUser.role);
 
   const weekStart = startOfWeek(weekDate, { weekStartsOn: 0 });
