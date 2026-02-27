@@ -131,8 +131,8 @@ export default function Layout({ children, currentPageName }) {
       {/* Top bar for desktop */}
       <div className="hidden md:flex items-center justify-between px-6 py-3 bg-[#0d0d0d] border-b border-zinc-800/60">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-green-500 flex items-center justify-center">
-            <span className="text-white font-black text-sm">L</span>
+          <div className="w-8 h-8 rounded-xl bg-green-500 flex items-center justify-center overflow-hidden">
+            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5fcc1102e_ChatGPTImageFeb27202605_01_28PM.png" alt="logo" className="w-full h-full object-contain p-0.5" />
           </div>
           <span className="text-white font-black text-lg tracking-tight">LOGIPUNCH</span>
         </div>
