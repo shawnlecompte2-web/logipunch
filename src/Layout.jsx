@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Clock, CheckSquare, BarChart2, Users, Settings, User } from "lucide-react";
+import { Clock, CheckSquare, BarChart2, Users, Settings, User, Delete, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 
 const ADMIN_ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "Gestionnaire Chauffeur", "Gestionnaire Cour", "Gestionnaire Mécanique", "Contremaitre", "Estimateur"];
 
@@ -14,17 +15,108 @@ const allNavItems = [
   { label: "Réglages", page: "Settings", icon: Settings, adminOnly: true },
 ];
 
+function getStoredUser() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
+}
+
+// PIN Entry modal shown when no user is logged in (on any page except Punch)
+function PinModal({ onSuccess }) {
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleKey = (val) => {
+    if (pin.length < 4) {
+      const newPin = pin + val;
+      setPin(newPin);
+      setError("");
+      if (newPin.length === 4) verifyPin(newPin);
+    }
+  };
+
+  const handleDelete = () => { setPin(p => p.slice(0, -1)); setError(""); };
+
+  const verifyPin = async (code) => {
+    setLoading(true);
+    try {
+      const users = await base44.entities.AppUser.filter({ pin_code: code, is_active: true });
+      if (!users || users.length === 0) { setError("Code invalide. Réessayez."); setPin(""); setLoading(false); return; }
+      onSuccess(users[0]);
+    } catch { setError("Erreur. Réessayez."); setPin(""); }
+    setLoading(false);
+  };
+
+  const keys = ["1","2","3","4","5","6","7","8","9","","0","del"];
+
+  return (
+    <div className="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col items-center justify-center px-4">
+      <div className="mb-10 text-center">
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center">
+            <span className="text-white font-black text-lg">L</span>
+          </div>
+          <span className="text-3xl font-black text-white tracking-tight">LOGIPUNCH</span>
+        </div>
+        <p className="text-zinc-500 text-sm mt-1">Entrez votre code à 4 chiffres</p>
+      </div>
+      <div className="flex gap-4 mb-8">
+        {[0,1,2,3].map(i => (
+          <div key={i} className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${i < pin.length ? "bg-green-500 border-green-500 scale-110" : "bg-transparent border-zinc-600"}`} />
+        ))}
+      </div>
+      {error && <div className="mb-5 px-5 py-2.5 bg-red-900/30 border border-red-700/50 rounded-xl text-red-400 text-sm text-center">{error}</div>}
+      <div className="grid grid-cols-3 gap-3 w-full max-w-xs">
+        {keys.map((k, i) => {
+          if (k === "") return <div key={i} />;
+          if (k === "del") return (
+            <button key={i} onClick={handleDelete} disabled={loading} className="h-16 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center active:scale-95 transition-all text-zinc-400 hover:bg-zinc-700">
+              <Delete size={22} />
+            </button>
+          );
+          return (
+            <button key={i} onClick={() => handleKey(k)} disabled={loading || pin.length >= 4} className="h-16 rounded-2xl bg-zinc-800 border border-zinc-700 text-white text-2xl font-semibold active:scale-95 transition-all hover:bg-zinc-700 hover:border-green-600">
+              {k}
+            </button>
+          );
+        })}
+      </div>
+      {loading && <div className="mt-8 text-green-400 text-sm animate-pulse">Vérification...</div>}
+    </div>
+  );
+}
+
 export default function Layout({ children, currentPageName }) {
-  const [currentRole, setCurrentRole] = useState(() => sessionStorage.getItem("logipunch_role") || null);
+  const [currentUser, setCurrentUser] = useState(getStoredUser);
 
   useEffect(() => {
-    const handler = () => setCurrentRole(sessionStorage.getItem("logipunch_role") || null);
-    window.addEventListener("logipunch_role_change", handler);
-    return () => window.removeEventListener("logipunch_role_change", handler);
+    const handler = () => setCurrentUser(getStoredUser());
+    window.addEventListener("logipunch_user_change", handler);
+    return () => window.removeEventListener("logipunch_user_change", handler);
   }, []);
 
-  const isAdmin = currentRole && ADMIN_ROLES.includes(currentRole);
-  const navItems = allNavItems.filter(item => item.public || isAdmin);
+  const handleLogin = (user) => {
+    sessionStorage.setItem("logipunch_user", JSON.stringify(user));
+    window.dispatchEvent(new Event("logipunch_user_change"));
+    setCurrentUser(user);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("logipunch_user");
+    window.dispatchEvent(new Event("logipunch_user_change"));
+    setCurrentUser(null);
+  };
+
+  const isAdmin = currentUser && ADMIN_ROLES.includes(currentUser.role);
+  const navItems = currentUser ? allNavItems.filter(item => item.public || isAdmin) : [];
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <style>{`body { background: #0a0a0a; }`}</style>
+        <PinModal onSuccess={handleLogin} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
@@ -36,7 +128,7 @@ export default function Layout({ children, currentPageName }) {
         ::-webkit-scrollbar-thumb:hover { background: #22c55e55; }
       `}</style>
 
-      {/* Top logo bar for desktop */}
+      {/* Top bar for desktop */}
       <div className="hidden md:flex items-center justify-between px-6 py-3 bg-[#0d0d0d] border-b border-zinc-800/60">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-green-500 flex items-center justify-center">
@@ -48,19 +140,23 @@ export default function Layout({ children, currentPageName }) {
           {navItems.map(({ label, page, icon: Icon }) => {
             const isActive = currentPageName === page;
             return (
-              <Link
-                key={page}
-                to={createPageUrl(page)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
-                  isActive ? "bg-green-700 text-white" : "text-zinc-400 hover:text-white hover:bg-zinc-800"
-                }`}
-              >
+              <Link key={page} to={createPageUrl(page)} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${isActive ? "bg-green-700 text-white" : "text-zinc-400 hover:text-white hover:bg-zinc-800"}`}>
                 <Icon size={15} />
                 {label}
               </Link>
             );
           })}
         </nav>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-white text-sm font-semibold">{currentUser.full_name}</p>
+            <p className="text-zinc-500 text-xs">{currentUser.role}</p>
+          </div>
+          <button onClick={handleLogout} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-zinc-500 hover:text-white hover:bg-zinc-800 text-sm transition-all">
+            <LogOut size={15} />
+            <span>Quitter</span>
+          </button>
+        </div>
       </div>
 
       {/* Main content */}
@@ -73,13 +169,7 @@ export default function Layout({ children, currentPageName }) {
         {navItems.map(({ label, page, icon: Icon }) => {
           const isActive = currentPageName === page;
           return (
-            <Link
-              key={page}
-              to={createPageUrl(page)}
-              className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 transition-all ${
-                isActive ? "text-green-400" : "text-zinc-600 hover:text-zinc-400"
-              }`}
-            >
+            <Link key={page} to={createPageUrl(page)} className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 transition-all ${isActive ? "text-green-400" : "text-zinc-600 hover:text-zinc-400"}`}>
               <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
               <span className="text-[9px] font-semibold">{label}</span>
             </Link>
