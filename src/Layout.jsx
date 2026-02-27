@@ -72,7 +72,7 @@ function PinModal({ onSuccess }) {
           </div>
           <span className="text-3xl font-black text-white tracking-tight">LOGIPUNCH</span>
         </div>
-        <p className="text-zinc-300 text-base font-semibold">Bienvenue ! 👋</p>
+        <p className="text-zinc-300 text-base font-semibold">Bienvenue !</p>
         <p className="text-zinc-500 text-sm mt-1">Entrez votre code à 4 chiffres</p>
       </div>
       <div className="flex gap-4 mb-8">
