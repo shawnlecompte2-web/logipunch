@@ -233,9 +233,11 @@ export default function TimeSheet() {
     // Logo image (excavator)
     const logoUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png";
     try {
+      // Draw white background circle then add image with white filter effect
+      doc.setFillColor(255, 255, 255);
+      doc.circle(margin + 12, 24, 9, "F");
       doc.addImage(logoUrl, "PNG", margin + 3, 15, 18, 18);
     } catch(err) {
-      // fallback circle if image fails
       doc.setFillColor(16, 185, 129);
       doc.circle(margin + 12, 24, 6, "F");
     }
