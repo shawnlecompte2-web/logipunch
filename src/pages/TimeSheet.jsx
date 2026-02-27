@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, parseISO, addWeeks, subWeeks } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Download, X, Edit2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, X, Edit2, Printer } from "lucide-react";
 import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
 
 const GROUPS = ["DDL Excavation", "DDL Logistique", "Groupe DDL"];
 
