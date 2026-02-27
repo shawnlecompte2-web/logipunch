@@ -30,8 +30,11 @@ export default function TimeSheet() {
     setLoading(true);
     const allUsers = await base44.entities.AppUser.filter({ is_active: true });
     setUsers(allUsers);
-    const allEntries = await base44.entities.PunchEntry.filter({ week_start: weekStartStr });
-    setEntries(allEntries.filter(e => e.status === "approved" || e.status === "completed"));
+    const allEntries = await base44.entities.PunchEntry.list("-punch_in", 500);
+    setEntries(allEntries.filter(e => 
+      (e.status === "approved" || e.status === "completed") &&
+      e.work_date >= weekStartStr && e.work_date <= weekEndStr
+    ));
     setLoading(false);
   };
 
