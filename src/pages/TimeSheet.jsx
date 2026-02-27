@@ -362,6 +362,7 @@ export default function TimeSheet() {
           </table>
         </div>
       )}
+      {editEntry && <EditEntryModal entry={editEntry} onClose={() => setEditEntry(null)} onSaved={() => { setEditEntry(null); loadData(); }} />}
     </div>
   );
 }
