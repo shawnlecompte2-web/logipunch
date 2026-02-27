@@ -137,9 +137,9 @@ export default function TimeSheet() {
           <p className="text-zinc-500 text-sm mt-0.5">Heures approuvées uniquement</p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm font-semibold rounded-xl transition-all">
+          <button onClick={exportXLSX} className="flex items-center gap-2 px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm font-semibold rounded-xl transition-all">
             <Download size={15} />
-            Exporter CSV
+            Exporter XLSX
           </button>
         </div>
       </div>
