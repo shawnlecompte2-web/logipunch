@@ -82,28 +82,29 @@ function PinModal({ onSuccess }) {
           <p className="text-zinc-300 text-3xl font-bold mb-2">Bienvenue !</p>
           <p className="text-zinc-500 text-sm">Entrez votre code à 4 chiffres</p>
         </div>
-      <div className="flex gap-4 mb-8">
-        {[0,1,2,3].map(i => (
-          <div key={i} className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${i < pin.length ? "bg-green-500 border-green-500 scale-110" : "bg-transparent border-zinc-600"}`} />
-        ))}
+        <div className="flex gap-4 mb-8">
+          {[0,1,2,3].map(i => (
+            <div key={i} className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${i < pin.length ? "bg-green-500 border-green-500 scale-110" : "bg-transparent border-zinc-600"}`} />
+          ))}
+        </div>
+        {error && <div className="mb-5 px-5 py-2.5 bg-red-900/30 border border-red-700/50 rounded-xl text-red-400 text-sm text-center">{error}</div>}
+        <div className="grid grid-cols-3 gap-3 w-full max-w-xs">
+          {keys.map((k, i) => {
+            if (k === "") return <div key={i} />;
+            if (k === "del") return (
+              <button key={i} onClick={handleDelete} disabled={loading} className="h-16 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center active:scale-95 transition-all text-zinc-400 hover:bg-zinc-700">
+                <Delete size={22} />
+              </button>
+            );
+            return (
+              <button key={i} onClick={() => handleKey(k)} disabled={loading || pin.length >= 4} className="h-16 rounded-2xl bg-zinc-800 border border-zinc-700 text-white text-2xl font-semibold active:scale-95 transition-all hover:bg-zinc-700 hover:border-green-600">
+                {k}
+              </button>
+            );
+          })}
+        </div>
+        {loading && <div className="mt-8 text-green-400 text-sm animate-pulse">Vérification...</div>}
       </div>
-      {error && <div className="mb-5 px-5 py-2.5 bg-red-900/30 border border-red-700/50 rounded-xl text-red-400 text-sm text-center">{error}</div>}
-      <div className="grid grid-cols-3 gap-3 w-full max-w-xs">
-        {keys.map((k, i) => {
-          if (k === "") return <div key={i} />;
-          if (k === "del") return (
-            <button key={i} onClick={handleDelete} disabled={loading} className="h-16 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center active:scale-95 transition-all text-zinc-400 hover:bg-zinc-700">
-              <Delete size={22} />
-            </button>
-          );
-          return (
-            <button key={i} onClick={() => handleKey(k)} disabled={loading || pin.length >= 4} className="h-16 rounded-2xl bg-zinc-800 border border-zinc-700 text-white text-2xl font-semibold active:scale-95 transition-all hover:bg-zinc-700 hover:border-green-600">
-              {k}
-            </button>
-          );
-        })}
-      </div>
-      {loading && <div className="mt-8 text-green-400 text-sm animate-pulse">Vérification...</div>}
     </div>
   );
 }
