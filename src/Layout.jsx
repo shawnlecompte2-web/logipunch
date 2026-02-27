@@ -1,17 +1,31 @@
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Clock, CheckSquare, BarChart2, Users, Settings, User } from "lucide-react";
+import { useState, useEffect } from "react";
 
-const navItems = [
-  { label: "Punch", page: "Punch", icon: Clock },
-  { label: "Approbation", page: "Approvals", icon: CheckSquare },
-  { label: "Heures", page: "TimeSheet", icon: BarChart2 },
-  { label: "Actifs", page: "ActiveUsers", icon: Users },
-  { label: "Mes heures", page: "MyHours", icon: User },
-  { label: "Réglages", page: "Settings", icon: Settings },
+const ADMIN_ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "Gestionnaire Chauffeur", "Gestionnaire Cour", "Gestionnaire Mécanique", "Contremaitre", "Estimateur"];
+
+const allNavItems = [
+  { label: "Punch", page: "Punch", icon: Clock, public: true },
+  { label: "Mes heures", page: "MyHours", icon: User, public: true },
+  { label: "Approbation", page: "Approvals", icon: CheckSquare, adminOnly: true },
+  { label: "Heures", page: "TimeSheet", icon: BarChart2, adminOnly: true },
+  { label: "Actifs", page: "ActiveUsers", icon: Users, adminOnly: true },
+  { label: "Réglages", page: "Settings", icon: Settings, adminOnly: true },
 ];
 
 export default function Layout({ children, currentPageName }) {
+  const [currentRole, setCurrentRole] = useState(() => sessionStorage.getItem("logipunch_role") || null);
+
+  useEffect(() => {
+    const handler = () => setCurrentRole(sessionStorage.getItem("logipunch_role") || null);
+    window.addEventListener("logipunch_role_change", handler);
+    return () => window.removeEventListener("logipunch_role_change", handler);
+  }, []);
+
+  const isAdmin = currentRole && ADMIN_ROLES.includes(currentRole);
+  const navItems = allNavItems.filter(item => item.public || isAdmin);
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
       <style>{`
@@ -38,9 +52,7 @@ export default function Layout({ children, currentPageName }) {
                 key={page}
                 to={createPageUrl(page)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
-                  isActive
-                    ? "bg-green-700 text-white"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+                  isActive ? "bg-green-700 text-white" : "text-zinc-400 hover:text-white hover:bg-zinc-800"
                 }`}
               >
                 <Icon size={15} />
