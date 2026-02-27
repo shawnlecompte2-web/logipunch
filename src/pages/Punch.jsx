@@ -377,12 +377,26 @@ export default function Punch() {
   const [currentUser, setCurrentUser] = useState(null);
   const [activeEntry, setActiveEntry] = useState(null);
 
+  const handleLogin = (user, entry) => {
+    sessionStorage.setItem("logipunch_role", user.role);
+    window.dispatchEvent(new Event("logipunch_role_change"));
+    setCurrentUser(user);
+    setActiveEntry(entry || null);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("logipunch_role");
+    window.dispatchEvent(new Event("logipunch_role_change"));
+    setCurrentUser(null);
+    setActiveEntry(null);
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-start">
       {!currentUser ? (
-        <PinEntry onSuccess={(user, entry) => { setCurrentUser(user); setActiveEntry(entry || null); }} />
+        <PinEntry onSuccess={handleLogin} />
       ) : (
-        <PunchDashboard user={currentUser} activeEntry={activeEntry} setActiveEntry={setActiveEntry} onLogout={() => { setCurrentUser(null); setActiveEntry(null); }} />
+        <PunchDashboard user={currentUser} activeEntry={activeEntry} setActiveEntry={setActiveEntry} onLogout={handleLogout} />
       )}
     </div>
   );
