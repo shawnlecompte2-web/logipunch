@@ -312,7 +312,7 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
   };
 
   if (view === "punchin") return <PunchInForm user={user} projects={projects} onSuccess={e => { setActiveEntry(e); setView("main"); }} onBack={() => setView("main")} />;
-  if (view === "punchout") return <PunchOutForm user={user} activeEntry={activeEntry} onSuccess={() => { setActiveEntry(null); setView("main"); }} onBack={() => setView("main")} />;
+  if (view === "punchout") return <PunchOutForm user={user} activeEntry={activeEntry} onSuccess={() => { setActiveEntry(null); setStoredEntry(null); setView("main"); }} onBack={() => setView("main")} />;
   if (view === "changeproject") return <ChangeProjectForm user={user} activeEntry={activeEntry} projects={projects} onSuccess={e => { setActiveEntry(e); setView("main"); }} onBack={() => setView("main")} />;
 
   return (
