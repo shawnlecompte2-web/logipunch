@@ -230,19 +230,21 @@ export default function TimeSheet() {
     doc.setFillColor(15, 23, 42); // slate-900
     doc.roundedRect(margin, 12, colW, 38, 3, 3, "F");
 
-    // Logo circle
-    doc.setFillColor(16, 185, 129);
-    doc.circle(24, 27, 5, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.text("L", 22.5, 29.5);
+    // Logo image (excavator)
+    const logoUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5fcc1102e_ChatGPTImageFeb27202605_01_28PM.png";
+    try {
+      doc.addImage(logoUrl, "PNG", margin + 3, 15, 18, 18);
+    } catch(err) {
+      // fallback circle if image fails
+      doc.setFillColor(16, 185, 129);
+      doc.circle(margin + 12, 24, 6, "F");
+    }
 
     // Company name
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(255, 255, 255);
-    doc.text("LOGIPUNCH", 33, 28);
+    doc.text("LOGIPUNCH", margin + 25, 28);
 
     // Subtitle
     doc.setFontSize(8);
