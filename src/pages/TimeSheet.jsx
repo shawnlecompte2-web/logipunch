@@ -435,6 +435,13 @@ export default function TimeSheet() {
                   })}
                   <td className="p-3 text-center">
                     <p className="text-green-400 font-bold">{getWeekTotal(user.id).toFixed(1)}h</p>
+                    <button
+                      onClick={() => printPaySlip(user)}
+                      title="Imprimer slip de paye"
+                      className="mt-1 p-1.5 bg-zinc-800 hover:bg-blue-700 rounded-lg transition-all block mx-auto"
+                    >
+                      <Printer size={12} className="text-zinc-400 hover:text-white" />
+                    </button>
                   </td>
                 </tr>
               ))}
