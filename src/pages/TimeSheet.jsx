@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, parseISO, addWeeks, subWeeks } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 
 const GROUPS = ["DDL Excavation", "DDL Logistique", "Groupe DDL"];
 
