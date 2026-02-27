@@ -65,18 +65,18 @@ function PinModal({ onSuccess }) {
         <p className="text-zinc-600 text-xs mt-1 capitalize">{dateStr}</p>
       </div>
 
-      {/* Logo & Title - Top Right */}
-      <div className="absolute top-6 right-6">
-        <div className="flex items-center gap-2.5">
-          <div className="w-14 h-14 rounded-xl bg-green-500 flex items-center justify-center overflow-hidden">
+      {/* Logo & Title - Top Left */}
+      <div className="absolute top-6 left-6">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center overflow-hidden">
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-full h-full object-contain p-1" style={{filter: "brightness(0) invert(1)"}} />
           </div>
-          <span className="text-4xl font-black text-white tracking-tight">LOGIPUNCH</span>
+          <span className="text-2xl font-black text-white tracking-tight">LOGIPUNCH</span>
         </div>
       </div>
 
       <div className="text-center">
-        <p className="text-zinc-300 text-base font-semibold mb-2">Bienvenue !</p>
+        <p className="text-zinc-300 text-3xl font-bold mb-2">Bienvenue !</p>
         <p className="text-zinc-500 text-sm">Entrez votre code à 4 chiffres</p>
       </div>
       <div className="flex gap-4 mb-8">
