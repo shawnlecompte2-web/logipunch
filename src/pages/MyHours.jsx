@@ -17,6 +17,7 @@ export default function MyHours() {
   const weekStart = startOfWeek(weekDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(weekDate, { weekStartsOn: 0 });
   const weekStartStr = format(weekStart, "yyyy-MM-dd");
+  const weekEndStr = format(weekEnd, "yyyy-MM-dd");
   const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
   useEffect(() => {
