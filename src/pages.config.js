@@ -47,8 +47,14 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import Punch from './pages/Punch';
 
-export const pagesConfig = {
-	Pages: {}
+
+export const PAGES = {
+    "Punch": Punch,
 }
 
+export const pagesConfig = {
+    mainPage: "Punch",
+    Pages: PAGES,
+};
