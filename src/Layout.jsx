@@ -54,15 +54,25 @@ function PinModal({ onSuccess }) {
 
   const keys = ["1","2","3","4","5","6","7","8","9","","0","del"];
 
+  const dateStr = now.toLocaleDateString("fr-CA", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const timeStr = now.toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
   return (
     <div className="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col items-center justify-center px-4">
-      <div className="mb-10 text-center">
-        <div className="flex items-center justify-center gap-3 mb-2">
+      {/* Date & Time */}
+      <div className="mb-8 text-center">
+        <p className="text-5xl font-black text-white tracking-tight tabular-nums">{timeStr}</p>
+        <p className="text-zinc-400 text-sm mt-1 capitalize">{dateStr}</p>
+      </div>
+
+      <div className="mb-8 text-center">
+        <div className="flex items-center justify-center gap-3 mb-3">
           <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center overflow-hidden">
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-full h-full object-contain p-1" style={{filter: "brightness(0) invert(1)"}} />
           </div>
           <span className="text-3xl font-black text-white tracking-tight">LOGIPUNCH</span>
         </div>
+        <p className="text-zinc-300 text-base font-semibold">Bienvenue ! 👋</p>
         <p className="text-zinc-500 text-sm mt-1">Entrez votre code à 4 chiffres</p>
       </div>
       <div className="flex gap-4 mb-8">
