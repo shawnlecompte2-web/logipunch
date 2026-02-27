@@ -231,7 +231,7 @@ export default function TimeSheet() {
     doc.roundedRect(margin, 12, colW, 38, 3, 3, "F");
 
     // Logo image (excavator)
-    const logoUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5fcc1102e_ChatGPTImageFeb27202605_01_28PM.png";
+    const logoUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png";
     try {
       doc.addImage(logoUrl, "PNG", margin + 3, 15, 18, 18);
     } catch(err) {
