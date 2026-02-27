@@ -35,24 +35,7 @@ export default function MyHours() {
 
   const getWeekTotal = () => entries.reduce((sum, e) => sum + (e.total_hours || 0), 0);
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <div className="text-center mb-6">
-          <p className="text-zinc-500 text-sm">Mes heures · Entrez votre code</p>
-        </div>
-        <div className="w-full max-w-xs">
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <div className="w-9 h-9 rounded-xl bg-green-500 flex items-center justify-center">
-              <span className="text-white font-black text-base">L</span>
-            </div>
-            <span className="text-2xl font-black text-white tracking-tight">LOGIPUNCH</span>
-          </div>
-          <PinEntry onSuccess={(u) => handlePinSuccess(u)} />
-        </div>
-      </div>
-    );
-  }
+  if (!user) return null;
 
   return (
     <div className="min-h-screen p-4 max-w-3xl mx-auto">
@@ -61,7 +44,6 @@ export default function MyHours() {
           <h1 className="text-white text-xl font-bold">Mes heures</h1>
           <p className="text-zinc-500 text-sm">{user.full_name} · {user.role}</p>
         </div>
-        <button onClick={() => setUser(null)} className="text-zinc-500 hover:text-zinc-300 text-sm">Quitter</button>
       </div>
 
       {/* Week Nav */}
