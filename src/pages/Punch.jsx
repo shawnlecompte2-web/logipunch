@@ -187,7 +187,7 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
         <div className="grid grid-cols-3 gap-3">
           <div><p className="text-zinc-500 text-xs mb-1">Projet</p><p className="text-white text-sm font-semibold">{activeEntry.project_name}</p></div>
           <div><p className="text-zinc-500 text-xs mb-1">Début</p><p className="text-white text-sm font-semibold">{format(punchInTime, "HH:mm")}</p></div>
-          <div><p className="text-zinc-500 text-xs mb-1">Fin</p><p className="text-white text-sm font-semibold">{format(now, "HH:mm")}</p></div>
+          <div><p className="text-zinc-500 text-xs mb-1">Fin</p><p className="text-white text-sm font-semibold">{format(punchOutTime, "HH:mm")}</p></div>
         </div>
       </div>
       <div className="mb-6">
