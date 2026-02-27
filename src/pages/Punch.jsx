@@ -395,20 +395,10 @@ export default function Punch() {
   // Always verify/refresh the active entry from the DB on mount
   useEffect(() => {
     if (!currentUser) return;
-    // Fetch entries without punch_out (still active regardless of status label)
     base44.entities.PunchEntry.filter({ user_id: currentUser.id, status: "active" }).then(entries => {
-      if (entries && entries.length > 0) {
-        setActiveEntry(entries[0]);
-        setStoredEntry(entries[0]);
-      } else {
-        // Also check sessionStorage - if we have one, verify it's still valid
-        const stored = getStoredEntry();
-        if (!stored) {
-          setActiveEntry(null);
-          setStoredEntry(null);
-        }
-        // Keep stored entry for a moment in case DB is slow
-      }
+      const entry = entries && entries.length > 0 ? entries[0] : null;
+      setActiveEntry(entry);
+      setStoredEntry(entry);
     });
   }, [currentUser?.id]);
 
