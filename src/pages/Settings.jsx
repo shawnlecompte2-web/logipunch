@@ -44,7 +44,6 @@ export default function Settings() {
     <div className="min-h-screen p-4 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-white text-2xl font-bold">Réglages</h1>
-        <button onClick={() => setAdminAccess(false)} className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors">Quitter</button>
       </div>
 
       {/* Tabs */}
