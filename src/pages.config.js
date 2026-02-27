@@ -50,12 +50,14 @@
 import Punch from './pages/Punch';
 import Approvals from './pages/Approvals';
 import TimeSheet from './pages/TimeSheet';
+import ActiveUsers from './pages/ActiveUsers';
 
 
 export const PAGES = {
     "Punch": Punch,
     "Approvals": Approvals,
     "TimeSheet": TimeSheet,
+    "ActiveUsers": ActiveUsers,
 }
 
 export const pagesConfig = {
