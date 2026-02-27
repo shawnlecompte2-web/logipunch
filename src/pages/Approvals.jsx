@@ -161,7 +161,6 @@ export default function Approvals() {
         <div className="flex gap-2 flex-wrap">
           <button onClick={() => setFilter("pending")} className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${filter === "pending" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400"}`}>En attente</button>
           <button onClick={() => setFilter("all")} className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${filter === "all" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400"}`}>Tout</button>
-          <button onClick={() => setApproverUser(null)} className="px-3 py-1.5 rounded-lg text-sm text-zinc-400 bg-zinc-800 hover:bg-zinc-700">Quitter</button>
         </div>
       </div>
       {loading && <p className="text-zinc-500 text-center py-10">Chargement...</p>}
