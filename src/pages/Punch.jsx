@@ -393,14 +393,19 @@ export default function Punch() {
   const [currentUser] = useState(getStoredUser);
   const [activeEntry, setActiveEntry] = useState(getStoredEntry);
 
-  // Always verify/refresh the active entry from the DB on mount
+  // On mount: if sessionStorage has an entry, trust it.
+  // If not, fetch from DB to check if there's an active entry.
   useEffect(() => {
     if (!currentUser) return;
-    // Fetch all recent entries and find the one without a punch_out (truly active)
+    const stored = getStoredEntry();
+    if (stored) {
+      // Already have something in session, trust it
+      setActiveEntry(stored);
+      return;
+    }
+    // Nothing in session, check DB for an active entry
     base44.entities.PunchEntry.filter({ user_id: currentUser.id }).then(entries => {
-      const entry = entries
-        ? entries.find(e => !e.punch_out)
-        : null;
+      const entry = entries ? entries.find(e => !e.punch_out) : null;
       setActiveEntry(entry || null);
       setStoredEntry(entry || null);
     });
