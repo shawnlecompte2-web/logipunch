@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Edit2, Trash2, X, Check, Users, FolderOpen, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Users, FolderOpen } from "lucide-react";
+
+function getStoredUser() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
+}
 
 const ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "Gestionnaire Chauffeur", "Chauffeur", "Gestionnaire Cour", "Gestionnaire Mécanique", "Mécano", "Contremaitre", "Manœuvre", "Opérateur", "Estimateur"];
 const GROUPS = ["DDL Excavation", "DDL Logistique", "Groupe DDL"];
