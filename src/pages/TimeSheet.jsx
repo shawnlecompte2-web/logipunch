@@ -319,6 +319,11 @@ export default function TimeSheet() {
                             {day.entries.length > 1 && (
                               <p className="text-zinc-600 text-xs">{day.entries.length} projets</p>
                             )}
+                            {isAdmin && day.entries.map(e => (
+                              <button key={e.id} onClick={() => setEditEntry(e)} className="mt-1 p-1 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all block mx-auto">
+                                <Edit2 size={11} className="text-zinc-500" />
+                              </button>
+                            ))}
                           </div>
                         ) : (
                           <p className="text-zinc-800 text-center">—</p>
