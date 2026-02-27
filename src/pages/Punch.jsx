@@ -376,20 +376,38 @@ function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
 }
 
+function getStoredEntry() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_active_entry") || "null"); } catch { return null; }
+}
+
+function setStoredEntry(entry) {
+  if (entry) sessionStorage.setItem("logipunch_active_entry", JSON.stringify(entry));
+  else sessionStorage.removeItem("logipunch_active_entry");
+}
+
 // ─── MAIN PAGE ───────────────────────────────────────────────────────────────
 export default function Punch() {
   const [currentUser] = useState(getStoredUser);
-  const [activeEntry, setActiveEntry] = useState(null);
+  const [activeEntry, setActiveEntry] = useState(getStoredEntry);
 
+  // Always verify/refresh the active entry from the DB on mount
   useEffect(() => {
     if (!currentUser) return;
     base44.entities.PunchEntry.filter({ user_id: currentUser.id, status: "active" }).then(entries => {
-      setActiveEntry(entries && entries.length > 0 ? entries[0] : null);
+      const entry = entries && entries.length > 0 ? entries[0] : null;
+      setActiveEntry(entry);
+      setStoredEntry(entry);
     });
   }, [currentUser?.id]);
 
+  const handleSetActiveEntry = (entry) => {
+    setActiveEntry(entry);
+    setStoredEntry(entry);
+  };
+
   const handleLogout = () => {
     sessionStorage.removeItem("logipunch_user");
+    sessionStorage.removeItem("logipunch_active_entry");
     window.dispatchEvent(new Event("logipunch_user_change"));
     window.location.reload();
   };
@@ -398,7 +416,7 @@ export default function Punch() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-start">
-      <PunchDashboard user={currentUser} activeEntry={activeEntry} setActiveEntry={setActiveEntry} onLogout={handleLogout} />
+      <PunchDashboard user={currentUser} activeEntry={activeEntry} setActiveEntry={handleSetActiveEntry} onLogout={handleLogout} />
     </div>
   );
 }

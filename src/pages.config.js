@@ -47,22 +47,22 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Punch from './pages/Punch';
-import Approvals from './pages/Approvals';
-import TimeSheet from './pages/TimeSheet';
 import ActiveUsers from './pages/ActiveUsers';
-import Settings from './pages/Settings';
+import Approvals from './pages/Approvals';
 import MyHours from './pages/MyHours';
+import Punch from './pages/Punch';
+import Settings from './pages/Settings';
+import TimeSheet from './pages/TimeSheet';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Punch": Punch,
-    "Approvals": Approvals,
-    "TimeSheet": TimeSheet,
     "ActiveUsers": ActiveUsers,
-    "Settings": Settings,
+    "Approvals": Approvals,
     "MyHours": MyHours,
+    "Punch": Punch,
+    "Settings": Settings,
+    "TimeSheet": TimeSheet,
 }
 
 export const pagesConfig = {
