@@ -84,26 +84,14 @@ const APPROVE_ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "G
 export default function Approvals() {
   const [entries, setEntries] = useState([]);
   const [users, setUsers] = useState([]);
-  const [approverUser, setApproverUser] = useState(null);
-  const [pinInput, setPinInput] = useState("");
-  const [pinError, setPinError] = useState("");
+  const [approverUser] = useState(() => {
+    const u = getStoredUser();
+    return u && APPROVE_ROLES.includes(u.role) ? u : null;
+  });
   const [loading, setLoading] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
   const [filter, setFilter] = useState("pending");
   const [expandedUser, setExpandedUser] = useState(null);
-
-  const handlePinLogin = async () => {
-    setLoading(true);
-    setPinError("");
-    const found = await base44.entities.AppUser.filter({ pin_code: pinInput, is_active: true });
-    if (!found || found.length === 0 || !APPROVE_ROLES.includes(found[0].role)) {
-      setPinError("Accès refusé ou code invalide.");
-      setLoading(false);
-      return;
-    }
-    setApproverUser(found[0]);
-    setLoading(false);
-  };
 
   useEffect(() => {
     if (!approverUser) return;
