@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import { Check, X, Edit2, ChevronDown, ChevronUp } from "lucide-react";
-import { useState as useLocalState } from "react";
+
+function getStoredUser() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
+}
 
 function EditEntryModal({ entry, approver, onClose, onSaved }) {
   const [punchIn, setPunchIn] = useState(
