@@ -79,11 +79,6 @@ function EditEntryModal({ entry, onClose, onSaved }) {
     </div>
   );
 }
-const ADMIN_ROLES = ["Administrateur"];
-
-function getStoredUser() {
-  try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
-}
 
 export default function TimeSheet() {
   const [entries, setEntries] = useState([]);
@@ -96,9 +91,6 @@ export default function TimeSheet() {
   const [editEntry, setEditEntry] = useState(null);
   const currentUser = getStoredUser();
   const isAdmin = currentUser?.role === "Administrateur";
-  const [editEntry, setEditEntry] = useState(null);
-  const currentUser = getStoredUser();
-  const isAdmin = currentUser && ADMIN_ROLES.includes(currentUser.role);
 
   const weekStart = startOfWeek(weekDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(weekDate, { weekStartsOn: 0 });
