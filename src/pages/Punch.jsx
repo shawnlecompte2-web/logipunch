@@ -173,6 +173,7 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
       total_hours: parseFloat(Math.max(0, (totalMinutes - finalLunch) / 60).toFixed(2)),
       status: "completed",
     });
+    sessionStorage.removeItem("logipunch_active_entry");
     onSuccess();
     setLoading(false);
   };
