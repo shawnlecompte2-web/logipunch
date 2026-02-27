@@ -168,14 +168,15 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
     if (!canSubmit) return;
     setLoading(true);
     const finalLunch = lunch === "custom" ? parseInt(customLunch) || 0 : lunch;
-    sessionStorage.removeItem("logipunch_active_entry");
+    // Update DB first, then clear session, then call onSuccess
     await base44.entities.PunchEntry.update(activeEntry.id, {
       punch_out: punchOutTime.toISOString(), lunch_break: finalLunch,
       total_hours: parseFloat(Math.max(0, (totalMinutes - finalLunch) / 60).toFixed(2)),
       status: "completed",
     });
-    onSuccess();
+    sessionStorage.removeItem("logipunch_active_entry");
     setLoading(false);
+    onSuccess();
   };
 
   return (
