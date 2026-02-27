@@ -6,37 +6,20 @@ function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
 }
 
-const ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "Gestionnaire Chauffeur", "Chauffeur", "Gestionnaire Cour", "Gestionnaire Mécanique", "Mécano", "Contremaitre", "Manœuvre", "Opérateur", "Estimateur"];
-const GROUPS = ["DDL Excavation", "DDL Logistique", "Groupe DDL"];
+const ADMIN_ROLES = ["Administrateur", "Surintendant", "Chargé de projet"];
 
 export default function Settings() {
-  const [tab, setTab] = useState("users"); // users | projects
+  const [tab, setTab] = useState("users");
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [adminPinInput, setAdminPinInput] = useState("");
-  const [adminAccess, setAdminAccess] = useState(false);
-  const [pinError, setPinError] = useState("");
-  const [editUser, setEditUser] = useState(null);
-  const [editProject, setEditProject] = useState(null);
-  const [showUserForm, setShowUserForm] = useState(false);
-  const [showProjectForm, setShowProjectForm] = useState(false);
 
-  const ADMIN_ROLES = ["Administrateur", "Surintendant", "Chargé de projet"];
-
-  const checkAdminPin = async () => {
-    const found = await base44.entities.AppUser.filter({ pin_code: adminPinInput, is_active: true });
-    if (found && found.length > 0 && ADMIN_ROLES.includes(found[0].role)) {
-      setAdminAccess(true);
-      setPinError("");
-    } else {
-      setPinError("Accès administrateur requis.");
-    }
-  };
+  const currentUser = getStoredUser();
+  const adminAccess = currentUser && ADMIN_ROLES.includes(currentUser.role);
 
   useEffect(() => {
     if (adminAccess) loadAll();
-  }, [adminAccess]);
+  }, []);
 
   const loadAll = async () => {
     setLoading(true);
