@@ -58,27 +58,30 @@ function PinModal({ onSuccess }) {
   const timeStr = now.toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col items-center justify-center px-4">
-      {/* Date & Time - Top Left */}
-      <div className="absolute top-6 left-6">
-        <p className="text-2xl font-black text-green-400 tracking-tight tabular-nums">{timeStr}</p>
-        <p className="text-zinc-600 text-xs mt-1 capitalize">{dateStr}</p>
-      </div>
-
-      {/* Logo & Title - Top Left */}
-      <div className="absolute top-6 left-6">
+    <div className="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col px-4">
+      {/* Top Section - Logo left, Date/Time right */}
+      <div className="flex items-start justify-between pt-6 px-6 pb-8">
+        {/* Logo & Title - Top Left */}
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center overflow-hidden">
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-full h-full object-contain p-1" style={{filter: "brightness(0) invert(1)"}} />
           </div>
           <span className="text-2xl font-black text-white tracking-tight">LOGIPUNCH</span>
         </div>
+
+        {/* Date & Time - Top Right */}
+        <div className="text-right">
+          <p className="text-2xl font-black text-green-400 tracking-tight tabular-nums">{timeStr}</p>
+          <p className="text-zinc-600 text-xs mt-1 capitalize">{dateStr}</p>
+        </div>
       </div>
 
-      <div className="text-center">
-        <p className="text-zinc-300 text-3xl font-bold mb-2">Bienvenue !</p>
-        <p className="text-zinc-500 text-sm">Entrez votre code à 4 chiffres</p>
-      </div>
+      {/* Center Section - Welcome & PIN */}
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="text-center mb-8">
+          <p className="text-zinc-300 text-3xl font-bold mb-2">Bienvenue !</p>
+          <p className="text-zinc-500 text-sm">Entrez votre code à 4 chiffres</p>
+        </div>
       <div className="flex gap-4 mb-8">
         {[0,1,2,3].map(i => (
           <div key={i} className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${i < pin.length ? "bg-green-500 border-green-500 scale-110" : "bg-transparent border-zinc-600"}`} />
