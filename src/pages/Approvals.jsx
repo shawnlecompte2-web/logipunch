@@ -225,6 +225,7 @@ export default function Approvals() {
                               <button onClick={() => handleReject(entry)} className="p-2 bg-red-900/40 hover:bg-red-800/60 border border-red-700/40 rounded-lg transition-all"><X size={14} className="text-red-400" /></button>
                             </>
                           )}
+                          <button onClick={() => handleDelete(entry.id)} className="p-2 bg-zinc-800 hover:bg-red-900/40 border border-zinc-700 hover:border-red-700/40 rounded-lg transition-all"><Trash2 size={14} className="text-zinc-500 hover:text-red-400" /></button>
                         </div>
                       </div>
                     </div>

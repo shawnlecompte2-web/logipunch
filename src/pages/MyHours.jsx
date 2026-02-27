@@ -123,10 +123,15 @@ export default function MyHours() {
                               {entry.plate_number && <span>Plaque: <span className="text-zinc-300">{entry.plate_number}</span></span>}
                             </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right flex flex-col items-end gap-1">
                             <p className="text-green-400 font-bold text-sm">{entry.total_hours?.toFixed(2) || "—"}h</p>
                             {entry.approved_by && (
                               <p className="text-zinc-600 text-xs mt-0.5">par {entry.approved_by}</p>
+                            )}
+                            {entry.status !== "approved" && (
+                              <button onClick={() => handleDelete(entry.id)} className="p-1.5 bg-zinc-800 hover:bg-red-900/40 border border-zinc-700 hover:border-red-700/40 rounded-lg transition-all mt-1">
+                                <Trash2 size={13} className="text-zinc-500 hover:text-red-400" />
+                              </button>
                             )}
                           </div>
                         </div>
