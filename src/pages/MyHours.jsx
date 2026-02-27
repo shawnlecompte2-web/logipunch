@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ArrowLeft, ChevronLeft, ChevronRight, Clock } from "lucide-react";
-import PinEntry from "../components/punch/PinEntry";
+import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+
+function getStoredUser() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
+}
 
 export default function MyHours() {
-  const [user, setUser] = useState(null);
+  const [user] = useState(getStoredUser);
   const [entries, setEntries] = useState([]);
   const [weekDate, setWeekDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
@@ -15,10 +18,6 @@ export default function MyHours() {
   const weekEnd = endOfWeek(weekDate, { weekStartsOn: 1 });
   const weekStartStr = format(weekStart, "yyyy-MM-dd");
   const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
-
-  const handlePinSuccess = (u) => {
-    setUser(u);
-  };
 
   useEffect(() => {
     if (!user) return;
