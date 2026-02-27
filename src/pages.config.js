@@ -49,11 +49,13 @@
  */
 import Punch from './pages/Punch';
 import Approvals from './pages/Approvals';
+import TimeSheet from './pages/TimeSheet';
 
 
 export const PAGES = {
     "Punch": Punch,
     "Approvals": Approvals,
+    "TimeSheet": TimeSheet,
 }
 
 export const pagesConfig = {
