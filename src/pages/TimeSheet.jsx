@@ -16,8 +16,8 @@ export default function TimeSheet() {
   const [viewMode, setViewMode] = useState("week"); // week | day
   const [selectedDay, setSelectedDay] = useState(format(new Date(), "yyyy-MM-dd"));
 
-  const weekStart = startOfWeek(weekDate, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(weekDate, { weekStartsOn: 1 });
+  const weekStart = startOfWeek(weekDate, { weekStartsOn: 0 });
+  const weekEnd = endOfWeek(weekDate, { weekStartsOn: 0 });
   const weekStartStr = format(weekStart, "yyyy-MM-dd");
   const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
 

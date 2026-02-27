@@ -94,7 +94,7 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
     setLoading(true);
     const project = projects.find(p => p.id === selectedProject);
     const now = new Date();
-    const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
+    const weekStart = format(startOfWeek(now, { weekStartsOn: 0 }), "yyyy-MM-dd");
     const entry = {
       user_id: user.id, user_name: user.full_name, project_id: selectedProject,
       project_name: project?.name || "", punch_in: now.toISOString(),
@@ -241,7 +241,7 @@ function ChangeProjectForm({ user, activeEntry, projects, onSuccess, onBack }) {
       punch_out: now.toISOString(), lunch_break: 0,
       total_hours: parseFloat((totalMinutes / 60).toFixed(2)), status: "completed",
     });
-    const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
+    const weekStart = format(startOfWeek(now, { weekStartsOn: 0 }), "yyyy-MM-dd");
     const newEntry = {
       user_id: user.id, user_name: user.full_name, project_id: selectedProject,
       project_name: project?.name || "", punch_in: now.toISOString(), status: "active",
