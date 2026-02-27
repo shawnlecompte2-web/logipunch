@@ -18,7 +18,8 @@ export default function ActiveUsers() {
 
   const loadData = async () => {
     setLoading(true);
-    const entries = await base44.entities.PunchEntry.filter({ status: "active" });
+    const allEntries = await base44.entities.PunchEntry.list("-punch_in", 200);
+    const entries = allEntries.filter(e => !e.punch_out);
     const allUsers = await base44.entities.AppUser.filter({ is_active: true });
     setActiveEntries(entries);
     setUsers(allUsers);
