@@ -105,6 +105,8 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
     if (needsMachine) entry.machine = machine;
     if (needsPlate) entry.plate_number = plateNumber;
     const created = await base44.entities.PunchEntry.create(entry);
+    // Persist immediately so navigation doesn't lose the active entry
+    sessionStorage.setItem("logipunch_active_entry", JSON.stringify(created));
     onSuccess(created);
     setLoading(false);
   };
