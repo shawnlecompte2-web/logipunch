@@ -395,10 +395,13 @@ export default function Punch() {
   // Always verify/refresh the active entry from the DB on mount
   useEffect(() => {
     if (!currentUser) return;
-    base44.entities.PunchEntry.filter({ user_id: currentUser.id, status: "active" }).then(entries => {
-      const entry = entries && entries.length > 0 ? entries[0] : null;
-      setActiveEntry(entry);
-      setStoredEntry(entry);
+    // Fetch all recent entries and find the one without a punch_out (truly active)
+    base44.entities.PunchEntry.filter({ user_id: currentUser.id }).then(entries => {
+      const entry = entries
+        ? entries.find(e => !e.punch_out)
+        : null;
+      setActiveEntry(entry || null);
+      setStoredEntry(entry || null);
     });
   }, [currentUser?.id]);
 
