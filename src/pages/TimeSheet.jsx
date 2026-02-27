@@ -250,7 +250,7 @@ export default function TimeSheet() {
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(148, 163, 184); // slate-400
-    doc.text("FEUILLE DE TEMPS  ·  SLIP DE PAYE", 33, 36);
+    doc.text("FEUILLE DE TEMPS  ·  SLIP DE PAYE", margin + 25, 36);
 
     // Week badge (right aligned)
     doc.setFillColor(30, 41, 59); // slate-800
