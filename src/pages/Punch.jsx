@@ -157,9 +157,9 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const [lunch, setLunch] = useState(null);
   const [customLunch, setCustomLunch] = useState("");
   const [loading, setLoading] = useState(false);
-  const now = new Date();
+  const [punchOutTime] = useState(new Date());
   const punchInTime = new Date(activeEntry.punch_in);
-  const totalMinutes = differenceInMinutes(now, punchInTime);
+  const totalMinutes = differenceInMinutes(punchOutTime, punchInTime);
   const lunchMinutes = lunch === "custom" ? parseInt(customLunch) || 0 : (lunch ?? 0);
   const workedHours = (Math.max(0, totalMinutes - lunchMinutes) / 60).toFixed(2);
   const canSubmit = lunch !== null;
@@ -168,10 +168,9 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
     if (!canSubmit) return;
     setLoading(true);
     const finalLunch = lunch === "custom" ? parseInt(customLunch) || 0 : lunch;
-    // Clear session FIRST before DB call so navigation never sees stale entry
     sessionStorage.removeItem("logipunch_active_entry");
     await base44.entities.PunchEntry.update(activeEntry.id, {
-      punch_out: now.toISOString(), lunch_break: finalLunch,
+      punch_out: punchOutTime.toISOString(), lunch_break: finalLunch,
       total_hours: parseFloat(Math.max(0, (totalMinutes - finalLunch) / 60).toFixed(2)),
       status: "completed",
     });
