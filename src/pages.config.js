@@ -52,6 +52,7 @@ import Approvals from './pages/Approvals';
 import TimeSheet from './pages/TimeSheet';
 import ActiveUsers from './pages/ActiveUsers';
 import Settings from './pages/Settings';
+import MyHours from './pages/MyHours';
 
 
 export const PAGES = {
@@ -60,6 +61,7 @@ export const PAGES = {
     "TimeSheet": TimeSheet,
     "ActiveUsers": ActiveUsers,
     "Settings": Settings,
+    "MyHours": MyHours,
 }
 
 export const pagesConfig = {
