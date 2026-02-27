@@ -67,7 +67,9 @@ export default function TimeSheet() {
     wsData.push([`Semaine du ${format(weekStart, "d MMMM yyyy", { locale: fr })}`]);
     wsData.push([]); // blank
 
-    groupUsers.forEach(user => {
+    const usersWithHours = groupUsers.filter(user => getEntriesForUser(user.id).length > 0);
+
+    usersWithHours.forEach(user => {
       // User name header
       wsData.push([user.full_name]);
       // Column headers
