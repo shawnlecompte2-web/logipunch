@@ -372,32 +372,33 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
   );
 }
 
+function getStoredUser() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
+}
+
 // ─── MAIN PAGE ───────────────────────────────────────────────────────────────
 export default function Punch() {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser] = useState(getStoredUser);
   const [activeEntry, setActiveEntry] = useState(null);
 
-  const handleLogin = (user, entry) => {
-    sessionStorage.setItem("logipunch_role", user.role);
-    window.dispatchEvent(new Event("logipunch_role_change"));
-    setCurrentUser(user);
-    setActiveEntry(entry || null);
-  };
+  useEffect(() => {
+    if (!currentUser) return;
+    base44.entities.PunchEntry.filter({ user_id: currentUser.id, status: "active" }).then(entries => {
+      setActiveEntry(entries && entries.length > 0 ? entries[0] : null);
+    });
+  }, [currentUser?.id]);
 
   const handleLogout = () => {
-    sessionStorage.removeItem("logipunch_role");
-    window.dispatchEvent(new Event("logipunch_role_change"));
-    setCurrentUser(null);
-    setActiveEntry(null);
+    sessionStorage.removeItem("logipunch_user");
+    window.dispatchEvent(new Event("logipunch_user_change"));
+    window.location.reload();
   };
+
+  if (!currentUser) return null;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-start">
-      {!currentUser ? (
-        <PinEntry onSuccess={handleLogin} />
-      ) : (
-        <PunchDashboard user={currentUser} activeEntry={activeEntry} setActiveEntry={setActiveEntry} onLogout={handleLogout} />
-      )}
+      <PunchDashboard user={currentUser} activeEntry={activeEntry} setActiveEntry={setActiveEntry} onLogout={handleLogout} />
     </div>
   );
 }
