@@ -27,7 +27,8 @@ export default function MyHours() {
 
   const loadEntries = async () => {
     setLoading(true);
-    const data = await base44.entities.PunchEntry.filter({ user_id: user.id, week_start: weekStartStr });
+    const all = await base44.entities.PunchEntry.filter({ user_id: user.id });
+    const data = all.filter(e => e.work_date >= weekStartStr && e.work_date <= weekEndStr);
     setEntries(data);
     setLoading(false);
   };
