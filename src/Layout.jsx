@@ -149,6 +149,7 @@ export default function Layout({ children, currentPageName }) {
     sessionStorage.setItem("logipunch_user", JSON.stringify(user));
     window.dispatchEvent(new Event("logipunch_user_change"));
     setCurrentUser(user);
+    navigate(createPageUrl("Punch"));
   };
 
   const handleLogout = () => {
