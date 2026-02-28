@@ -11,7 +11,8 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [adminName, setAdminName] = useState("");
-  const [adminRole, setAdminRole] = useState("Administrateur");
+  const [adminRole, setAdminRole] = useState("");
+  const [adminGroup, setAdminGroup] = useState("");
   const [adminPin, setAdminPin] = useState("");
   const [adminPinConfirm, setAdminPinConfirm] = useState("");
   const [showPin, setShowPin] = useState(false);
