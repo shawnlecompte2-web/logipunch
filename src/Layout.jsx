@@ -50,17 +50,7 @@ function PinModal({ onSuccess, company }) {
   const verifyPin = async (code) => {
     setLoading(true);
     try {
-      let users = [];
-      if (company?.id) {
-        users = await base44.entities.AppUser.filter({ pin_code: code, is_active: true, company_id: company.id });
-        // Fallback: legacy users not yet linked to a company
-        if (users.length === 0) {
-          const all = await base44.entities.AppUser.filter({ pin_code: code, is_active: true });
-          users = all.filter(u => !u.company_id);
-        }
-      } else {
-        users = await base44.entities.AppUser.filter({ pin_code: code, is_active: true });
-      }
+      const users = await base44.entities.AppUser.filter({ pin_code: code, is_active: true, company_id: company.id });
       if (!users || users.length === 0) { setError("Code invalide. Réessayez."); setPin(""); setLoading(false); return; }
       onSuccess(users[0]);
     } catch { setError("Erreur. Réessayez."); setPin(""); }
