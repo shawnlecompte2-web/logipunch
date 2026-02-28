@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Edit2, Trash2, X, Users, FolderOpen, ChevronDown, AlertTriangle, Building2 } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Users, FolderOpen, ChevronDown, AlertTriangle, Building2, ShieldCheck } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import CompanySettingsTab from "@/components/company/CompanySettingsTab";
 
