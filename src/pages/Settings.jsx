@@ -225,7 +225,7 @@ function UserForm({ user, projects, users, companyId, onClose, onSaved }) {
     allowed_pages: user?.allowed_pages || [],
     assigned_projects: user?.assigned_projects || [],
     approves_users: user?.approves_users || [],
-    approved_by: user?.approved_by || "",
+    approved_by: Array.isArray(user?.approved_by) ? user.approved_by : (user?.approved_by ? [user.approved_by] : []),
   });
 
   const togglePage = (key) => {
