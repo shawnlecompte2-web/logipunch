@@ -206,6 +206,13 @@ function UsersTab({ users, projects, companyId, onRefresh }) {
   );
 }
 
+const EXTRA_PAGES = [
+  { key: "Approvals", label: "Approbation" },
+  { key: "TimeSheet", label: "Heures" },
+  { key: "ActiveUsers", label: "Actifs" },
+  { key: "Settings", label: "Réglages" },
+];
+
 function UserForm({ user, projects, users, companyId, onClose, onSaved }) {
   const [form, setForm] = useState({
     full_name: user?.full_name || "",
@@ -213,10 +220,21 @@ function UserForm({ user, projects, users, companyId, onClose, onSaved }) {
     role: user?.role || "",
     group: user?.group || "",
     is_active: user?.is_active !== false,
+    is_admin: user?.is_admin || false,
+    allowed_pages: user?.allowed_pages || [],
     assigned_projects: user?.assigned_projects || [],
     approves_users: user?.approves_users || [],
     approved_by: user?.approved_by || "",
   });
+
+  const togglePage = (key) => {
+    setForm(f => ({
+      ...f,
+      allowed_pages: f.allowed_pages.includes(key)
+        ? f.allowed_pages.filter(p => p !== key)
+        : [...f.allowed_pages, key],
+    }));
+  };
   const [saving, setSaving] = useState(false);
   const [newRole, setNewRole] = useState("");
   const [newGroup, setNewGroup] = useState("");
