@@ -96,12 +96,14 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
     const project = projects.find(p => p.id === selectedProject);
     const now = new Date();
     const weekStart = format(startOfWeek(now, { weekStartsOn: 0 }), "yyyy-MM-dd");
+    const company = getStoredCompany();
     const entry = {
       user_id: user.id, user_name: user.full_name, project_id: selectedProject,
       project_name: project?.name || "", punch_in: now.toISOString(),
       status: AUTO_APPROVE_ROLES.includes(user.role) ? "approved" : "active",
       week_start: weekStart, work_date: format(now, "yyyy-MM-dd"),
       group: user.group, role: user.role, lunch_break: 0,
+      ...(company?.id ? { company_id: company.id } : {}),
     };
     if (needsMachine) entry.machine = machine;
     if (needsPlate) entry.plate_number = plateNumber;
@@ -301,7 +303,9 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
   }, []);
 
   useEffect(() => {
-    base44.entities.Project.filter({ is_active: true }).then(all => {
+    const company = getStoredCompany();
+    const filter = { is_active: true, ...(company?.id ? { company_id: company.id } : {}) };
+    base44.entities.Project.filter(filter).then(all => {
       if (user.assigned_projects && user.assigned_projects.length > 0) {
         setProjects(all.filter(p => user.assigned_projects.includes(p.id)));
       } else setProjects(all);
@@ -435,6 +439,10 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
 
 function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
+}
+
+function getStoredCompany() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
 }
 
 function getStoredEntry() {
