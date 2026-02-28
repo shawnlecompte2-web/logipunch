@@ -10,10 +10,27 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
   const [logoPreview, setLogoPreview] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [adminName, setAdminName] = useState("");
+  const [adminRole, setAdminRole] = useState("Administrateur");
   const [adminPin, setAdminPin] = useState("");
   const [adminPinConfirm, setAdminPinConfirm] = useState("");
   const [showPin, setShowPin] = useState(false);
   const [pinError, setPinError] = useState("");
+
+  const ROLES = [
+    "Administrateur",
+    "Surintendant",
+    "Contremaitre",
+    "Chargé de projet",
+    "Gestionnaire Chauffeur",
+    "Gestionnaire Cour",
+    "Gestionnaire Mécanique",
+    "Estimateur",
+    "Opérateur",
+    "Chauffeur",
+    "Mécanicien",
+    "Manœuvre",
+  ];
 
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
