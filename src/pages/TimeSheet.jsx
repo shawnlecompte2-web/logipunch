@@ -516,10 +516,17 @@ export default function TimeSheet() {
     doc.text("SIGNATURE EMPLOYÉ", margin, y + 6);
     doc.text("VALIDATION DIRECTION", pageW - margin, y + 6, { align: "right" });
 
-    // ── LOGIPUNCH FOOTER ──────────────────────────────────────────
+    // ── TapIN FOOTER ──────────────────────────────────────────
+    const logoFooterUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/6b809ffd5_clock_5190346.png";
+    const logoFooterData = await loadImgWithSize(logoFooterUrl);
+    if (logoFooterData) {
+      const lh = 6;
+      const lw = (logoFooterData.w / logoFooterData.h) * lh;
+      try { doc.addImage(logoFooterData.img, "PNG", pageW / 2 - lw - 2, 284, lw, lh); } catch(e) {}
+    }
     doc.setFontSize(7);
-    doc.setTextColor(200, 200, 200);
-    doc.text(`Généré par LOGIPUNCH · ${format(new Date(), "d MMMM yyyy 'à' HH:mm", { locale: fr })}`, pageW / 2, 290, { align: "center" });
+    doc.setTextColor(180, 180, 180);
+    doc.text(`Généré par TapIN · ${format(new Date(), "d MMMM yyyy 'à' HH:mm", { locale: fr })}`, pageW / 2 + 1, 290, { align: "left" });
 
     const nameParts2 = user.full_name.trim().split(/\s+/);
     const firstName = nameParts2[0];
