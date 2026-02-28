@@ -639,6 +639,119 @@ function RolesTab({ users, companyId, onRefresh }) {
   );
 }
 
+function GroupsTab({ users, companyId, onRefresh }) {
+  const existingGroups = [...new Set(users.filter(u => u.group).map(u => u.group))].sort();
+  const [newGroup, setNewGroup] = useState("");
+  const [editingGroup, setEditingGroup] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const usersWithGroup = (group) => users.filter(u => u.group === group);
+
+  const handleRename = async (original, newName) => {
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === original) { setEditingGroup(null); return; }
+    setSaving(true);
+    await Promise.all(usersWithGroup(original).map(u => base44.entities.AppUser.update(u.id, { group: trimmed })));
+    setSaving(false);
+    setEditingGroup(null);
+    onRefresh();
+  };
+
+  const handleDelete = async (group) => {
+    const affected = usersWithGroup(group);
+    const msg = affected.length > 0
+      ? `Supprimer le groupe "${group}"? Les ${affected.length} utilisateur(s) avec ce groupe auront leur groupe vidé.`
+      : `Supprimer le groupe "${group}"?`;
+    if (!window.confirm(msg)) return;
+    setSaving(true);
+    await Promise.all(affected.map(u => base44.entities.AppUser.update(u.id, { group: "" })));
+    setSaving(false);
+    onRefresh();
+  };
+
+  return (
+    <div>
+      <div className="mb-6">
+        <p className="text-white font-semibold mb-1">Gestion des groupes</p>
+        <p className="text-zinc-500 text-xs">Les groupes sont partagés entre tous les utilisateurs du portail.</p>
+      </div>
+
+      <div className="flex gap-2 mb-6">
+        <input
+          value={newGroup}
+          onChange={e => setNewGroup(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && newGroup.trim() && alert(`Groupe "${newGroup.trim()}" — assignez-le à un utilisateur pour le voir dans la liste.`) && setNewGroup("")}
+          placeholder="Nouveau groupe..."
+          className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600 placeholder:text-zinc-600"
+        />
+        <button
+          onClick={() => { if (newGroup.trim()) { alert(`Groupe "${newGroup.trim()}" — assignez-le à un utilisateur pour le voir dans la liste.`); setNewGroup(""); } }}
+          disabled={!newGroup.trim()}
+          className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-40 flex items-center gap-2"
+        >
+          <Plus size={15} /> Ajouter
+        </button>
+      </div>
+
+      {saving && <p className="text-zinc-500 text-sm text-center py-4 animate-pulse">Mise à jour...</p>}
+
+      <div className="space-y-2">
+        {existingGroups.map(group => {
+          const count = usersWithGroup(group).length;
+          const isEditing = editingGroup?.original === group;
+          return (
+            <div key={group} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center gap-3">
+              <div className="flex-1">
+                {isEditing ? (
+                  <input
+                    autoFocus
+                    value={editingGroup.value}
+                    onChange={e => setEditingGroup(g => ({ ...g, value: e.target.value }))}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") handleRename(group, editingGroup.value);
+                      if (e.key === "Escape") setEditingGroup(null);
+                    }}
+                    className="w-full bg-zinc-800 border border-green-600 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none"
+                  />
+                ) : (
+                  <div>
+                    <span className="text-white font-semibold text-sm">{group}</span>
+                    <span className="text-zinc-600 text-xs ml-2">{count} utilisateur{count !== 1 ? "s" : ""}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                {isEditing ? (
+                  <>
+                    <button onClick={() => handleRename(group, editingGroup.value)} className="p-2 bg-green-900/40 hover:bg-green-800/60 border border-green-700/40 rounded-lg transition-all">
+                      <Check size={14} className="text-green-400" />
+                    </button>
+                    <button onClick={() => setEditingGroup(null)} className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all">
+                      <X size={14} className="text-zinc-400" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => setEditingGroup({ original: group, value: group })} className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all">
+                      <Edit2 size={14} className="text-zinc-400" />
+                    </button>
+                    <button onClick={() => handleDelete(group)} className="p-2 bg-red-900/30 hover:bg-red-900/50 rounded-lg transition-all">
+                      <Trash2 size={14} className="text-red-500" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
+        {existingGroups.length === 0 && (
+          <p className="text-zinc-600 text-sm text-center py-8">Aucun groupe défini.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ProjectForm({ project, users, companyId, onClose, onSaved }) {
   const [form, setForm] = useState({
     name: project?.name || "",
