@@ -40,7 +40,7 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
   const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
   const handleSubmit = async () => {
-    if (!name) return;
+    if (!name || !adminName) return;
     if (adminPin.length !== 4 || !/^\d{4}$/.test(adminPin)) { setPinError("Le code doit être 4 chiffres."); return; }
     if (adminPin !== adminPinConfirm) { setPinError("Les codes ne correspondent pas."); return; }
     setPinError("");
@@ -54,11 +54,11 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
     }
     const join_code = generateCode();
     const company = await base44.entities.Company.create({ name, join_code, logo_url, address, phone });
-    // Create the admin user for this company
+    // Create the first user (yourself) for this company
     await base44.entities.AppUser.create({
-      full_name: "Administrateur",
+      full_name: adminName,
       pin_code: adminPin,
-      role: "Administrateur",
+      role: adminRole,
       group: name,
       is_active: true,
       company_id: company.id,
