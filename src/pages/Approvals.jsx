@@ -3,9 +3,35 @@ import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import { Check, X, Edit2, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import PullToRefresh from "@/components/PullToRefresh";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
+}
+
+function LunchDrawer({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const opts = [0, 15, 30, 45, 60];
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm text-left flex items-center justify-between">
+        <span>{value === 0 ? "Aucun" : `${value} min`}</span>
+        <ChevronDown size={14} className="text-zinc-500" />
+      </button>
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerContent className="bg-zinc-900 border-t border-zinc-700">
+          <DrawerHeader><DrawerTitle className="text-white text-left">Dîner</DrawerTitle></DrawerHeader>
+          <div className="px-4 pb-8 space-y-2">
+            {opts.map(v => (
+              <button key={v} onClick={() => { onChange(v); setOpen(false); }} className={`w-full px-4 py-3 rounded-xl text-sm font-semibold text-left transition-all border ${value === v ? "bg-green-900/30 border-green-700/50 text-green-400" : "bg-zinc-800 border-zinc-800 text-zinc-300"}`}>
+                {v === 0 ? "Aucun" : `${v} min`}
+              </button>
+            ))}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </>
+  );
 }
 
 function EditEntryModal({ entry, approver, onClose, onSaved }) {
@@ -58,9 +84,7 @@ function EditEntryModal({ entry, approver, onClose, onSaved }) {
           </div>
           <div>
             <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Dîner (minutes)</label>
-            <select value={lunch} onChange={e => setLunch(parseInt(e.target.value))} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600">
-              {[0,15,30,45,60].map(v => <option key={v} value={v}>{v === 0 ? "Aucun" : `${v} min`}</option>)}
-            </select>
+            <LunchDrawer value={lunch} onChange={setLunch} />
           </div>
           {calcTotal() && (
             <div className="bg-zinc-800 rounded-xl p-3 text-center">
@@ -129,19 +153,22 @@ export default function Approvals() {
   };
 
   const handleApprove = async (entry) => {
+    // Optimistic update
+    setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, status: "approved", approved_by: approverUser.full_name } : e));
     await base44.entities.PunchEntry.update(entry.id, { status: "approved", approved_by: approverUser.full_name, approved_at: new Date().toISOString() });
-    loadData();
   };
 
   const handleReject = async (entry) => {
+    // Optimistic update
+    setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, status: "rejected" } : e));
     await base44.entities.PunchEntry.update(entry.id, { status: "rejected" });
-    loadData();
   };
 
   const handleDelete = async (entryId) => {
     if (!window.confirm("Supprimer cette entrée?")) return;
+    // Optimistic update
+    setEntries(prev => prev.filter(e => e.id !== entryId));
     await base44.entities.PunchEntry.delete(entryId);
-    loadData();
   };
 
   const groupedByUser = {};
@@ -159,6 +186,7 @@ export default function Approvals() {
   }
 
   return (
+    <PullToRefresh onRefresh={loadData}>
     <div className="min-h-screen p-4 max-w-4xl mx-auto">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
@@ -239,5 +267,6 @@ export default function Approvals() {
       </div>
       {editEntry && <EditEntryModal entry={editEntry} approver={approverUser} onClose={() => setEditEntry(null)} onSaved={() => { setEditEntry(null); loadData(); }} />}
     </div>
+    </PullToRefresh>
   );
 }
