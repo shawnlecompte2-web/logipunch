@@ -41,7 +41,7 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
   const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
   const handleSubmit = async () => {
-    if (!name || !adminName) return;
+    if (!name || !adminName || !adminRole || !adminGroup) return;
     if (adminPin.length !== 4 || !/^\d{4}$/.test(adminPin)) { setPinError("Le code doit être 4 chiffres."); return; }
     if (adminPin !== adminPinConfirm) { setPinError("Les codes ne correspondent pas."); return; }
     setPinError("");
