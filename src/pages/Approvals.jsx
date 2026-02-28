@@ -152,8 +152,17 @@ export default function Approvals() {
       } else if (approverUser.role === "Contremaitre") {
         const ids = allUsers.filter(u => ["Manœuvre", "Opérateur"].includes(u.role)).map(u => u.id);
         allEntries = allEntries.filter(e => ids.includes(e.user_id));
-      } else if (approverUser.approves_users?.length > 0) {
-        allEntries = allEntries.filter(e => approverUser.approves_users.includes(e.user_id));
+      } else {
+        // Filter to users who have this approver in their approved_by array
+        const workerIds = allUsers.filter(u => {
+          const approvedBy = Array.isArray(u.approved_by) ? u.approved_by : (u.approved_by ? [u.approved_by] : []);
+          return approvedBy.includes(approverUser.id);
+        }).map(u => u.id);
+        if (workerIds.length > 0 || approverUser.approves_users?.length > 0) {
+          const legacyIds = approverUser.approves_users || [];
+          const allIds = [...new Set([...workerIds, ...legacyIds])];
+          allEntries = allEntries.filter(e => allIds.includes(e.user_id));
+        }
       }
     }
     setEntries(allEntries);
