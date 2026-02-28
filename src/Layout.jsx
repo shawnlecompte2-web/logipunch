@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Clock, CheckSquare, BarChart2, Users, Settings, User, Delete, LogOut } from "lucide-react";
+import { Clock, CheckSquare, BarChart2, Users, Settings, User, Delete, LogOut, Phone } from "lucide-react";
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import CompanyPortalOverlay from "@/components/company/CompanyPortalOverlay";
