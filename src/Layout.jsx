@@ -69,7 +69,7 @@ function PinModal({ onSuccess, company }) {
           <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/6b809ffd5_clock_5190346.png" alt="logo" className="w-12 h-12 object-contain" style={{filter: "brightness(0) invert(1)"}} />
         </div>
         <div>
-          <span className="text-2xl font-black text-white tracking-tight">LOGIPUNCH</span>
+          <span className="text-2xl font-black text-white tracking-tight">TapIN</span>
           {company?.name && <p className="text-zinc-500 text-xs leading-tight">{company.name}</p>}
         </div>
         </div>
@@ -197,7 +197,7 @@ export default function Layout({ children, currentPageName }) {
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/6b809ffd5_clock_5190346.png" alt="logo" className="w-10 h-10 object-contain" style={{filter: "brightness(0) invert(1)"}} />
           </div>
           <div>
-            <span className="text-white font-black text-lg tracking-tight">LOGIPUNCH</span>
+            <span className="text-white font-black text-lg tracking-tight">TapIN</span>
             {currentCompany?.name && <p className="text-zinc-500 text-xs leading-none mt-0.5">{currentCompany.name}</p>}
           </div>
         </div>
