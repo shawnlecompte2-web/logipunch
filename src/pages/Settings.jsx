@@ -73,6 +73,9 @@ export default function Settings() {
         <button onClick={() => setTab("approvals")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "approvals" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"}`}>
           <ShieldCheck size={15} /> Approbations
         </button>
+        <button onClick={() => setTab("roles")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "roles" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"}`}>
+          <Tag size={15} /> Rôles
+        </button>
       </div>
 
       {tab === "users" && (
