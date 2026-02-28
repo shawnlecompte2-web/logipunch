@@ -137,7 +137,9 @@ export default function Approvals() {
     setUsers(allUsers);
     let allEntries = filter === "pending"
       ? await base44.entities.PunchEntry.filter({ status: "completed", ...(companyId ? { company_id: companyId } : {}) })
-      : await base44.entities.PunchEntry.list("-punch_in");
+      : companyId
+        ? await base44.entities.PunchEntry.filter({ company_id: companyId }, "-punch_in")
+        : await base44.entities.PunchEntry.list("-punch_in");
 
     const isAdmin = approverUser.is_admin === true || ["Administrateur", "Surintendant", "Chargé de projet"].includes(approverUser.role);
     if (!isAdmin) {
