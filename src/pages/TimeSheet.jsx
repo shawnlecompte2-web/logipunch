@@ -225,7 +225,7 @@ export default function TimeSheet() {
     XLSX.writeFile(wb, `heures_${activeGroup}_${weekStartStr}.xlsx`);
   };
 
-  const printPaySlip = (user) => {
+  const printPaySlip = async (user) => {
     const doc = new jsPDF();
     const userEntries = getEntriesForUser(user.id);
     const weekTotal = getWeekTotal(user.id);
@@ -238,6 +238,15 @@ export default function TimeSheet() {
     const pageW = 210;
     const margin = 14;
     const colW = pageW - margin * 2;
+
+    // Helper: load image and get natural dimensions for ratio preservation
+    const loadImgWithSize = (url) => new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve({ img, w: img.naturalWidth, h: img.naturalHeight });
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
 
     const toHM = (hrs) => {
       const totalMin = Math.round(hrs * 60);
