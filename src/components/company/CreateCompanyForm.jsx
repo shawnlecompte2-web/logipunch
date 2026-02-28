@@ -24,6 +24,9 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
 
   const handleSubmit = async () => {
     if (!name) return;
+    if (adminPin.length !== 4 || !/^\d{4}$/.test(adminPin)) { setPinError("Le code doit être 4 chiffres."); return; }
+    if (adminPin !== adminPinConfirm) { setPinError("Les codes ne correspondent pas."); return; }
+    setPinError("");
     setSaving(true);
     let logo_url = "";
     if (logoFile) {
