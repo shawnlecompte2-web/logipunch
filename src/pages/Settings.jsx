@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Edit2, Trash2, X, Users, FolderOpen } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Users, FolderOpen, ChevronDown, AlertTriangle } from "lucide-react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
@@ -62,7 +63,66 @@ export default function Settings() {
       {tab === "projects" && (
         <ProjectsTab projects={projects} users={users} onRefresh={loadAll} />
       )}
+
+      {/* Danger Zone */}
+      <div className="mt-10 border-t border-zinc-800/60 pt-6">
+        <div className="flex items-center gap-2 mb-1">
+          <AlertTriangle size={14} className="text-red-500" />
+          <h2 className="text-red-500 font-bold text-sm">Zone de danger</h2>
+        </div>
+        <p className="text-zinc-600 text-xs mb-4">Désactiver votre compte vous empêchera de vous connecter.</p>
+        <button
+          onClick={async () => {
+            if (!window.confirm("Désactiver votre compte? Vous ne pourrez plus vous connecter.")) return;
+            await base44.entities.AppUser.update(currentUser.id, { is_active: false });
+            sessionStorage.removeItem("logipunch_user");
+            window.dispatchEvent(new Event("logipunch_user_change"));
+            window.location.reload();
+          }}
+          className="px-4 py-2 bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-semibold rounded-xl hover:bg-red-900/40 transition-all"
+        >
+          Désactiver mon compte
+        </button>
+      </div>
     </div>
+  );
+}
+
+function BottomSelect({ label, value, onChange, options }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm text-left flex items-center justify-between"
+      >
+        <span>{value || label}</span>
+        <ChevronDown size={14} className="text-zinc-500" />
+      </button>
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerContent className="bg-zinc-900 border-t border-zinc-700">
+          <DrawerHeader>
+            <DrawerTitle className="text-white text-left">{label}</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-8 space-y-2 max-h-[65vh] overflow-y-auto">
+            {options.map(opt => (
+              <button
+                key={opt}
+                onClick={() => { onChange(opt); setOpen(false); }}
+                className={`w-full px-4 py-3 rounded-xl text-sm font-semibold text-left transition-all border ${
+                  value === opt
+                    ? "bg-green-900/30 border-green-700/50 text-green-400"
+                    : "bg-zinc-800 border-zinc-800 text-zinc-300 hover:border-zinc-600"
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </>
   );
 }
 
@@ -176,15 +236,11 @@ function UserForm({ user, projects, users, onClose, onSaved }) {
         </div>
         <div>
           <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Rôle *</label>
-          <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600">
-            {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
+          <BottomSelect label="Rôle" value={form.role} onChange={v => setForm(f => ({ ...f, role: v }))} options={ROLES} />
         </div>
         <div>
           <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Groupe *</label>
-          <select value={form.group} onChange={e => setForm(f => ({ ...f, group: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600">
-            {GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
-          </select>
+          <BottomSelect label="Groupe" value={form.group} onChange={v => setForm(f => ({ ...f, group: v }))} options={GROUPS} />
         </div>
       </div>
       <div className="mb-4">

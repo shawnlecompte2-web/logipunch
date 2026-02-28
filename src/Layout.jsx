@@ -189,7 +189,7 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Bottom nav for mobile/tablet */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-zinc-800/60 flex z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-zinc-800/60 flex z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {navItems.map(({ label, page, icon: Icon }) => {
           const isActive = currentPageName === page;
           return (
