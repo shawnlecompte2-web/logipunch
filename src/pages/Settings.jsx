@@ -13,6 +13,7 @@ function getStoredUser() {
 }
 
 const ADMIN_ROLES = ["Administrateur", "Surintendant", "Chargé de projet"];
+const isAdminUser = (user) => user?.is_admin === true || ADMIN_ROLES.includes(user?.role);
 
 export default function Settings() {
   const [tab, setTab] = useState("users");
