@@ -217,6 +217,7 @@ function UserForm({ user, projects, users, companyId, onClose, onSaved }) {
   const [form, setForm] = useState({
     full_name: user?.full_name || "",
     pin_code: user?.pin_code || "",
+    phone: user?.phone || "",
     role: user?.role || "",
     group: user?.group || "",
     is_active: user?.is_active !== false,
