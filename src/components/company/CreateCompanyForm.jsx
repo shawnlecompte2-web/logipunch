@@ -139,7 +139,7 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
 
         <button
           onClick={handleSubmit}
-          disabled={!name || saving}
+          disabled={!name || adminPin.length !== 4 || adminPinConfirm.length !== 4 || saving}
           className={`w-full h-14 rounded-2xl font-bold text-base transition-all flex items-center justify-between px-6 ${
             name && !saving ? "bg-green-600 hover:bg-green-500 text-white" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
           }`}
