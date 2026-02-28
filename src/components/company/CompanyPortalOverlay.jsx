@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Phone } from "lucide-react";
 import CreateCompanyForm from "./CreateCompanyForm";
 
 export default function CompanyPortalOverlay({ onSuccess }) {
