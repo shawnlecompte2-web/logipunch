@@ -256,11 +256,39 @@ function UserForm({ user, projects, users, companyId, onClose, onSaved }) {
         </div>
         <div>
           <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Rôle *</label>
-          <BottomSelect label="Rôle" value={form.role} onChange={v => setForm(f => ({ ...f, role: v }))} options={ROLES} />
+          {existingRoles.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {existingRoles.map(r => (
+                <button key={r} type="button" onClick={() => setForm(f => ({ ...f, role: r }))}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-all ${form.role === r ? "bg-green-900/40 border-green-700/60 text-green-400" : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500"}`}>
+                  {r}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="flex gap-2">
+            <input value={form.role === existingRoles.find(r => r === form.role) ? form.role : form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
+              placeholder="Nouveau rôle ou sélectionner ci-dessus"
+              className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600 placeholder:text-zinc-600" />
+          </div>
         </div>
         <div>
           <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Groupe *</label>
-          <BottomSelect label="Groupe" value={form.group} onChange={v => setForm(f => ({ ...f, group: v }))} options={GROUPS} />
+          {existingGroups.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {existingGroups.map(g => (
+                <button key={g} type="button" onClick={() => setForm(f => ({ ...f, group: g }))}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-all ${form.group === g ? "bg-green-900/40 border-green-700/60 text-green-400" : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500"}`}>
+                  {g}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="flex gap-2">
+            <input value={form.group} onChange={e => setForm(f => ({ ...f, group: e.target.value }))}
+              placeholder="Nouveau groupe ou sélectionner ci-dessus"
+              className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600 placeholder:text-zinc-600" />
+          </div>
         </div>
       </div>
       <div className="mb-4">
