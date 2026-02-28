@@ -229,106 +229,158 @@ export default function TimeSheet() {
     const doc = new jsPDF();
     const userEntries = getEntriesForUser(user.id);
     const weekTotal = getWeekTotal(user.id);
-    const weekLabel = `${format(weekStart, "d MMMM yyyy", { locale: fr })} – ${format(weekEnd, "d MMMM yyyy", { locale: fr })}`;
+    const totalLunch = userEntries.reduce((s, e) => s + (e.lunch_break || 0), 0);
+    const grossHours = userEntries.reduce((s, e) => {
+      if (!e.punch_in || !e.punch_out) return s + (e.total_hours || 0);
+      return s + (new Date(e.punch_out) - new Date(e.punch_in)) / 3600000;
+    }, 0);
+    const weekLabel = `DU ${format(weekStart, "d MMM", { locale: fr }).toUpperCase()} AU ${format(weekEnd, "d MMM yyyy", { locale: fr }).toUpperCase()}`;
     const pageW = 210;
     const margin = 14;
     const colW = pageW - margin * 2;
 
-    // ── Background ──────────────────────────────────────────────
-    doc.setFillColor(248, 250, 252);
+    const toHM = (hrs) => {
+      const totalMin = Math.round(hrs * 60);
+      const h = Math.floor(Math.abs(totalMin) / 60);
+      const m = Math.abs(totalMin) % 60;
+      const sign = totalMin < 0 ? "-" : "";
+      return `${sign}${h}h ${String(m).padStart(2, "0")}m`;
+    };
+
+    // ── White background ──────────────────────────────────────────
+    doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, pageW, 297, "F");
 
-    // ── Top accent bar ───────────────────────────────────────────
-    doc.setFillColor(16, 185, 129);
-    doc.rect(0, 0, pageW, 6, "F");
+    // ── HEADER ────────────────────────────────────────────────────
+    let y = 14;
 
-    // ── Header card ──────────────────────────────────────────────
-    doc.setFillColor(15, 23, 42);
-    doc.roundedRect(margin, 12, colW, 38, 3, 3, "F");
-
-    // Company logo (if available) or LOGIPUNCH logo
-    const logoUrl = company?.logo_url
-      ? company.logo_url
-      : "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png";
-    try {
-      doc.setFillColor(255, 255, 255);
-      doc.circle(margin + 12, 24, 9, "F");
-      doc.addImage(logoUrl, "PNG", margin + 3, 15, 18, 18);
-    } catch(err) {
-      doc.setFillColor(16, 185, 129);
-      doc.circle(margin + 12, 24, 6, "F");
+    // Company logo (top left)
+    const logoUrl = company?.logo_url;
+    if (logoUrl) {
+      try { doc.addImage(logoUrl, "PNG", margin, y, 28, 14); } catch(e) {}
+      // Company name next to logo
+      doc.setFontSize(20);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(30, 30, 30);
+      doc.text(company?.name ? company.name.toUpperCase() : "LOGIPUNCH", margin + 32, y + 10);
+    } else {
+      // No logo: company name large
+      const nameParts = (company?.name || "LOGIPUNCH").toUpperCase().split(" ");
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(30, 30, 30);
+      // First word normal, rest in green
+      doc.text(nameParts[0], margin, y + 12);
+      if (nameParts.length > 1) {
+        const firstW = doc.getTextWidth(nameParts[0] + " ");
+        doc.setTextColor(100, 200, 80);
+        doc.text(nameParts.slice(1).join(" "), margin + firstW, y + 12);
+      }
     }
 
-    // Company name
-    doc.setFontSize(18);
+    // Subtitle under company name
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(140, 140, 140);
+    doc.text("FEUILLE DE TEMPS  ·  LOGISTIQUE", margin, y + 20);
+
+    // "RAPPORT DE PAIE" badge top right
+    doc.setFillColor(20, 20, 20);
+    doc.roundedRect(pageW - margin - 52, y, 52, 12, 1, 1, "F");
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(255, 255, 255);
-    doc.text(company?.name ? company.name.toUpperCase() : "LOGIPUNCH", margin + 25, 28);
+    doc.text("RAPPORT DE PAIE", pageW - margin - 49, y + 8);
 
-    // Subtitle
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(148, 163, 184);
-    doc.text("FEUILLE DE TEMPS  ·  SLIP DE PAYE", margin + 25, 36);
-
-    // Week badge (right aligned)
-    doc.setFillColor(30, 41, 59); // slate-800
-    doc.roundedRect(pageW - margin - 70, 17, 68, 12, 2, 2, "F");
-    doc.setFontSize(7.5);
-    doc.setTextColor(16, 185, 129);
-    doc.setFont("helvetica", "bold");
-    doc.text("SEMAINE", pageW - margin - 65, 22.5);
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(200, 220, 220);
-    doc.text(weekLabel, pageW - margin - 66, 27.5);
+    doc.setTextColor(140, 140, 140);
+    doc.text("DOCUMENT GÉNÉRÉ ÉLECTRONIQUEMENT", pageW - margin - 51, y + 18);
 
-    // ── Employee info card ────────────────────────────────────────
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(margin, 56, colW, 24, 3, 3, "F");
-    doc.setDrawColor(226, 232, 240);
+    // Separator line
+    y += 26;
+    doc.setDrawColor(30, 30, 30);
+    doc.setLineWidth(0.8);
+    doc.line(margin, y, pageW - margin, y);
+    y += 6;
+
+    // ── EMPLOYEE CARD ─────────────────────────────────────────────
+    const cardH = 36;
+    doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.3);
-    doc.roundedRect(margin, 56, colW, 24, 3, 3, "S");
+    doc.rect(margin, y, colW, cardH, "S");
+    // Vertical divider at midpoint
+    doc.line(margin + colW / 2, y, margin + colW / 2, y + cardH);
 
-    // Left accent strip
-    doc.setFillColor(16, 185, 129);
-    doc.roundedRect(margin, 56, 3, 24, 1, 1, "F");
-
-    doc.setFontSize(13);
+    // Left: employee info
+    doc.setFontSize(7);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(15, 23, 42);
-    doc.text(user.full_name, margin + 8, 66);
-    doc.setFontSize(8.5);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 116, 139); // slate-500
-    doc.text(`${user.role}  ·  ${user.group}`, margin + 8, 74);
+    doc.setTextColor(140, 140, 140);
+    doc.text("IDENTIFICATION DE L'EMPLOYÉ", margin + 4, y + 8);
 
-    // Generated date (right side of employee card)
-    doc.setFontSize(7.5);
-    doc.setTextColor(148, 163, 184);
-    doc.text(`Généré le ${format(new Date(), "d MMM yyyy", { locale: fr })}`, pageW - margin - 4, 63, { align: "right" });
+    const nameFull = user.full_name.toUpperCase();
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(20, 20, 20);
+    // Wrap name if needed
+    const nameLines = doc.splitTextToSize(nameFull, colW / 2 - 8);
+    doc.text(nameLines, margin + 4, y + 17);
 
-    // ── Table ─────────────────────────────────────────────────────
-    let y = 92;
-
-    // Column x positions
-    const cols = { date: margin + 2, projet: margin + 40, arrivee: margin + 115, depart: margin + 138, diner: margin + 158, total: margin + 174 };
-
-    // Table header
-    doc.setFillColor(15, 23, 42);
-    doc.roundedRect(margin, y - 5, colW, 10, 2, 2, "F");
-    doc.setTextColor(255, 255, 255);
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
-    doc.text("DATE", cols.date, y + 1);
-    doc.text("PROJET", cols.projet, y + 1);
-    doc.text("ARRIVÉE", cols.arrivee, y + 1);
-    doc.text("DÉPART", cols.depart, y + 1);
-    doc.text("DÎNER", cols.diner, y + 1);
-    doc.text("TOTAL", cols.total, y + 1);
-    y += 14;
+    doc.setTextColor(100, 200, 80);
+    doc.text(`${(user.group || "").toUpperCase()}  ·  ${(user.role || "").toUpperCase()}`, margin + 4, y + cardH - 4);
 
-    // Group entries by date
+    // Right: week total
+    const midX = margin + colW / 2 + 4;
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(140, 140, 140);
+    doc.text("TOTAL SEMAINE", midX, y + 10);
+
+    const weekHours = Math.floor(weekTotal);
+    const weekMins = Math.round((weekTotal - weekHours) * 60);
+    doc.setFontSize(26);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(20, 20, 20);
+    doc.text(`${weekHours}h`, midX, y + 26);
+    const hW = doc.getTextWidth(`${weekHours}h`);
+    doc.setFontSize(20);
+    doc.text(`${String(weekMins).padStart(2, "0")}m`, midX + hW + 1, y + 26);
+    doc.setFontSize(9);
+    doc.setTextColor(100, 200, 80);
+    doc.text("NET", midX + hW + doc.getTextWidth(`${String(weekMins).padStart(2, "0")}m`) + 3, y + 26);
+
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(140, 140, 140);
+    doc.text(`PÉRIODE : ${weekLabel}`, midX, y + cardH - 4);
+
+    y += cardH + 8;
+
+    // ── TABLE HEADER ──────────────────────────────────────────────
+    doc.setFillColor(240, 242, 245);
+    doc.rect(margin, y, colW, 9, "F");
+
+    const cDate = margin + 2;
+    const cIn = margin + 46;
+    const cOut = margin + 66;
+    const cDiner = margin + 88;
+    const cProjet = margin + 108;
+    const cTotal = pageW - margin - 2;
+
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(80, 80, 80);
+    doc.text("DATE / JOURNÉE", cDate, y + 6);
+    doc.text("IN", cIn, y + 6);
+    doc.text("OUT", cOut, y + 6);
+    doc.text("DÎNER", cDiner, y + 6);
+    doc.text("PROJET", cProjet, y + 6);
+    doc.text("TOTAL NET", cTotal, y + 6, { align: "right" });
+    y += 12;
+
+    // ── TABLE ROWS ────────────────────────────────────────────────
     const byDate = {};
     userEntries.forEach(e => {
       if (!byDate[e.work_date]) byDate[e.work_date] = [];
@@ -336,96 +388,117 @@ export default function TimeSheet() {
     });
     const sortedDates = Object.keys(byDate).sort();
 
-    let rowIdx = 0;
     sortedDates.forEach(date => {
       const dayEntries = byDate[date].sort((a, b) => a.punch_in.localeCompare(b.punch_in));
       const dayTotal = dayEntries.reduce((s, e) => s + (e.total_hours || 0), 0);
 
       dayEntries.forEach((e, idx) => {
-        // Alternating row bg
-        if (rowIdx % 2 === 0) {
-          doc.setFillColor(241, 245, 249);
-        } else {
-          doc.setFillColor(255, 255, 255);
-        }
-        doc.rect(margin, y - 5, colW, 9, "F");
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.2);
+        doc.line(margin, y + 7, pageW - margin, y + 7);
 
         doc.setFontSize(8.5);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(30, 41, 59);
+        doc.setFont("helvetica", idx === 0 ? "bold" : "normal");
+        doc.setTextColor(30, 30, 30);
+        if (idx === 0) doc.text(format(parseISO(date), "dd/MM/yyyy"), cDate, y + 5);
 
-        if (idx === 0) {
-          doc.setFont("helvetica", "bold");
-          doc.text(format(parseISO(date), "EEE d/MM", { locale: fr }), cols.date, y);
-          doc.setFont("helvetica", "normal");
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(60, 60, 60);
+        doc.text(e.punch_in ? format(parseISO(e.punch_in), "HH:mm") : "-", cIn, y + 5);
+        doc.text(e.punch_out ? format(parseISO(e.punch_out), "HH:mm") : "-", cOut, y + 5);
+
+        if (e.lunch_break > 0) {
+          doc.setTextColor(220, 130, 30);
+          doc.text(`${e.lunch_break}m`, cDiner, y + 5);
+        } else {
+          doc.setTextColor(180, 180, 180);
+          doc.text("—", cDiner, y + 5);
         }
-        const proj = (e.project_name || "-").substring(0, 26);
-        doc.text(proj, cols.projet, y);
-        doc.setTextColor(71, 85, 105);
-        doc.text(e.punch_in ? format(parseISO(e.punch_in), "HH:mm") : "-", cols.arrivee, y);
-        doc.text(e.punch_out ? format(parseISO(e.punch_out), "HH:mm") : "-", cols.depart, y);
-        doc.text(`${e.lunch_break || 0} min`, cols.diner, y);
+
+        doc.setTextColor(120, 120, 120);
+        doc.text((e.project_name || "-").substring(0, 24), cProjet, y + 5);
+
         doc.setFont("helvetica", "bold");
-        doc.setTextColor(5, 150, 105); // emerald-600
-        doc.text(`${(e.total_hours || 0).toFixed(2)}h`, cols.total, y);
-        y += 9;
-        rowIdx++;
+        doc.setTextColor(30, 30, 30);
+        doc.text(toHM(e.total_hours || 0), cTotal, y + 5, { align: "right" });
+        y += 8;
       });
 
-      // Day subtotal row
-      doc.setFillColor(209, 250, 229); // emerald-100
-      doc.rect(margin, y - 4, colW, 8, "F");
-      doc.setDrawColor(167, 243, 208);
-      doc.setLineWidth(0.2);
-      doc.line(margin, y - 4, margin + colW, y - 4);
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(4, 120, 87); // emerald-700
-      doc.text("Sous-total jour", cols.diner - 28, y + 1);
-      doc.text(`${dayTotal.toFixed(2)}h`, cols.total, y + 1);
-      y += 12;
+      // Day subtotal (only if multiple entries)
+      if (dayEntries.length > 1) {
+        doc.setFillColor(245, 248, 245);
+        doc.rect(margin, y, colW, 7, "F");
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(100, 160, 80);
+        doc.text("SOUS-TOTAL JOUR", cDate, y + 5);
+        doc.setTextColor(30, 30, 30);
+        doc.text(toHM(dayTotal), cTotal, y + 5, { align: "right" });
+        y += 9;
+      }
     });
 
-    // ── Week total box ────────────────────────────────────────────
     y += 4;
-    doc.setFillColor(5, 150, 105); // emerald-600
-    doc.roundedRect(margin, y, colW, 16, 3, 3, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("TOTAL DE LA SEMAINE", margin + 6, y + 10);
-    doc.setFontSize(13);
-    doc.text(`${weekTotal.toFixed(2)} heures`, pageW - margin - 4, y + 10, { align: "right" });
 
-    // ── Signature zone ────────────────────────────────────────────
-    y += 28;
-    doc.setDrawColor(203, 213, 225);
+    // ── SUMMARY BOX ───────────────────────────────────────────────
+    doc.setFillColor(20, 25, 40);
+    doc.roundedRect(margin, y, colW, 22, 2, 2, "F");
+
+    const summaryMid = margin + colW / 2;
+
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 200, 80);
+    doc.text("RÉSUMÉ HEBDOMADAIRE", margin + 6, y + 9);
+
+    // Total brut
+    doc.setTextColor(160, 160, 160);
+    doc.setFontSize(7);
+    doc.text("TOTAL BRUT", summaryMid - 38, y + 7);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text(toHM(grossHours), summaryMid - 38, y + 16);
+
+    // Total diner
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(160, 160, 160);
+    doc.text("TOTAL DÎNER", summaryMid + 4, y + 7);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(220, 130, 30);
+    doc.text(`-${toHM(totalLunch / 60)}`, summaryMid + 4, y + 16);
+
+    // Net à payer
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 200, 80);
+    doc.text("NET À PAYER", pageW - margin - 38, y + 7);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 200, 80);
+    doc.text(toHM(weekTotal), pageW - margin - 4, y + 17, { align: "right" });
+
+    y += 32;
+
+    // ── SIGNATURES ────────────────────────────────────────────────
+    y = Math.max(y, 240);
+    doc.setDrawColor(180, 180, 180);
     doc.setLineWidth(0.4);
-    // Employer signature
-    doc.line(margin, y + 14, margin + 70, y + 14);
+    doc.line(margin, y, margin + 65, y);
+    doc.line(pageW - margin - 65, y, pageW - margin, y);
+
     doc.setFontSize(7.5);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(148, 163, 184);
-    doc.text("Signature de l'employeur", margin, y + 19);
-    // Employee signature
-    doc.line(pageW - margin - 70, y + 14, pageW - margin, y + 14);
-    doc.text("Signature de l'employé", pageW - margin - 70, y + 19);
+    doc.setTextColor(140, 140, 140);
+    doc.text("SIGNATURE EMPLOYÉ", margin, y + 6);
+    doc.text("VALIDATION DIRECTION", pageW - margin, y + 6, { align: "right" });
 
-    // ── Footer ────────────────────────────────────────────────────
-    doc.setFillColor(15, 23, 42);
-    doc.rect(0, 285, pageW, 12, "F");
-    doc.setTextColor(100, 116, 139);
+    // ── LOGIPUNCH FOOTER ──────────────────────────────────────────
     doc.setFontSize(7);
-    // Always show LOGIPUNCH branding in footer
-    const logiLogoUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png";
-    try { doc.addImage(logiLogoUrl, "PNG", margin, 286, 7, 7); } catch(e) {}
-    doc.setTextColor(16, 185, 129);
-    doc.setFont("helvetica", "bold");
-    doc.text("LOGIPUNCH", margin + 9, 292);
-    doc.setTextColor(100, 116, 139);
-    doc.setFont("helvetica", "normal");
-    doc.text("  ·  Système de gestion du temps", margin + 26, 292);
-    doc.text(`Document généré le ${format(new Date(), "d MMMM yyyy 'à' HH:mm", { locale: fr })}`, pageW - margin, 292, { align: "right" });
+    doc.setTextColor(200, 200, 200);
+    doc.text(`Généré par LOGIPUNCH · ${format(new Date(), "d MMMM yyyy 'à' HH:mm", { locale: fr })}`, pageW / 2, 290, { align: "center" });
 
     doc.save(`slip_paye_${user.full_name.replace(/\s+/g, "_")}_${weekStartStr}.pdf`);
   };
