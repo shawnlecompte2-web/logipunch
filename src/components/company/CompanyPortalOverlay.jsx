@@ -10,6 +10,46 @@ export default function CompanyPortalOverlay({ onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [now, setNow] = useState(new Date());
 
+  // SMS recovery for forgotten portal code
+  const [smsMode, setSmsMode] = useState(false);
+  const [smsPhone, setSmsPhone] = useState("");
+  const [smsSent, setSmsSent] = useState(false);
+  const [smsCodeInput, setSmsCodeInput] = useState("");
+  const [smsLoading, setSmsLoading] = useState(false);
+  const [smsError, setSmsError] = useState("");
+  const [foundCompany, setFoundCompany] = useState(null);
+
+  const handleSmsSend = async () => {
+    setSmsLoading(true);
+    setSmsError("");
+    let normalizedPhone = smsPhone.replace(/\D/g, "");
+    if (normalizedPhone.length === 10) normalizedPhone = "+1" + normalizedPhone;
+    else normalizedPhone = "+" + normalizedPhone;
+    try {
+      // Find a company that has a user with this phone number
+      const users = await base44.entities.AppUser.filter({ phone: normalizedPhone, is_active: true });
+      if (!users || users.length === 0) { setSmsError("Aucun compte trouvé avec ce numéro."); setSmsLoading(false); return; }
+      const company = await base44.entities.Company.filter({ id: users[0].company_id });
+      if (!company || company.length === 0) { setSmsError("Aucune entreprise trouvée."); setSmsLoading(false); return; }
+      setFoundCompany(company[0]);
+      const res = await base44.functions.invoke("sendSmsCode", { action: "send", phone: normalizedPhone, company_id: company[0].id });
+      if (res.data?.success) { setSmsSent(true); setSmsPhone(normalizedPhone); }
+      else setSmsError(res.data?.error || "Erreur lors de l'envoi.");
+    } catch { setSmsError("Erreur lors de l'envoi."); }
+    setSmsLoading(false);
+  };
+
+  const handleSmsVerify = async () => {
+    setSmsLoading(true);
+    setSmsError("");
+    try {
+      const res = await base44.functions.invoke("sendSmsCode", { action: "verify", phone: smsPhone, code: smsCodeInput, company_id: foundCompany.id });
+      if (res.data?.success) { onSuccess(foundCompany); }
+      else setSmsError(res.data?.error || "Code incorrect.");
+    } catch { setSmsError("Code incorrect."); }
+    setSmsLoading(false);
+  };
+
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
