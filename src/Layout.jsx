@@ -66,7 +66,7 @@ function PinModal({ onSuccess, company }) {
       <div className="flex items-start justify-between pt-6 px-6 pb-8">
         <div className="flex items-center gap-2">
         <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
-          <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-12 h-12 object-contain" style={{filter: "brightness(0) invert(1)"}} />
+          <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/6b809ffd5_clock_5190346.png" alt="logo" className="w-12 h-12 object-contain" style={{filter: "brightness(0) invert(1)"}} />
         </div>
         <div>
           <span className="text-2xl font-black text-white tracking-tight">LOGIPUNCH</span>
