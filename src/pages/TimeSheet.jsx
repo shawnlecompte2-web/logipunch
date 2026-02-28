@@ -96,7 +96,7 @@ export default function TimeSheet() {
   const [editEntry, setEditEntry] = useState(null);
   const [company] = useState(getStoredCompany);
   const currentUser = getStoredUser();
-  const isAdmin = currentUser?.role === "Administrateur";
+  const isAdmin = currentUser?.is_admin === true || currentUser?.role === "Administrateur";
 
   const weekStart = startOfWeek(weekDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(weekDate, { weekStartsOn: 0 });
