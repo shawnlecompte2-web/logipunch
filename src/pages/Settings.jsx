@@ -213,8 +213,8 @@ function UserForm({ user, projects, users, companyId, onClose, onSaved }) {
   });
   const [saving, setSaving] = useState(false);
 
-  const ROLES = [...new Set(users.filter(u => u.role).map(u => u.role))];
-  const GROUPS = [...new Set(users.filter(u => u.group).map(u => u.group))];
+  const existingRoles = [...new Set(users.filter(u => u.role).map(u => u.role))];
+  const existingGroups = [...new Set(users.filter(u => u.group).map(u => u.group))];
 
   const handleSave = async () => {
     if (!form.full_name || !form.pin_code) return;
