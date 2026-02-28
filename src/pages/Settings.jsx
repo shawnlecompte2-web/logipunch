@@ -23,7 +23,7 @@ export default function Settings() {
   const [company, setCompany] = useState(getStoredCompany);
 
   const currentUser = getStoredUser();
-  const adminAccess = currentUser && ADMIN_ROLES.includes(currentUser.role);
+  const adminAccess = currentUser && isAdminUser(currentUser);
 
   useEffect(() => {
     if (adminAccess) loadAll();
