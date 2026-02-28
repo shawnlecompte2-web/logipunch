@@ -232,24 +232,25 @@ export default function TimeSheet() {
     const weekLabel = `${format(weekStart, "d MMMM yyyy", { locale: fr })} – ${format(weekEnd, "d MMMM yyyy", { locale: fr })}`;
     const pageW = 210;
     const margin = 14;
-    const colW = pageW - margin * 2; // 182
+    const colW = pageW - margin * 2;
 
     // ── Background ──────────────────────────────────────────────
     doc.setFillColor(248, 250, 252);
     doc.rect(0, 0, pageW, 297, "F");
 
     // ── Top accent bar ───────────────────────────────────────────
-    doc.setFillColor(16, 185, 129); // emerald-500
+    doc.setFillColor(16, 185, 129);
     doc.rect(0, 0, pageW, 6, "F");
 
     // ── Header card ──────────────────────────────────────────────
-    doc.setFillColor(15, 23, 42); // slate-900
+    doc.setFillColor(15, 23, 42);
     doc.roundedRect(margin, 12, colW, 38, 3, 3, "F");
 
-    // Logo image (excavator)
-    const logoUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png";
+    // Company logo (if available) or LOGIPUNCH logo
+    const logoUrl = company?.logo_url
+      ? company.logo_url
+      : "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png";
     try {
-      // Draw white background circle then add image with white filter effect
       doc.setFillColor(255, 255, 255);
       doc.circle(margin + 12, 24, 9, "F");
       doc.addImage(logoUrl, "PNG", margin + 3, 15, 18, 18);
@@ -262,12 +263,12 @@ export default function TimeSheet() {
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(255, 255, 255);
-    doc.text("LOGIPUNCH", margin + 25, 28);
+    doc.text(company?.name ? company.name.toUpperCase() : "LOGIPUNCH", margin + 25, 28);
 
     // Subtitle
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(148, 163, 184); // slate-400
+    doc.setTextColor(148, 163, 184);
     doc.text("FEUILLE DE TEMPS  ·  SLIP DE PAYE", margin + 25, 36);
 
     // Week badge (right aligned)
@@ -415,7 +416,15 @@ export default function TimeSheet() {
     doc.rect(0, 285, pageW, 12, "F");
     doc.setTextColor(100, 116, 139);
     doc.setFontSize(7);
-    doc.text("LOGIPUNCH  ·  Système de gestion du temps", margin, 292);
+    // Always show LOGIPUNCH branding in footer
+    const logiLogoUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png";
+    try { doc.addImage(logiLogoUrl, "PNG", margin, 286, 7, 7); } catch(e) {}
+    doc.setTextColor(16, 185, 129);
+    doc.setFont("helvetica", "bold");
+    doc.text("LOGIPUNCH", margin + 9, 292);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "normal");
+    doc.text("  ·  Système de gestion du temps", margin + 26, 292);
     doc.text(`Document généré le ${format(new Date(), "d MMMM yyyy 'à' HH:mm", { locale: fr })}`, pageW - margin, 292, { align: "right" });
 
     doc.save(`slip_paye_${user.full_name.replace(/\s+/g, "_")}_${weekStartStr}.pdf`);
