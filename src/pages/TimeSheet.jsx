@@ -262,30 +262,41 @@ export default function TimeSheet() {
 
     // ── HEADER ────────────────────────────────────────────────────
     let y = 14;
-
-    // Company logo (top left)
     const logoUrl = company?.logo_url;
+    const logoMaxH = 18; // max logo height in mm
+    const logoMaxW = 50; // max logo width in mm
+
     if (logoUrl) {
-      try { doc.addImage(logoUrl, "PNG", margin, y, 28, 14); } catch(e) {}
-      // Company name next to logo
-      doc.setFontSize(20);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(30, 30, 30);
-      doc.text(company?.name ? company.name.toUpperCase() : "LOGIPUNCH", margin + 32, y + 10);
-    } else {
-      // No logo: company name large
-      const nameParts = (company?.name || "LOGIPUNCH").toUpperCase().split(" ");
-      doc.setFontSize(22);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(30, 30, 30);
-      // First word normal, rest in green
-      doc.text(nameParts[0], margin, y + 12);
-      if (nameParts.length > 1) {
-        const firstW = doc.getTextWidth(nameParts[0] + " ");
-        doc.setTextColor(100, 200, 80);
-        doc.text(nameParts.slice(1).join(" "), margin + firstW, y + 12);
+      const imgData = await loadImgWithSize(logoUrl);
+      if (imgData) {
+        // Preserve ratio
+        let lw = logoMaxW;
+        let lh = (imgData.h / imgData.w) * lw;
+        if (lh > logoMaxH) { lh = logoMaxH; lw = (imgData.w / imgData.h) * lh; }
+        try { doc.addImage(imgData.img, "PNG", margin, y, lw, lh); } catch(e) {}
+        y += lh + 4;
       }
     }
+
+    // Company name (large, two-color)
+    const nameParts = (company?.name || "LOGIPUNCH").toUpperCase().split(" ");
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 30, 30);
+    doc.text(nameParts[0], margin, y + 12);
+    if (nameParts.length > 1) {
+      const firstW = doc.getTextWidth(nameParts[0] + " ");
+      doc.setTextColor(100, 200, 80);
+      doc.text(nameParts.slice(1).join(" "), margin + firstW, y + 12);
+    }
+
+    // "RAPPORT DE PAIE" badge — right-aligned, same vertical level as company name
+    doc.setFillColor(20, 20, 20);
+    doc.roundedRect(pageW - margin - 52, y + 2, 52, 12, 1, 1, "F");
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text("RAPPORT DE PAIE", pageW - margin - 49, y + 10);
 
     // Subtitle under company name
     doc.setFontSize(7.5);
@@ -293,18 +304,10 @@ export default function TimeSheet() {
     doc.setTextColor(140, 140, 140);
     doc.text("FEUILLE DE TEMPS  ·  LOGISTIQUE", margin, y + 20);
 
-    // "RAPPORT DE PAIE" badge top right
-    doc.setFillColor(20, 20, 20);
-    doc.roundedRect(pageW - margin - 52, y, 52, 12, 1, 1, "F");
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(255, 255, 255);
-    doc.text("RAPPORT DE PAIE", pageW - margin - 49, y + 8);
-
+    // "DOCUMENT GÉNÉRÉ..." under badge
     doc.setFontSize(7);
-    doc.setFont("helvetica", "normal");
     doc.setTextColor(140, 140, 140);
-    doc.text("DOCUMENT GÉNÉRÉ ÉLECTRONIQUEMENT", pageW - margin - 51, y + 18);
+    doc.text("DOCUMENT GÉNÉRÉ ÉLECTRONIQUEMENT", pageW - margin - 51, y + 20);
 
     // Separator line
     y += 26;
