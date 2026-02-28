@@ -96,6 +96,9 @@ export default function Settings() {
       {tab === "roles" && (
         <RolesTab users={users} companyId={company?.id} onRefresh={loadAll} />
       )}
+      {tab === "groups" && (
+        <GroupsTab users={users} companyId={company?.id} onRefresh={loadAll} />
+      )}
 
       {/* Danger Zone */}
       <div className="mt-10 border-t border-zinc-800/60 pt-6">
