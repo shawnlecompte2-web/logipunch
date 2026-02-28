@@ -280,6 +280,10 @@ function UserForm({ user, projects, users, companyId, onClose, onSaved }) {
           <input value={form.pin_code} onChange={e => setForm(f => ({ ...f, pin_code: e.target.value }))} maxLength={4} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm font-mono focus:outline-none focus:border-green-600" />
         </div>
         <div>
+          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Téléphone (pour SMS)</label>
+          <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="Ex: 5141234567" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm font-mono focus:outline-none focus:border-green-600 placeholder:text-zinc-600" />
+        </div>
+        <div>
           <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Rôle *</label>
           {existingRoles.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
