@@ -115,7 +115,7 @@ export default function Approvals() {
   const [users, setUsers] = useState([]);
   const [approverUser] = useState(() => {
     const u = getStoredUser();
-    return u && APPROVE_ROLES.includes(u.role) ? u : null;
+    return u && (u.is_admin === true || APPROVE_ROLES.includes(u.role)) ? u : null;
   });
   const [loading, setLoading] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
