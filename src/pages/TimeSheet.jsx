@@ -359,9 +359,10 @@ export default function TimeSheet() {
     const hW = doc.getTextWidth(`${weekHours}h`);
     doc.setFontSize(20);
     doc.text(`${String(weekMins).padStart(2, "0")}m`, midX + hW + 1, y + 26);
+    const mW = doc.getTextWidth(`${String(weekMins).padStart(2, "0")}m`);
     doc.setFontSize(9);
     doc.setTextColor(100, 200, 80);
-    doc.text("NET", midX + hW + doc.getTextWidth(`${String(weekMins).padStart(2, "0")}m`) + 3, y + 26);
+    doc.text("NET", midX + hW + mW + 3, y + 22);
 
     doc.setFontSize(7.5);
     doc.setFont("helvetica", "normal");
