@@ -204,14 +204,16 @@ function UserForm({ user, projects, users, companyId, onClose, onSaved }) {
   const [form, setForm] = useState({
     full_name: user?.full_name || "",
     pin_code: user?.pin_code || "",
-    role: user?.role || "Manœuvre",
-    group: user?.group || "DDL Excavation",
+    role: user?.role || "",
+    group: user?.group || "",
     is_active: user?.is_active !== false,
     assigned_projects: user?.assigned_projects || [],
     approves_users: user?.approves_users || [],
     approved_by: user?.approved_by || "",
   });
   const [saving, setSaving] = useState(false);
+  const [newRole, setNewRole] = useState("");
+  const [newGroup, setNewGroup] = useState("");
 
   const existingRoles = [...new Set(users.filter(u => u.role).map(u => u.role))];
   const existingGroups = [...new Set(users.filter(u => u.group).map(u => u.group))];
