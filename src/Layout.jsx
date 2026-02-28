@@ -74,17 +74,17 @@ function PinModal({ onSuccess, company }) {
     <div className="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col px-4">
       <div className="flex items-start justify-between pt-6 px-6 pb-8">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center overflow-hidden">
-            {company?.logo_url ? (
-              <img src={company.logo_url} alt="logo" className="w-full h-full object-contain p-1" />
-            ) : (
-              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-full h-full object-contain p-1" style={{filter: "brightness(0) invert(1)"}} />
-            )}
-          </div>
-          <div>
-            <span className="text-2xl font-black text-white tracking-tight">LOGIPUNCH</span>
-            {company?.name && <p className="text-zinc-500 text-xs leading-tight">{company.name}</p>}
-          </div>
+        <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
+          {company?.logo_url ? (
+            <img src={company.logo_url} alt="logo" className="w-12 h-12 object-contain" />
+          ) : (
+            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-12 h-12 object-contain" style={{filter: "brightness(0) invert(1)"}} />
+          )}
+        </div>
+        <div>
+          <span className="text-2xl font-black text-white tracking-tight">LOGIPUNCH</span>
+          {company?.name && <p className="text-zinc-500 text-xs leading-tight">{company.name}</p>}
+        </div>
         </div>
         <div className="text-right">
           <p className="text-2xl font-black text-green-400 tracking-tight tabular-nums">{timeStr}</p>
@@ -206,11 +206,11 @@ export default function Layout({ children, currentPageName }) {
       {/* Top bar - desktop */}
       <div className="hidden md:flex items-center justify-between px-6 py-3 bg-[#0d0d0d] border-b border-zinc-800/60">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-green-500 flex items-center justify-center overflow-hidden">
+          <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
             {currentCompany?.logo_url ? (
-              <img src={currentCompany.logo_url} alt="logo" className="w-full h-full object-contain p-0.5" />
+              <img src={currentCompany.logo_url} alt="logo" className="w-10 h-10 object-contain" />
             ) : (
-              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-full h-full object-contain p-0.5" />
+              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-10 h-10 object-contain" style={{filter: "brightness(0) invert(1)"}} />
             )}
           </div>
           <div>
