@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { format, parseISO, differenceInMinutes } from "date-fns";
 import { fr } from "date-fns/locale";
 import { MapPin, Clock, RefreshCw } from "lucide-react";
+import PullToRefresh from "@/components/PullToRefresh";
 
 export default function ActiveUsers() {
   const [activeEntries, setActiveEntries] = useState([]);

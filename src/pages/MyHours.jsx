@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Clock, Trash2 } from "lucide-react";
+import PullToRefresh from "@/components/PullToRefresh";
 
 function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
