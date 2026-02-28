@@ -316,6 +316,21 @@ function UserForm({ user, projects, users, companyId, onClose, onSaved }) {
         </div>
       </div>
       <div className="mb-4">
+        <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Accès aux pages</label>
+        <p className="text-zinc-600 text-xs mb-2">Punch et Mes heures sont toujours accessibles. Les admins ont accès à tout.</p>
+        <div className="flex flex-wrap gap-2">
+          <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-800/50 border border-zinc-700/50 text-zinc-600">Punch ✓</span>
+          <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-800/50 border border-zinc-700/50 text-zinc-600">Mes heures ✓</span>
+          {EXTRA_PAGES.map(p => (
+            <button key={p.key} type="button" onClick={() => togglePage(p.key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${form.allowed_pages.includes(p.key) ? "bg-green-900/40 border-green-700/60 text-green-400" : "bg-zinc-800 border-zinc-700 text-zinc-500 hover:border-zinc-500"}`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-4">
         <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Projets assignés</label>
         <div className="flex flex-wrap gap-2">
           {projects.map(p => (
