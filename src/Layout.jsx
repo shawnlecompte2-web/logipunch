@@ -3,6 +3,7 @@ import { createPageUrl } from "@/utils";
 import { Clock, CheckSquare, BarChart2, Users, Settings, User, Delete, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import CompanyPortalOverlay from "@/components/company/CompanyPortalOverlay";
 
 const ADMIN_ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "Gestionnaire Chauffeur", "Gestionnaire Cour", "Gestionnaire Mécanique", "Contremaitre", "Estimateur"];
 
@@ -19,8 +20,11 @@ function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
 }
 
-// PIN Entry modal shown when no user is logged in (on any page except Punch)
-function PinModal({ onSuccess }) {
+function getStoredCompany() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
+}
+
+function PinModal({ onSuccess, company }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,7 +49,17 @@ function PinModal({ onSuccess }) {
   const verifyPin = async (code) => {
     setLoading(true);
     try {
-      const users = await base44.entities.AppUser.filter({ pin_code: code, is_active: true });
+      let users = [];
+      if (company?.id) {
+        users = await base44.entities.AppUser.filter({ pin_code: code, is_active: true, company_id: company.id });
+        // Fallback: legacy users not yet linked to a company
+        if (users.length === 0) {
+          const all = await base44.entities.AppUser.filter({ pin_code: code, is_active: true });
+          users = all.filter(u => !u.company_id);
+        }
+      } else {
+        users = await base44.entities.AppUser.filter({ pin_code: code, is_active: true });
+      }
       if (!users || users.length === 0) { setError("Code invalide. Réessayez."); setPin(""); setLoading(false); return; }
       onSuccess(users[0]);
     } catch { setError("Erreur. Réessayez."); setPin(""); }
@@ -53,30 +67,31 @@ function PinModal({ onSuccess }) {
   };
 
   const keys = ["1","2","3","4","5","6","7","8","9","","0","del"];
-
   const dateStr = now.toLocaleDateString("fr-CA", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
   const timeStr = now.toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" });
 
   return (
     <div className="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col px-4">
-      {/* Top Section - Logo left, Date/Time right */}
       <div className="flex items-start justify-between pt-6 px-6 pb-8">
-        {/* Logo & Title - Top Left */}
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center overflow-hidden">
-            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-full h-full object-contain p-1" style={{filter: "brightness(0) invert(1)"}} />
+            {company?.logo_url ? (
+              <img src={company.logo_url} alt="logo" className="w-full h-full object-contain p-1" />
+            ) : (
+              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-full h-full object-contain p-1" style={{filter: "brightness(0) invert(1)"}} />
+            )}
           </div>
-          <span className="text-2xl font-black text-white tracking-tight">LOGIPUNCH</span>
+          <div>
+            <span className="text-2xl font-black text-white tracking-tight">LOGIPUNCH</span>
+            {company?.name && <p className="text-zinc-500 text-xs leading-tight">{company.name}</p>}
+          </div>
         </div>
-
-        {/* Date & Time - Top Right */}
         <div className="text-right">
           <p className="text-2xl font-black text-green-400 tracking-tight tabular-nums">{timeStr}</p>
           <p className="text-zinc-600 text-xs mt-1 capitalize">{dateStr}</p>
         </div>
       </div>
 
-      {/* Center Section - Welcome & PIN */}
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="text-center mb-8">
           <p className="text-zinc-300 text-3xl font-bold mb-2">Bienvenue !</p>
@@ -105,18 +120,42 @@ function PinModal({ onSuccess }) {
         </div>
         {loading && <div className="mt-8 text-green-400 text-sm animate-pulse">Vérification...</div>}
       </div>
+
+      <div className="flex justify-center pb-6">
+        <button
+          onClick={() => {
+            sessionStorage.removeItem("logipunch_company");
+            window.dispatchEvent(new Event("logipunch_company_change"));
+          }}
+          className="text-zinc-700 text-xs hover:text-zinc-500 transition-colors"
+        >
+          Changer de portail
+        </button>
+      </div>
     </div>
   );
 }
 
 export default function Layout({ children, currentPageName }) {
   const [currentUser, setCurrentUser] = useState(getStoredUser);
+  const [currentCompany, setCurrentCompany] = useState(getStoredCompany);
 
   useEffect(() => {
-    const handler = () => setCurrentUser(getStoredUser());
-    window.addEventListener("logipunch_user_change", handler);
-    return () => window.removeEventListener("logipunch_user_change", handler);
+    const handleUserChange = () => setCurrentUser(getStoredUser());
+    const handleCompanyChange = () => setCurrentCompany(getStoredCompany());
+    window.addEventListener("logipunch_user_change", handleUserChange);
+    window.addEventListener("logipunch_company_change", handleCompanyChange);
+    return () => {
+      window.removeEventListener("logipunch_user_change", handleUserChange);
+      window.removeEventListener("logipunch_company_change", handleCompanyChange);
+    };
   }, []);
+
+  const handleCompanySelect = (company) => {
+    sessionStorage.setItem("logipunch_company", JSON.stringify(company));
+    window.dispatchEvent(new Event("logipunch_company_change"));
+    setCurrentCompany(company);
+  };
 
   const handleLogin = (user) => {
     sessionStorage.setItem("logipunch_user", JSON.stringify(user));
@@ -133,15 +172,27 @@ export default function Layout({ children, currentPageName }) {
   const isAdmin = currentUser && ADMIN_ROLES.includes(currentUser.role);
   const navItems = currentUser ? allNavItems.filter(item => item.public || isAdmin) : [];
 
-  if (!currentUser) {
+  // Step 1: No company selected → show company portal
+  if (!currentCompany) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white">
         <style>{`body { background: #0a0a0a; }`}</style>
-        <PinModal onSuccess={handleLogin} />
+        <CompanyPortalOverlay onSuccess={handleCompanySelect} />
       </div>
     );
   }
 
+  // Step 2: Company selected but no user → show PIN
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <style>{`body { background: #0a0a0a; }`}</style>
+        <PinModal onSuccess={handleLogin} company={currentCompany} />
+      </div>
+    );
+  }
+
+  // Step 3: Fully authenticated → show app
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
       <style>{`
@@ -152,13 +203,20 @@ export default function Layout({ children, currentPageName }) {
         ::-webkit-scrollbar-thumb:hover { background: #22c55e55; }
       `}</style>
 
-      {/* Top bar for desktop */}
+      {/* Top bar - desktop */}
       <div className="hidden md:flex items-center justify-between px-6 py-3 bg-[#0d0d0d] border-b border-zinc-800/60">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-green-500 flex items-center justify-center overflow-hidden">
-            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-full h-full object-contain p-0.5" />
+            {currentCompany?.logo_url ? (
+              <img src={currentCompany.logo_url} alt="logo" className="w-full h-full object-contain p-0.5" />
+            ) : (
+              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/5493e8e6d_ChatGPTImageFeb27202605_01_06PM.png" alt="logo" className="w-full h-full object-contain p-0.5" />
+            )}
           </div>
-          <span className="text-white font-black text-lg tracking-tight">LOGIPUNCH</span>
+          <div>
+            <span className="text-white font-black text-lg tracking-tight">LOGIPUNCH</span>
+            {currentCompany?.name && <p className="text-zinc-500 text-xs leading-none mt-0.5">{currentCompany.name}</p>}
+          </div>
         </div>
         <nav className="flex items-center gap-1">
           {navItems.map(({ label, page, icon: Icon }) => {
@@ -188,7 +246,7 @@ export default function Layout({ children, currentPageName }) {
         {children}
       </main>
 
-      {/* Bottom nav for mobile/tablet */}
+      {/* Bottom nav - mobile */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-zinc-800/60 flex z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {navItems.map(({ label, page, icon: Icon }) => {
           const isActive = currentPageName === page;
