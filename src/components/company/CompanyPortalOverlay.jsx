@@ -122,7 +122,7 @@ export default function CompanyPortalOverlay({ onSuccess }) {
           </>
         )}
 
-        {mode === "join" && (
+        {mode === "join" && !smsMode && (
           <div className="w-full">
             <button
               onClick={() => { setMode("select"); setError(""); setJoinCode(""); }}
@@ -151,6 +151,51 @@ export default function CompanyPortalOverlay({ onSuccess }) {
             >
               {loading ? "Vérification..." : "REJOINDRE"}
             </button>
+            <button onClick={() => setSmsMode(true)} className="w-full mt-4 flex items-center justify-center gap-2 text-zinc-500 hover:text-zinc-300 text-sm transition-colors">
+              <Phone size={14} /> Code oublié ? Recevoir un SMS
+            </button>
+          </div>
+        )}
+
+        {mode === "join" && smsMode && (
+          <div className="w-full">
+            <button onClick={() => { setSmsMode(false); setSmsSent(false); setSmsError(""); setSmsPhone(""); setSmsCodeInput(""); }} className="text-zinc-500 text-sm mb-8 flex items-center gap-1 hover:text-zinc-300 transition-colors">
+              ← Retour
+            </button>
+            <div className="text-center mb-8">
+              <p className="text-xl font-bold text-white mb-1">Connexion par SMS</p>
+              <p className="text-zinc-500 text-sm">{smsSent ? "Entrez le code reçu par SMS" : "Entrez votre numéro de téléphone"}</p>
+            </div>
+            {smsError && <p className="text-red-400 text-sm mb-4 text-center">{smsError}</p>}
+            {!smsSent ? (
+              <>
+                <input
+                  type="tel"
+                  placeholder="Ex: 5141234567"
+                  value={smsPhone}
+                  onChange={e => setSmsPhone(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-4 text-white text-center text-2xl font-mono placeholder:text-zinc-700 focus:outline-none focus:border-green-600 tracking-widest mb-4"
+                />
+                <button onClick={handleSmsSend} disabled={smsLoading || smsPhone.length < 10} className={`w-full h-14 rounded-2xl font-bold text-base transition-all ${!smsLoading && smsPhone.length >= 10 ? "bg-green-600 hover:bg-green-500 text-white" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"}`}>
+                  {smsLoading ? "Envoi..." : "Envoyer le code"}
+                </button>
+              </>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  placeholder="000000"
+                  value={smsCodeInput}
+                  onChange={e => setSmsCodeInput(e.target.value)}
+                  maxLength={6}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-4 text-white text-center text-2xl font-bold font-mono placeholder:text-zinc-700 focus:outline-none focus:border-green-600 tracking-widest mb-4"
+                />
+                <button onClick={handleSmsVerify} disabled={smsLoading || smsCodeInput.length < 6} className={`w-full h-14 rounded-2xl font-bold text-base transition-all ${!smsLoading && smsCodeInput.length >= 6 ? "bg-green-600 hover:bg-green-500 text-white" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"}`}>
+                  {smsLoading ? "Vérification..." : "CONFIRMER"}
+                </button>
+                <button onClick={() => setSmsSent(false)} className="w-full mt-3 text-zinc-600 text-xs hover:text-zinc-400 transition-colors">Renvoyer le code</button>
+              </>
+            )}
           </div>
         )}
       </div>
