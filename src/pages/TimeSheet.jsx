@@ -453,46 +453,54 @@ export default function TimeSheet() {
     y += 4;
 
     // ── SUMMARY BOX ───────────────────────────────────────────────
+    const boxH = 26;
     doc.setFillColor(20, 25, 40);
-    doc.roundedRect(margin, y, colW, 22, 2, 2, "F");
+    doc.roundedRect(margin, y, colW, boxH, 2, 2, "F");
 
-    const summaryMid = margin + colW / 2;
+    // 4 columns: label | total brut | total diner | net à payer
+    const col1x = margin + 6;
+    const col2x = margin + 60;
+    const col3x = margin + 110;
+    const col4x = pageW - margin - 4;
 
+    // Label
     doc.setFontSize(7.5);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(100, 200, 80);
-    doc.text("RÉSUMÉ HEBDOMADAIRE", margin + 6, y + 9);
+    doc.text("RÉSUMÉ", col1x, y + 10);
+    doc.text("HEBDOMADAIRE", col1x, y + 18);
 
     // Total brut
-    doc.setTextColor(160, 160, 160);
-    doc.setFontSize(7);
-    doc.text("TOTAL BRUT", summaryMid - 38, y + 7);
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(255, 255, 255);
-    doc.text(toHM(grossHours), summaryMid - 38, y + 16);
-
-    // Total diner
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(160, 160, 160);
-    doc.text("TOTAL DÎNER", summaryMid + 4, y + 7);
-    doc.setFontSize(11);
+    doc.text("TOTAL BRUT", col2x, y + 9);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text(toHM(grossHours), col2x, y + 20);
+
+    // Total dîner
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(160, 160, 160);
+    doc.text("TOTAL DÎNER", col3x, y + 9);
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(220, 130, 30);
-    doc.text(`-${toHM(totalLunch / 60)}`, summaryMid + 4, y + 16);
+    doc.text(`-${toHM(totalLunch / 60)}`, col3x, y + 20);
 
     // Net à payer
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 200, 80);
-    doc.text("NET À PAYER", pageW - margin - 38, y + 7);
+    doc.text("NET À PAYER", col4x, y + 9, { align: "right" });
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(100, 200, 80);
-    doc.text(toHM(weekTotal), pageW - margin - 4, y + 17, { align: "right" });
+    doc.text(toHM(weekTotal), col4x, y + 21, { align: "right" });
 
-    y += 32;
+    y += boxH + 6;
 
     // ── SIGNATURES ────────────────────────────────────────────────
     y = Math.max(y, 240);
