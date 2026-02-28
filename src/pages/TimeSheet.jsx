@@ -6,6 +6,10 @@ import { ChevronLeft, ChevronRight, Download, X, Edit2, Printer } from "lucide-r
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 
+function getStoredCompany() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
+}
+
 const GROUPS = ["DDL Excavation", "DDL Logistique", "Groupe DDL"];
 
 function getStoredUser() {
@@ -85,11 +89,12 @@ export default function TimeSheet() {
   const [entries, setEntries] = useState([]);
   const [users, setUsers] = useState([]);
   const [weekDate, setWeekDate] = useState(new Date());
-  const [activeGroup, setActiveGroup] = useState("DDL Excavation");
+  const [activeGroup, setActiveGroup] = useState(null);
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState("week"); // week | day
   const [selectedDay, setSelectedDay] = useState(format(new Date(), "yyyy-MM-dd"));
   const [editEntry, setEditEntry] = useState(null);
+  const [company] = useState(getStoredCompany);
   const currentUser = getStoredUser();
   const isAdmin = currentUser?.role === "Administrateur";
 
@@ -105,19 +110,30 @@ export default function TimeSheet() {
 
   const loadData = async () => {
     setLoading(true);
-    const allUsers = await base44.entities.AppUser.filter({ is_active: true });
+    const companyId = company?.id;
+    const [allUsers, allEntries] = await Promise.all([
+      companyId ? base44.entities.AppUser.filter({ is_active: true, company_id: companyId }) : base44.entities.AppUser.filter({ is_active: true }),
+      base44.entities.PunchEntry.list("-punch_in", 500),
+    ]);
     setUsers(allUsers);
-    const allEntries = await base44.entities.PunchEntry.list("-punch_in", 500);
-    setEntries(allEntries.filter(e => 
+
+    // Detect groups from users dynamically
+    const groups = [...new Set(allUsers.map(u => u.group).filter(Boolean))];
+    if (!activeGroup && groups.length > 0) setActiveGroup(groups[0]);
+
+    setEntries(allEntries.filter(e =>
+      (companyId ? e.company_id === companyId : true) &&
       (e.status === "approved" || e.status === "completed") &&
       e.work_date >= weekStartStr && e.work_date <= weekEndStr
     ));
     setLoading(false);
   };
 
+  const allGroups = [...new Set(users.map(u => u.group).filter(Boolean))];
+
   const getUsersForGroup = () => {
-    if (activeGroup === "Groupe DDL") return users.filter(u => u.group === "Groupe DDL");
-    return users.filter(u => u.group === activeGroup || u.group === "Groupe DDL");
+    if (!activeGroup) return users;
+    return users.filter(u => u.group === activeGroup);
   };
 
   const getEntriesForUser = (userId) => entries.filter(e => e.user_id === userId);
@@ -425,7 +441,7 @@ export default function TimeSheet() {
 
       {/* Group Tabs */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
-        {["DDL Excavation", "DDL Logistique"].map(g => (
+        {allGroups.map(g => (
           <button
             key={g}
             onClick={() => setActiveGroup(g)}
