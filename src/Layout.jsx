@@ -157,7 +157,13 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const isAdmin = currentUser && isAdminUser(currentUser);
-  const navItems = currentUser ? allNavItems.filter(item => item.public || isAdmin) : [];
+  const navItems = currentUser ? allNavItems.filter(item => {
+    if (item.alwaysVisible) return true;
+    if (isAdmin) return true;
+    // Check allowed_pages on user
+    const allowed = currentUser.allowed_pages || [];
+    return allowed.includes(item.key);
+  }) : [];
 
   // Step 1: No company selected → show company portal
   if (!currentCompany) {
