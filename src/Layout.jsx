@@ -170,7 +170,7 @@ export default function Layout({ children, currentPageName }) {
     setCurrentUser(null);
   };
 
-  const isAdmin = currentUser && ADMIN_ROLES.includes(currentUser.role);
+  const isAdmin = currentUser && isAdminUser(currentUser);
   const navItems = currentUser ? allNavItems.filter(item => item.public || isAdmin) : [];
 
   // Step 1: No company selected → show company portal
