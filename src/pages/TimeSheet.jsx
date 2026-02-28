@@ -521,7 +521,15 @@ export default function TimeSheet() {
     doc.setTextColor(200, 200, 200);
     doc.text(`Généré par LOGIPUNCH · ${format(new Date(), "d MMMM yyyy 'à' HH:mm", { locale: fr })}`, pageW / 2, 290, { align: "center" });
 
-    doc.save(`slip_paye_${user.full_name.replace(/\s+/g, "_")}_${weekStartStr}.pdf`);
+    const nameParts2 = user.full_name.trim().split(/\s+/);
+    const firstName = nameParts2[0];
+    const lastInitial = nameParts2.length > 1 ? nameParts2[nameParts2.length - 1][0].toUpperCase() : "";
+    const startDay = format(weekStart, "d");
+    const endDay = format(weekEnd, "d");
+    const monthFr = format(weekEnd, "MMM", { locale: fr });
+    const monthCap = monthFr.charAt(0).toUpperCase() + monthFr.slice(1);
+    const fileName = `${startDay}-${endDay}${monthCap}${firstName}${lastInitial}.pdf`;
+    doc.save(fileName);
   };
 
   const groupUsers = getUsersForGroup().sort((a, b) => getWeekTotal(b.id) - getWeekTotal(a.id));
