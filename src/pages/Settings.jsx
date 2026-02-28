@@ -434,7 +434,8 @@ function ApprovalsTab({ users, onRefresh }) {
     await Promise.all(
       activeUsers.map(u => {
         const approverIds = assignments[u.id] || [];
-        return base44.entities.AppUser.update(u.id, { approved_by: approverIds });
+        const validArray = Array.isArray(approverIds) ? approverIds : [];
+        return base44.entities.AppUser.update(u.id, { approved_by: validArray });
       })
     );
     setSaving(false);
