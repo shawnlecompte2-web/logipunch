@@ -10,6 +10,10 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
   const [logoPreview, setLogoPreview] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [adminPin, setAdminPin] = useState("");
+  const [adminPinConfirm, setAdminPinConfirm] = useState("");
+  const [showPin, setShowPin] = useState(false);
+  const [pinError, setPinError] = useState("");
 
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
