@@ -139,7 +139,7 @@ export default function Approvals() {
       ? await base44.entities.PunchEntry.filter({ status: "completed", ...(companyId ? { company_id: companyId } : {}) })
       : await base44.entities.PunchEntry.list("-punch_in");
 
-    const isAdmin = ["Administrateur", "Surintendant", "Chargé de projet"].includes(approverUser.role);
+    const isAdmin = approverUser.is_admin === true || ["Administrateur", "Surintendant", "Chargé de projet"].includes(approverUser.role);
     if (!isAdmin) {
       if (approverUser.role === "Gestionnaire Chauffeur") {
         const ids = allUsers.filter(u => u.role === "Chauffeur").map(u => u.id);
