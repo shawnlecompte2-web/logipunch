@@ -5,6 +5,10 @@ import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Clock, Trash2 } from "lucide-react";
 import PullToRefresh from "@/components/PullToRefresh";
 
+function getStoredCompany() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
+}
+
 function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
 }
