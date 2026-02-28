@@ -213,8 +213,8 @@ function UserForm({ user, projects, users, companyId, onClose, onSaved }) {
   });
   const [saving, setSaving] = useState(false);
 
-  const ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "Gestionnaire Chauffeur", "Chauffeur", "Gestionnaire Cour", "Gestionnaire Mécanique", "Mécano", "Contremaitre", "Manœuvre", "Opérateur", "Estimateur"];
-  const GROUPS = ["DDL Excavation", "DDL Logistique", "Groupe DDL"];
+  const ROLES = [...new Set(users.filter(u => u.role).map(u => u.role))];
+  const GROUPS = [...new Set(users.filter(u => u.group).map(u => u.group))];
 
   const handleSave = async () => {
     if (!form.full_name || !form.pin_code) return;
