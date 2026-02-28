@@ -178,9 +178,9 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
 
         <button
           onClick={handleSubmit}
-          disabled={!name || adminPin.length !== 4 || adminPinConfirm.length !== 4 || saving}
+          disabled={!name || !adminName || adminPin.length !== 4 || adminPinConfirm.length !== 4 || saving}
           className={`w-full h-14 rounded-2xl font-bold text-base transition-all flex items-center justify-between px-6 ${
-            name && adminPin.length === 4 && adminPinConfirm.length === 4 && !saving ? "bg-green-600 hover:bg-green-500 text-white" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
+            name && adminName && adminPin.length === 4 && adminPinConfirm.length === 4 && !saving ? "bg-green-600 hover:bg-green-500 text-white" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
           }`}
         >
           <span>{saving ? "Création en cours..." : "CRÉER MON PORTAIL"}</span>
