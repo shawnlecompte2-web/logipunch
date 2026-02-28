@@ -510,6 +510,129 @@ function ApprovalsTab({ users, onRefresh }) {
   );
 }
 
+function RolesTab({ users, companyId, onRefresh }) {
+  const existingRoles = [...new Set(users.filter(u => u.role).map(u => u.role))].sort();
+  const [newRole, setNewRole] = useState("");
+  const [editingRole, setEditingRole] = useState(null); // { original, value }
+  const [saving, setSaving] = useState(false);
+
+  const usersWithRole = (role) => users.filter(u => u.role === role);
+
+  const handleAddRole = () => {
+    const trimmed = newRole.trim();
+    if (!trimmed || existingRoles.includes(trimmed)) return;
+    setNewRole("");
+    // Roles exist via users - just show confirmation; user can assign when editing a user
+    alert(`Rôle "${trimmed}" ajouté. Assignez-le à un utilisateur pour le voir dans la liste.`);
+  };
+
+  const handleRename = async (original, newName) => {
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === original) { setEditingRole(null); return; }
+    setSaving(true);
+    const affected = usersWithRole(original);
+    await Promise.all(affected.map(u => base44.entities.AppUser.update(u.id, { role: trimmed })));
+    setSaving(false);
+    setEditingRole(null);
+    onRefresh();
+  };
+
+  const handleDelete = async (role) => {
+    const affected = usersWithRole(role);
+    const msg = affected.length > 0
+      ? `Supprimer le rôle "${role}"? Les ${affected.length} utilisateur(s) avec ce rôle auront leur rôle vidé.`
+      : `Supprimer le rôle "${role}"?`;
+    if (!window.confirm(msg)) return;
+    setSaving(true);
+    await Promise.all(affected.map(u => base44.entities.AppUser.update(u.id, { role: "" })));
+    setSaving(false);
+    onRefresh();
+  };
+
+  return (
+    <div>
+      <div className="mb-6">
+        <p className="text-white font-semibold mb-1">Gestion des rôles</p>
+        <p className="text-zinc-500 text-xs">Les rôles sont partagés entre tous les utilisateurs du portail.</p>
+      </div>
+
+      {/* Add new role */}
+      <div className="flex gap-2 mb-6">
+        <input
+          value={newRole}
+          onChange={e => setNewRole(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleAddRole()}
+          placeholder="Nouveau rôle..."
+          className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600 placeholder:text-zinc-600"
+        />
+        <button
+          onClick={handleAddRole}
+          disabled={!newRole.trim()}
+          className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-40 flex items-center gap-2"
+        >
+          <Plus size={15} /> Ajouter
+        </button>
+      </div>
+
+      {saving && <p className="text-zinc-500 text-sm text-center py-4 animate-pulse">Mise à jour...</p>}
+
+      <div className="space-y-2">
+        {existingRoles.map(role => {
+          const count = usersWithRole(role).length;
+          const isEditing = editingRole?.original === role;
+          return (
+            <div key={role} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center gap-3">
+              <div className="flex-1">
+                {isEditing ? (
+                  <input
+                    autoFocus
+                    value={editingRole.value}
+                    onChange={e => setEditingRole(r => ({ ...r, value: e.target.value }))}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") handleRename(role, editingRole.value);
+                      if (e.key === "Escape") setEditingRole(null);
+                    }}
+                    className="w-full bg-zinc-800 border border-green-600 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none"
+                  />
+                ) : (
+                  <div>
+                    <span className="text-white font-semibold text-sm">{role}</span>
+                    <span className="text-zinc-600 text-xs ml-2">{count} utilisateur{count !== 1 ? "s" : ""}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                {isEditing ? (
+                  <>
+                    <button onClick={() => handleRename(role, editingRole.value)} className="p-2 bg-green-900/40 hover:bg-green-800/60 border border-green-700/40 rounded-lg transition-all">
+                      <Check size={14} className="text-green-400" />
+                    </button>
+                    <button onClick={() => setEditingRole(null)} className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all">
+                      <X size={14} className="text-zinc-400" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => setEditingRole({ original: role, value: role })} className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all">
+                      <Edit2 size={14} className="text-zinc-400" />
+                    </button>
+                    <button onClick={() => handleDelete(role)} className="p-2 bg-red-900/30 hover:bg-red-900/50 rounded-lg transition-all">
+                      <Trash2 size={14} className="text-red-500" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
+        {existingRoles.length === 0 && (
+          <p className="text-zinc-600 text-sm text-center py-8">Aucun rôle défini.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ProjectForm({ project, users, companyId, onClose, onSaved }) {
   const [form, setForm] = useState({
     name: project?.name || "",
