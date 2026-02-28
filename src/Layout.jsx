@@ -9,12 +9,12 @@ const ADMIN_ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "Ges
 const isAdminUser = (user) => user?.is_admin === true || ADMIN_ROLES.includes(user?.role);
 
 const allNavItems = [
-  { label: "Punch", page: "Punch", icon: Clock, public: true },
-  { label: "Mes heures", page: "MyHours", icon: User, public: true },
-  { label: "Approbation", page: "Approvals", icon: CheckSquare, adminOnly: true },
-  { label: "Heures", page: "TimeSheet", icon: BarChart2, adminOnly: true },
-  { label: "Actifs", page: "ActiveUsers", icon: Users, adminOnly: true },
-  { label: "Réglages", page: "Settings", icon: Settings, adminOnly: true },
+  { label: "Punch", page: "Punch", icon: Clock, alwaysVisible: true },
+  { label: "Mes heures", page: "MyHours", icon: User, alwaysVisible: true },
+  { label: "Approbation", page: "Approvals", icon: CheckSquare, key: "Approvals" },
+  { label: "Heures", page: "TimeSheet", icon: BarChart2, key: "TimeSheet" },
+  { label: "Actifs", page: "ActiveUsers", icon: Users, key: "ActiveUsers" },
+  { label: "Réglages", page: "Settings", icon: Settings, key: "Settings" },
 ];
 
 function getStoredUser() {
