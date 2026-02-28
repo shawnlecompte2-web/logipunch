@@ -5,6 +5,10 @@ import { fr } from "date-fns/locale";
 import { MapPin, Clock, RefreshCw } from "lucide-react";
 import PullToRefresh from "@/components/PullToRefresh";
 
+function getStoredCompany() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
+}
+
 export default function ActiveUsers() {
   const [activeEntries, setActiveEntries] = useState([]);
   const [users, setUsers] = useState([]);
@@ -19,10 +23,13 @@ export default function ActiveUsers() {
 
   const loadData = async () => {
     setLoading(true);
-    const allEntries = await base44.entities.PunchEntry.list("-punch_in", 200);
-    const entries = allEntries.filter(e => !e.punch_out);
-    const allUsers = await base44.entities.AppUser.filter({ is_active: true });
-    setActiveEntries(entries);
+    const company = getStoredCompany();
+    const companyId = company?.id;
+    const [allEntries, allUsers] = await Promise.all([
+      base44.entities.PunchEntry.list("-punch_in", 200),
+      companyId ? base44.entities.AppUser.filter({ is_active: true, company_id: companyId }) : base44.entities.AppUser.filter({ is_active: true }),
+    ]);
+    setActiveEntries(allEntries.filter(e => !e.punch_out && (companyId ? e.company_id === companyId : true)));
     setUsers(allUsers);
     setLoading(false);
   };

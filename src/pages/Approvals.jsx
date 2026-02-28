@@ -5,6 +5,10 @@ import { Check, X, Edit2, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import PullToRefresh from "@/components/PullToRefresh";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
+function getStoredCompany() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
+}
+
 function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
 }
@@ -125,10 +129,14 @@ export default function Approvals() {
 
   const loadData = async () => {
     setLoading(true);
-    const allUsers = await base44.entities.AppUser.list();
+    const company = getStoredCompany();
+    const companyId = company?.id;
+    const allUsers = companyId
+      ? await base44.entities.AppUser.filter({ company_id: companyId })
+      : await base44.entities.AppUser.list();
     setUsers(allUsers);
     let allEntries = filter === "pending"
-      ? await base44.entities.PunchEntry.filter({ status: "completed" })
+      ? await base44.entities.PunchEntry.filter({ status: "completed", ...(companyId ? { company_id: companyId } : {}) })
       : await base44.entities.PunchEntry.list("-punch_in");
 
     const isAdmin = ["Administrateur", "Surintendant", "Chargé de projet"].includes(approverUser.role);
