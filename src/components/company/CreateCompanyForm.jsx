@@ -88,6 +88,40 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
           </div>
         </div>
 
+        {/* Admin PIN */}
+        <div className="mb-6">
+          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Votre code PIN administrateur (4 chiffres) *</label>
+          <p className="text-zinc-600 text-xs mb-3">Ce code vous permettra de vous connecter en tant qu'administrateur de votre portail.</p>
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <input
+                type={showPin ? "text" : "password"}
+                inputMode="numeric"
+                maxLength={4}
+                value={adminPin}
+                onChange={e => { setAdminPin(e.target.value.replace(/\D/g, "").slice(0,4)); setPinError(""); }}
+                placeholder="••••"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm tracking-widest"
+              />
+              <button type="button" onClick={() => setShowPin(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            <div className="relative flex-1">
+              <input
+                type={showPin ? "text" : "password"}
+                inputMode="numeric"
+                maxLength={4}
+                value={adminPinConfirm}
+                onChange={e => { setAdminPinConfirm(e.target.value.replace(/\D/g, "").slice(0,4)); setPinError(""); }}
+                placeholder="Confirmer"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm tracking-widest"
+              />
+            </div>
+          </div>
+          {pinError && <p className="text-red-400 text-xs mt-2">{pinError}</p>}
+        </div>
+
         <div className="space-y-4 mb-8">
           <div>
             <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Nom de l'entreprise *</label>
