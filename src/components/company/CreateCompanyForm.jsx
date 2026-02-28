@@ -37,6 +37,15 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
     }
     const join_code = generateCode();
     const company = await base44.entities.Company.create({ name, join_code, logo_url, address, phone });
+    // Create the admin user for this company
+    await base44.entities.AppUser.create({
+      full_name: "Administrateur",
+      pin_code: adminPin,
+      role: "Administrateur",
+      group: name,
+      is_active: true,
+      company_id: company.id,
+    });
     setSaving(false);
     onSuccess(company);
   };
