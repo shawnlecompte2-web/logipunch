@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Clock, CheckSquare, BarChart2, Users, Settings, User, Delete, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
