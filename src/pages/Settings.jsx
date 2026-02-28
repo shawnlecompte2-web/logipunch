@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Edit2, Trash2, X, Users, FolderOpen, ChevronDown, AlertTriangle } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Users, FolderOpen, ChevronDown, AlertTriangle, Building2 } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import CompanySettingsTab from "@/components/company/CompanySettingsTab";
+
+function getStoredCompany() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
+}
 
 function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
@@ -14,6 +19,7 @@ export default function Settings() {
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [company, setCompany] = useState(getStoredCompany);
 
   const currentUser = getStoredUser();
   const adminAccess = currentUser && ADMIN_ROLES.includes(currentUser.role);
@@ -55,6 +61,9 @@ export default function Settings() {
         <button onClick={() => setTab("projects")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "projects" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"}`}>
           <FolderOpen size={15} /> Projets
         </button>
+        <button onClick={() => setTab("company")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "company" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"}`}>
+          <Building2 size={15} /> Entreprise
+        </button>
       </div>
 
       {tab === "users" && (
@@ -62,6 +71,9 @@ export default function Settings() {
       )}
       {tab === "projects" && (
         <ProjectsTab projects={projects} users={users} onRefresh={loadAll} />
+      )}
+      {tab === "company" && company && (
+        <CompanySettingsTab company={company} onUpdated={(c) => { setCompany(c); }} />
       )}
 
       {/* Danger Zone */}
