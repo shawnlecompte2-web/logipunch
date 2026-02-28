@@ -70,6 +70,9 @@ export default function Settings() {
         <button onClick={() => setTab("company")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "company" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"}`}>
           <Building2 size={15} /> Entreprise
         </button>
+        <button onClick={() => setTab("approvals")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "approvals" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"}`}>
+          <ShieldCheck size={15} /> Approbations
+        </button>
       </div>
 
       {tab === "users" && (
@@ -80,6 +83,9 @@ export default function Settings() {
       )}
       {tab === "company" && company && (
         <CompanySettingsTab company={company} onUpdated={(c) => { setCompany(c); }} />
+      )}
+      {tab === "approvals" && (
+        <ApprovalsTab users={users} onRefresh={loadAll} />
       )}
 
       {/* Danger Zone */}
