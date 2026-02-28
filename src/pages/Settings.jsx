@@ -376,6 +376,75 @@ function ProjectsTab({ projects, users, companyId, onRefresh }) {
   );
 }
 
+function ApprovalsTab({ users, onRefresh }) {
+  const activeUsers = users.filter(u => u.is_active !== false);
+  const [saving, setSaving] = useState(false);
+  // Local state: map of workerId -> approverId
+  const [assignments, setAssignments] = useState(() => {
+    const map = {};
+    activeUsers.forEach(u => { if (u.approved_by) map[u.id] = u.approved_by; });
+    return map;
+  });
+
+  const handleSave = async () => {
+    setSaving(true);
+    await Promise.all(
+      activeUsers.map(u => {
+        const approverId = assignments[u.id] || "";
+        if (u.approved_by !== approverId) {
+          return base44.entities.AppUser.update(u.id, { approved_by: approverId });
+        }
+        return Promise.resolve();
+      })
+    );
+    setSaving(false);
+    onRefresh();
+  };
+
+  const adminUsers = activeUsers.filter(u => u.is_admin === true);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-white font-semibold">Associations approbateur → employé</p>
+          <p className="text-zinc-500 text-xs mt-0.5">Définissez qui approuve les heures de chaque employé</p>
+        </div>
+        <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50">
+          {saving ? "..." : "Sauvegarder"}
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        {activeUsers.map(worker => (
+          <div key={worker.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-white font-semibold text-sm truncate">{worker.full_name}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="px-2 py-0.5 bg-green-900/30 border border-green-700/30 text-green-400 text-xs rounded-full">{worker.role}</span>
+                <span className="px-2 py-0.5 bg-zinc-800 text-zinc-500 text-xs rounded-full">{worker.group}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-zinc-600 text-xs">approuvé par</span>
+              <select
+                value={assignments[worker.id] || ""}
+                onChange={e => setAssignments(a => ({ ...a, [worker.id]: e.target.value }))}
+                className="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-green-600 max-w-[160px]"
+              >
+                <option value="">— Aucun —</option>
+                {activeUsers.filter(u => u.id !== worker.id).map(approver => (
+                  <option key={approver.id} value={approver.id}>{approver.full_name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ProjectForm({ project, users, companyId, onClose, onSaved }) {
   const [form, setForm] = useState({
     name: project?.name || "",
