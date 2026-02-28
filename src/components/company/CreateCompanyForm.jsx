@@ -105,10 +105,32 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
           </div>
         </div>
 
+        {/* Admin Info */}
+        <div className="mb-4">
+          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Votre nom complet *</label>
+          <input
+            value={adminName}
+            onChange={e => setAdminName(e.target.value)}
+            placeholder="Ex: Jean Tremblay"
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm"
+          />
+        </div>
+
+        <div className="mb-6">
+          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Votre rôle *</label>
+          <select
+            value={adminRole}
+            onChange={e => setAdminRole(e.target.value)}
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-600 text-sm"
+          >
+            {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </div>
+
         {/* Admin PIN */}
         <div className="mb-6">
-          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Votre code PIN administrateur (4 chiffres) *</label>
-          <p className="text-zinc-600 text-xs mb-3">Ce code vous permettra de vous connecter en tant qu'administrateur de votre portail.</p>
+          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Votre code PIN (4 chiffres) *</label>
+          <p className="text-zinc-600 text-xs mb-3">Ce code vous permettra de vous connecter dans votre portail.</p>
           <div className="flex gap-3">
             <div className="relative flex-1">
               <input
