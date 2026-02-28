@@ -90,6 +90,9 @@ export default function Settings() {
       {tab === "approvals" && (
         <ApprovalsTab users={users} onRefresh={loadAll} />
       )}
+      {tab === "roles" && (
+        <RolesTab users={users} companyId={company?.id} onRefresh={loadAll} />
+      )}
 
       {/* Danger Zone */}
       <div className="mt-10 border-t border-zinc-800/60 pt-6">
