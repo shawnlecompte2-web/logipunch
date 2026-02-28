@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Upload, ChevronRight } from "lucide-react";
+import { Upload, ChevronRight, Eye, EyeOff } from "lucide-react";
 
 export default function CreateCompanyForm({ onSuccess, onBack }) {
   const [name, setName] = useState("");
