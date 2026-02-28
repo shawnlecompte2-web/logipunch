@@ -30,9 +30,14 @@ export default function Settings() {
 
   const loadAll = async () => {
     setLoading(true);
+    const companyId = company?.id;
     const [u, p] = await Promise.all([
-      base44.entities.AppUser.list(),
-      base44.entities.Project.list(),
+      companyId
+        ? base44.entities.AppUser.filter({ company_id: companyId })
+        : base44.entities.AppUser.list(),
+      companyId
+        ? base44.entities.Project.filter({ company_id: companyId })
+        : base44.entities.Project.list(),
     ]);
     setUsers(u);
     setProjects(p);
@@ -67,10 +72,10 @@ export default function Settings() {
       </div>
 
       {tab === "users" && (
-        <UsersTab users={users} projects={projects} onRefresh={loadAll} />
+        <UsersTab users={users} projects={projects} companyId={company?.id} onRefresh={loadAll} />
       )}
       {tab === "projects" && (
-        <ProjectsTab projects={projects} users={users} onRefresh={loadAll} />
+        <ProjectsTab projects={projects} users={users} companyId={company?.id} onRefresh={loadAll} />
       )}
       {tab === "company" && company && (
         <CompanySettingsTab company={company} onUpdated={(c) => { setCompany(c); }} />
@@ -138,7 +143,7 @@ function BottomSelect({ label, value, onChange, options }) {
   );
 }
 
-function UsersTab({ users, projects, onRefresh }) {
+function UsersTab({ users, projects, companyId, onRefresh }) {
   const [showForm, setShowForm] = useState(false);
   const [editUser, setEditUser] = useState(null);
 
@@ -158,7 +163,7 @@ function UsersTab({ users, projects, onRefresh }) {
       </div>
 
       {showForm && (
-        <UserForm user={editUser} projects={projects} users={users} onClose={() => { setShowForm(false); setEditUser(null); }} onSaved={() => { setShowForm(false); setEditUser(null); onRefresh(); }} />
+        <UserForm user={editUser} projects={projects} users={users} companyId={companyId} onClose={() => { setShowForm(false); setEditUser(null); }} onSaved={() => { setShowForm(false); setEditUser(null); onRefresh(); }} />
       )}
 
       <div className="space-y-2">
@@ -194,7 +199,7 @@ function UsersTab({ users, projects, onRefresh }) {
   );
 }
 
-function UserForm({ user, projects, users, onClose, onSaved }) {
+function UserForm({ user, projects, users, companyId, onClose, onSaved }) {
   const [form, setForm] = useState({
     full_name: user?.full_name || "",
     pin_code: user?.pin_code || "",
@@ -216,7 +221,7 @@ function UserForm({ user, projects, users, onClose, onSaved }) {
     if (user) {
       await base44.entities.AppUser.update(user.id, form);
     } else {
-      await base44.entities.AppUser.create(form);
+      await base44.entities.AppUser.create({ ...form, ...(companyId ? { company_id: companyId } : {}) });
     }
     setSaving(false);
     onSaved();
@@ -283,7 +288,7 @@ function UserForm({ user, projects, users, onClose, onSaved }) {
   );
 }
 
-function ProjectsTab({ projects, users, onRefresh }) {
+function ProjectsTab({ projects, users, companyId, onRefresh }) {
   const [showForm, setShowForm] = useState(false);
   const [editProject, setEditProject] = useState(null);
 
@@ -303,7 +308,7 @@ function ProjectsTab({ projects, users, onRefresh }) {
       </div>
 
       {showForm && (
-        <ProjectForm project={editProject} users={users} onClose={() => { setShowForm(false); setEditProject(null); }} onSaved={() => { setShowForm(false); setEditProject(null); onRefresh(); }} />
+        <ProjectForm project={editProject} users={users} companyId={companyId} onClose={() => { setShowForm(false); setEditProject(null); }} onSaved={() => { setShowForm(false); setEditProject(null); onRefresh(); }} />
       )}
 
       <div className="space-y-2">
@@ -334,7 +339,7 @@ function ProjectsTab({ projects, users, onRefresh }) {
   );
 }
 
-function ProjectForm({ project, users, onClose, onSaved }) {
+function ProjectForm({ project, users, companyId, onClose, onSaved }) {
   const [form, setForm] = useState({
     name: project?.name || "",
     project_number: project?.project_number || "",
@@ -359,7 +364,7 @@ function ProjectForm({ project, users, onClose, onSaved }) {
     if (project) {
       await base44.entities.Project.update(project.id, form);
     } else {
-      await base44.entities.Project.create(form);
+      await base44.entities.Project.create({ ...form, ...(companyId ? { company_id: companyId } : {}) });
     }
     setSaving(false);
     onSaved();
