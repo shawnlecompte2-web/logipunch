@@ -49,6 +49,7 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
       role: adminRole,
       group: adminGroup,
       is_active: true,
+      is_admin: true,
       company_id: company.id,
     });
     setSaving(false);
