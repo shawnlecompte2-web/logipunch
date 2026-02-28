@@ -60,7 +60,7 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
       full_name: adminName,
       pin_code: adminPin,
       role: adminRole,
-      group: name,
+      group: adminGroup,
       is_active: true,
       company_id: company.id,
     });
