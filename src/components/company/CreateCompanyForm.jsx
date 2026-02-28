@@ -116,15 +116,24 @@ export default function CreateCompanyForm({ onSuccess, onBack }) {
           />
         </div>
 
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Votre rôle *</label>
-          <select
-            value={adminRole}
+          <input
+            value={adminRole === "Administrateur" ? "" : adminRole}
             onChange={e => setAdminRole(e.target.value)}
-            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-600 text-sm"
-          >
-            {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
+            placeholder="Ex: Administrateur, Surintendant, Contremaitre..."
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm"
+          />
+        </div>
+
+        <div className="mb-6">
+          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Votre groupe *</label>
+          <input
+            value={adminGroup}
+            onChange={e => setAdminGroup(e.target.value)}
+            placeholder="Ex: Bureau, Chantier, Mécanique..."
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm"
+          />
         </div>
 
         {/* Admin PIN */}
