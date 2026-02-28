@@ -47,6 +47,7 @@ export default function MyHours() {
   if (!user) return null;
 
   return (
+    <PullToRefresh onRefresh={loadEntries}>
     <div className="min-h-screen p-4 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -148,5 +149,6 @@ export default function MyHours() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }

@@ -42,6 +42,7 @@ export default function ActiveUsers() {
   });
 
   return (
+    <PullToRefresh onRefresh={loadData}>
     <div className="min-h-screen p-4 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -108,5 +109,6 @@ export default function ActiveUsers() {
         ))}
       </div>
     </div>
+    </PullToRefresh>
   );
 }
