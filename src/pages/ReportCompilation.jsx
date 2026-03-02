@@ -109,6 +109,36 @@ export default function ReportCompilationPage() {
 
   const projectIds = Object.keys(structure).sort();
 
+  const downloadPDF = async (type, projectId, projectName, date, weekStart, dayReports, workers) => {
+    try {
+      const totalHours = getTotalHours(projectId, weekStart, date);
+      const response = await base44.functions.invoke('generateReportPDF', {
+        type,
+        projectId,
+        projectName,
+        date,
+        weekStart,
+        reports: dayReports,
+        workers,
+        totalHours
+      });
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = type === 'day'
+        ? `rapport_${new Date(date + 'T12:00:00').toLocaleDateString('fr-CA')}.pdf`
+        : `rapport_semaine_${weekStart}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
       <div className="max-w-4xl mx-auto">
