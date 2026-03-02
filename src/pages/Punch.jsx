@@ -304,22 +304,18 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
   }, []);
 
   useEffect(() => {
+    if (!user?.id) return;
     const company = getStoredCompany();
     const filter = { is_active: true, ...(company?.id ? { company_id: company.id } : {}) };
     base44.entities.Project.filter(filter).then(all => {
-      const hasAssignedProjects = user.assigned_projects && user.assigned_projects.length > 0;
-      const hasAssignedUsers = all.some(p => (p.assigned_users || []).includes(user.id));
-
-      if (hasAssignedProjects || hasAssignedUsers) {
-        setProjects(all.filter(p =>
-          (user.assigned_projects || []).includes(p.id) ||
-          (p.assigned_users || []).includes(user.id)
-        ));
-      } else {
-        setProjects(all);
-      }
+      const assignedProjectIds = user.assigned_projects || [];
+      const assignedToUser = all.filter(p =>
+        assignedProjectIds.includes(p.id) ||
+        (p.assigned_users || []).includes(user.id)
+      );
+      setProjects(assignedToUser.length > 0 ? assignedToUser : all);
     });
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     const handlePopState = () => {
