@@ -240,10 +240,16 @@ export default function Layout({ children, currentPageName }) {
     setCurrentCompany(company);
   };
 
-  const handleLogin = (user) => {
-    sessionStorage.setItem("logipunch_user", JSON.stringify(user));
+  const handleLogin = async (user) => {
+    // Always fetch fresh data from DB on login to get latest permissions
+    let freshUser = user;
+    try {
+      const fetched = await base44.entities.AppUser.get(user.id);
+      if (fetched) freshUser = fetched;
+    } catch {}
+    sessionStorage.setItem("logipunch_user", JSON.stringify(freshUser));
     window.dispatchEvent(new Event("logipunch_user_change"));
-    setCurrentUser(user);
+    setCurrentUser(freshUser);
     navigate(createPageUrl("Punch"));
   };
 
