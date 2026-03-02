@@ -4,8 +4,8 @@ import { jsPDF } from 'npm:jspdf@4.0.0';
 
 // Group → recipient email mapping
 const GROUP_EMAILS = {
-  "DDL Excavation": "Julie@groupeddl.ca",
-  "DDL Logistique": "Manon@groupeddl.ca",
+  "DDL Excavation": "shawn@groupeddl.ca",
+  "DDL Logistique": "shawn@groupeddl.ca",
 };
 
 // Always CC'd on all groups
