@@ -117,61 +117,61 @@ export default function CreateDailyReportPage() {
 
               {/* Machine */}
               <div>
-                <label className="block text-sm font-medium mb-2">Machine utilisée</label>
+                <label className="block text-sm font-medium mb-2 text-white">Machine utilisée</label>
                 <Input
                   value={formData.machine}
                   onChange={(e) => setFormData({...formData, machine: e.target.value})}
                   placeholder="Ex: Excavatrice, Pelleteuse, etc."
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500"
                 />
               </div>
 
               {/* Truck Count */}
               <div>
-                <label className="block text-sm font-medium mb-2">Nombre de camions au projet</label>
+                <label className="block text-sm font-medium mb-2 text-white">Nombre de camions au projet</label>
                 <Input
                   type="number"
                   min="0"
                   value={formData.truck_count}
                   onChange={(e) => setFormData({...formData, truck_count: e.target.value})}
                   placeholder="Ex: 2"
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500"
                 />
               </div>
 
               {/* Subcontractor */}
               <div>
-                <label className="block text-sm font-medium mb-2">Sous-traitant sur le projet</label>
+                <label className="block text-sm font-medium mb-2 text-white">Sous-traitant sur le projet</label>
                 <Textarea
                   value={formData.subcontractor}
                   onChange={(e) => setFormData({...formData, subcontractor: e.target.value})}
                   placeholder="Nom du sous-traitant (optionnel)"
-                  className="bg-zinc-800 border-zinc-700 resize-none"
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 resize-none"
                   rows="2"
                 />
               </div>
 
               {/* Work Description */}
               <div>
-                <label className="block text-sm font-medium mb-2">Description des travaux *</label>
+                <label className="block text-sm font-medium mb-2 text-white">Description des travaux *</label>
                 <Textarea
                   required
                   value={formData.work_description}
                   onChange={(e) => setFormData({...formData, work_description: e.target.value})}
                   placeholder="Décrivez les travaux effectués..."
-                  className="bg-zinc-800 border-zinc-700 resize-none"
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 resize-none"
                   rows="4"
                 />
               </div>
 
               {/* Other Notes */}
               <div>
-                <label className="block text-sm font-medium mb-2">Autres</label>
+                <label className="block text-sm font-medium mb-2 text-white">Autres</label>
                 <Textarea
                   value={formData.other_notes}
                   onChange={(e) => setFormData({...formData, other_notes: e.target.value})}
                   placeholder="Autres notes (optionnel)"
-                  className="bg-zinc-800 border-zinc-700 resize-none"
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 resize-none"
                   rows="3"
                 />
               </div>
