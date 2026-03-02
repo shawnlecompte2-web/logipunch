@@ -78,8 +78,6 @@ function PinEntry({ onSuccess }) {
 // ─── PUNCH IN FORM ───────────────────────────────────────────────────────────
 function PunchInForm({ user, projects, onSuccess, onBack }) {
   const [selectedProject, setSelectedProject] = useState("");
-  const [machine, setMachine] = useState("");
-  const [plateNumber, setPlateNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
   const availableProjects = projects;
