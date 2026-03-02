@@ -97,6 +97,9 @@ export default function Settings() {
       {tab === "roles" && (
         <RolesTab users={users} companyId={company?.id} onRefresh={loadAll} />
       )}
+      {tab === "roleConfig" && (
+        <RoleConfigTab users={users} companyId={company?.id} />
+      )}
       {tab === "groups" && (
         <GroupsTab users={users} companyId={company?.id} onRefresh={loadAll} />
       )}
