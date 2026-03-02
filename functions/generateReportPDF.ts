@@ -21,6 +21,27 @@ function formatTime(isoStr) {
   return `${h}:${m}`;
 }
 
+function addBox(doc, x, y, w, h, label, value, bgColor = [240, 244, 250], textColor = [30, 30, 30]) {
+  doc.setFillColor(...bgColor);
+  doc.rect(x, y, w, h, "F");
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
+  doc.rect(x, y, w, h, "S");
+  
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(100, 100, 100);
+  doc.text(label, x + 3, y + 4);
+  
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...textColor);
+  const lines = doc.splitTextToSize(value, w - 6);
+  doc.text(lines, x + 3, y + 12);
+  
+  return y + h;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
