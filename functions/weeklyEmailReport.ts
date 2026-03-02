@@ -375,21 +375,8 @@ async function generatePDF(user, entries, weekStart, weekEnd, companyName, compa
   return doc.output("arraybuffer");
 }
 
-function pdfToBase64(arrayBuffer) {
-  const bytes = new Uint8Array(arrayBuffer);
-  let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-function xlsxToBase64(buffer) {
-  let binary = "";
-  for (let i = 0; i < buffer.length; i++) {
-    binary += String.fromCharCode(buffer[i]);
-  }
-  return btoa(binary);
+function arrayBufferToFile(buffer, filename, mimeType) {
+  return new File([new Uint8Array(buffer)], filename, { type: mimeType });
 }
 
 function buildEmailHtml(groupName, users, entries, weekStart, weekEnd, pdfLinks, xlsxLink) {
