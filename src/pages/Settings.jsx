@@ -186,7 +186,17 @@ function UsersTab({ users, projects, companyId, onRefresh }) {
       )}
 
       <div className="space-y-2">
-        {users.filter(u => u.is_active !== false).map(user => (
+        {Object.entries(
+          users.filter(u => u.is_active !== false).reduce((acc, user) => {
+            const role = user.role || "Sans rôle";
+            if (!acc[role]) acc[role] = [];
+            acc[role].push(user);
+            return acc;
+          }, {})
+        ).sort(([a], [b]) => a.localeCompare(b)).map(([role, roleUsers]) => (
+          <div key={role}>
+            <p className="text-zinc-500 text-xs uppercase tracking-widest font-semibold mb-2 mt-4 first:mt-0">{role} <span className="text-zinc-700">({roleUsers.length})</span></p>
+            {roleUsers.map(user => (
           <div key={user.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center">
