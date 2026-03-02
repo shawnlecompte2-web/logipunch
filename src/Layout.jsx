@@ -223,6 +223,17 @@ export default function Layout({ children, currentPageName }) {
     };
   }, []);
 
+  // Refresh user permissions from DB on mount to always have up-to-date data
+  useEffect(() => {
+    const storedUser = getStoredUser();
+    if (!storedUser?.id) return;
+    base44.entities.AppUser.get(storedUser.id).then(freshUser => {
+      if (!freshUser) return;
+      sessionStorage.setItem("logipunch_user", JSON.stringify(freshUser));
+      setCurrentUser(freshUser);
+    }).catch(() => {});
+  }, []);
+
   const handleCompanySelect = (company) => {
     sessionStorage.setItem("logipunch_company", JSON.stringify(company));
     window.dispatchEvent(new Event("logipunch_company_change"));
