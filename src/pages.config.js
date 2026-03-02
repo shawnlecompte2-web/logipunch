@@ -55,6 +55,7 @@ import Settings from './pages/Settings';
 import TimeSheet from './pages/TimeSheet';
 import DailyReports from './pages/DailyReports';
 import CreateDailyReport from './pages/CreateDailyReport';
+import ReportCompilation from './pages/ReportCompilation';
 import __Layout from './Layout.jsx';
 
 
@@ -67,6 +68,7 @@ export const PAGES = {
     "TimeSheet": TimeSheet,
     "DailyReports": DailyReports,
     "CreateDailyReport": CreateDailyReport,
+    "ReportCompilation": ReportCompilation,
 }
 
 export const pagesConfig = {
