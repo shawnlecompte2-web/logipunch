@@ -84,9 +84,7 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
 
   const needsMachine = user.role === "Opérateur";
   const needsPlate = user.role === "Chauffeur";
-  const availableProjects = user.role === "Mécano"
-    ? projects.filter(p => p.name === "Mécanique" || p.project_number === "26-MEC")
-    : projects;
+  const availableProjects = projects;
 
   const canSubmit = selectedProject && (!needsMachine || machine) && (!needsPlate || plateNumber);
 
@@ -228,9 +226,7 @@ function ChangeProjectForm({ user, activeEntry, projects, onSuccess, onBack }) {
   const [machine, setMachine] = useState(activeEntry?.machine || "");
   const [loading, setLoading] = useState(false);
   const needsMachine = user.role === "Opérateur";
-  const availableProjects = user.role === "Mécano"
-    ? projects.filter(p => p.name === "Mécanique" || p.project_number === "26-MEC")
-    : projects.filter(p => p.id !== activeEntry?.project_id);
+  const availableProjects = projects.filter(p => p.id !== activeEntry?.project_id);
   const canSubmit = selectedProject && (!needsMachine || machine);
 
   const handleSubmit = async () => {
