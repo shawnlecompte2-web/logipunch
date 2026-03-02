@@ -170,10 +170,12 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
     setLoading(true);
     const finalLunch = lunch === "custom" ? parseInt(customLunch) || 0 : lunch;
     // Update DB first, then clear session, then call onSuccess
+    const autoApprove = Array.isArray(user.approved_by) && user.approved_by.includes("auto");
     await base44.entities.PunchEntry.update(activeEntry.id, {
       punch_out: punchOutTime.toISOString(), lunch_break: finalLunch,
       total_hours: parseFloat(Math.max(0, (totalMinutes - finalLunch) / 60).toFixed(2)),
-      status: "completed",
+      status: autoApprove ? "approved" : "completed",
+      ...(autoApprove ? { approved_by: "Automatique", approved_at: new Date().toISOString() } : {}),
     });
     sessionStorage.removeItem("logipunch_active_entry");
     setLoading(false);
