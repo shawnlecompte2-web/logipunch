@@ -468,11 +468,17 @@ function ApprovalsTab({ users, onRefresh }) {
   const toggleApprover = (workerId, approverId) => {
     setAssignments(a => {
       const current = a[workerId] || [];
+      // If selecting "auto", clear all others and set only auto
+      if (approverId === "auto") {
+        return { ...a, [workerId]: current.includes("auto") ? [] : ["auto"] };
+      }
+      // If selecting a real approver, remove "auto" first
+      const withoutAuto = current.filter(id => id !== "auto");
       return {
         ...a,
-        [workerId]: current.includes(approverId)
-          ? current.filter(id => id !== approverId)
-          : [...current, approverId],
+        [workerId]: withoutAuto.includes(approverId)
+          ? withoutAuto.filter(id => id !== approverId)
+          : [...withoutAuto, approverId],
       };
     });
   };
@@ -492,8 +498,9 @@ function ApprovalsTab({ users, onRefresh }) {
       <div className="space-y-3">
         {activeUsers.map(worker => {
           const selected = assignments[worker.id] || [];
+          const isAuto = selected.includes("auto");
           return (
-            <div key={worker.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+            <div key={worker.id} className={`bg-zinc-900 border rounded-xl p-4 ${isAuto ? "border-blue-700/40" : "border-zinc-800"}`}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-white font-semibold text-sm">{worker.full_name}</p>
@@ -505,7 +512,19 @@ function ApprovalsTab({ users, onRefresh }) {
                 <span className="text-zinc-600 text-xs flex-shrink-0">approuvé par</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {activeUsers.filter(u => u.id !== worker.id).map(approver => (
+                {/* Auto option */}
+                <button
+                  onClick={() => toggleApprover(worker.id, "auto")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                    isAuto
+                      ? "bg-blue-900/40 border-blue-700/60 text-blue-400"
+                      : "bg-zinc-800 border-zinc-700 text-zinc-500 hover:border-zinc-500"
+                  }`}
+                >
+                  ⚡ Automatique
+                </button>
+                {/* Real approvers (disabled if auto selected) */}
+                {!isAuto && activeUsers.filter(u => u.id !== worker.id).map(approver => (
                   <button
                     key={approver.id}
                     onClick={() => toggleApprover(worker.id, approver.id)}
