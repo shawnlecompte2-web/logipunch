@@ -116,6 +116,19 @@ export default function CreateDailyReportPage() {
                 </Select>
               </div>
 
+              {/* Report Date */}
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white">Date du rapport</label>
+                <input
+                  type="date"
+                  value={reportDate}
+                  onChange={(e) => setReportDate(e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-white"
+                />
+                <p className="text-xs text-zinc-500 mt-1">Vous pouvez remplir des rapports des jours précédents</p>
+              </div>
+
               {/* Machine */}
               <div>
                 <label className="block text-sm font-medium mb-2 text-white">Machine utilisée</label>
