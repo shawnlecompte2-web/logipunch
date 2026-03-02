@@ -519,22 +519,16 @@ Deno.serve(async (req) => {
         const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0].toUpperCase() : "";
         const fileName = `rapport_${weekStartStr}_${firstName}${lastInitial}.pdf`;
 
-        // Save to temp file for upload
-        const pdfPath = `/tmp/${fileName}`;
-        await Deno.writeFile(pdfPath, new Uint8Array(pdfBuf));
-        const pdfFile = await Deno.open(pdfPath);
-        const { file_url } = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfFile });
-        pdfFile.close();
+        // Convert to base64 for upload
+        const pdfBase64 = pdfToBase64(pdfBuf);
+        const { file_url } = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfBase64 });
         pdfLinks[user.id] = file_url;
       }
 
       // Generate XLSX
       const xlsxBuf = generateXLSX(groupName, groupUsers, groupEntries, weekStart, weekEnd);
-      const xlsxPath = `/tmp/${groupName}_${weekStartStr}.xlsx`;
-      await Deno.writeFile(xlsxPath, xlsxBuf);
-      const xlsxFile = await Deno.open(xlsxPath);
-      const { file_url: xlsxUrl } = await base44.asServiceRole.integrations.Core.UploadFile({ file: xlsxFile });
-      xlsxFile.close();
+      const xlsxBase64 = xlsxToBase64(xlsxBuf);
+      const { file_url: xlsxUrl } = await base44.asServiceRole.integrations.Core.UploadFile({ file: xlsxBase64 });
 
       // Send email to group recipient
       const emailHtml = buildEmailHtml(groupName, groupUsers, groupEntries, weekStart, weekEnd, pdfLinks, xlsxUrl);
