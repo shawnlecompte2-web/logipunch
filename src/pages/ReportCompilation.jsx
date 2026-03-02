@@ -188,13 +188,19 @@ export default function ReportCompilationPage() {
                                           </div>
 
                                           {workers.length > 0 && (
-                                            <div className="mb-3 p-2 bg-zinc-900/40 rounded border border-zinc-700/50">
-                                              <p className="text-xs text-zinc-400 mb-1">Employés ayant travaillé:</p>
-                                              <div className="flex flex-wrap gap-2">
-                                                {workers.map(w => (
-                                                  <span key={w.id} className="text-xs bg-blue-900/40 text-blue-300 px-2 py-1 rounded">{w.name}</span>
-                                                ))}
-                                              </div>
+                                            <div className="mb-3 p-3 bg-zinc-900/40 rounded border border-zinc-700/50 space-y-2">
+                                              <p className="text-xs text-zinc-400 font-semibold">Employés:</p>
+                                              {workers.map(w => (
+                                                <div key={w.id} className="text-xs bg-blue-900/20 text-blue-300 px-3 py-2 rounded border border-blue-700/30">
+                                                  <p className="font-semibold mb-1">{w.name}</p>
+                                                  <div className="grid grid-cols-2 gap-2 text-zinc-300">
+                                                    {w.punchIn && <p>Arrivée: <span className="text-blue-300">{new Date(w.punchIn).toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })}</span></p>}
+                                                    {w.punchOut && <p>Départ: <span className="text-blue-300">{new Date(w.punchOut).toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })}</span></p>}
+                                                    {w.lunchBreak > 0 && <p>Dîner: <span className="text-blue-300">{w.lunchBreak} min</span></p>}
+                                                    <p>Total: <span className="text-green-400 font-semibold">{w.totalHours}h</span></p>
+                                                  </div>
+                                                </div>
+                                              ))}
                                             </div>
                                           )}
 
