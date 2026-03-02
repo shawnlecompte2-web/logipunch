@@ -111,7 +111,7 @@ export default function ReportCompilationPage() {
 
   const downloadPDF = async (type, projectId, projectName, date, weekStart, dayReports, workers) => {
     try {
-      const totalHours = getTotalHours(projectId, weekStart, date);
+      const totalHours = type === 'day' ? getTotalHours(projectId, weekStart, date) : workers.reduce((sum, w) => sum + parseFloat(w.totalHours), 0).toFixed(2);
       const response = await base44.functions.invoke('generateReportPDF', {
         type,
         projectId,
@@ -123,7 +123,8 @@ export default function ReportCompilationPage() {
         totalHours
       });
 
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const arrayBuffer = await response.data.arrayBuffer();
+      const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -136,6 +137,16 @@ export default function ReportCompilationPage() {
       a.remove();
     } catch (error) {
       console.error('Error downloading PDF:', error);
+      alert('Erreur lors du téléchargement du PDF');
+    }
+  };
+
+  const deleteReport = async (reportId) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce rapport ?')) return;
+    try {
+      await base44.entities.DailyReport.delete(reportId);
+    } catch (error) {
+      alert('Erreur lors de la suppression du rapport');
     }
   };
 
