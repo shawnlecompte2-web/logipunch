@@ -3,7 +3,6 @@ import { base44 } from "@/api/base44Client";
 import { Plus, Edit2, Trash2, X, Users, FolderOpen, ChevronDown, AlertTriangle, Building2, ShieldCheck, Tag, Check } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import CompanySettingsTab from "@/components/company/CompanySettingsTab";
-import RoleConfigTab from "@/components/RoleConfigTab";
 
 function getStoredCompany() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
@@ -77,9 +76,6 @@ export default function Settings() {
         <button onClick={() => setTab("roles")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "roles" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"}`}>
           <Tag size={15} /> Rôles
         </button>
-        <button onClick={() => setTab("roleConfig")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "roleConfig" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"}`}>
-          <Tag size={15} /> Config rôles
-        </button>
         <button onClick={() => setTab("groups")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "groups" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"}`}>
           <Users size={15} /> Groupes
         </button>
@@ -99,9 +95,6 @@ export default function Settings() {
       )}
       {tab === "roles" && (
         <RolesTab users={users} companyId={company?.id} onRefresh={loadAll} />
-      )}
-      {tab === "roleConfig" && (
-        <RoleConfigTab users={users} companyId={company?.id} />
       )}
       {tab === "groups" && (
         <GroupsTab users={users} companyId={company?.id} onRefresh={loadAll} />

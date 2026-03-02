@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Coffee } from "lucide-react";
 import { format, differenceInMinutes } from "date-fns";
@@ -9,41 +9,6 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const [lunch, setLunch] = useState(null);
   const [customLunch, setCustomLunch] = useState("");
   const [loading, setLoading] = useState(false);
-  const [roleConfig, setRoleConfig] = useState(null);
-  const [customFields, setCustomFields] = useState({});
-
-  useEffect(() => {
-    // Load role config for this user
-    const loadRoleConfig = async () => {
-      if (!user?.role) return;
-      try {
-        // Try with company_id first if available
-        let filter = { role_name: user.role };
-        if (user.company_id) {
-          filter.company_id = user.company_id;
-        }
-        let configs = await base44.entities.RoleConfig.filter(filter);
-        console.log("RoleConfig filter:", filter, "Results:", configs);
-        
-        // If not found and we had company_id, try without it
-        if ((!configs || configs.length === 0) && user.company_id) {
-          console.log("No config found with company_id, trying without...");
-          configs = await base44.entities.RoleConfig.filter({ role_name: user.role });
-          console.log("RoleConfig filter (no company):", { role_name: user.role }, "Results:", configs);
-        }
-        
-        if (configs && configs.length > 0) {
-          console.log("Loaded config:", configs[0]);
-          setRoleConfig(configs[0]);
-        } else {
-          console.log("No RoleConfig found for role:", user.role);
-        }
-      } catch (err) {
-        console.error("Error loading RoleConfig:", err);
-      }
-    };
-    loadRoleConfig();
-  }, [user]);
 
   const now = new Date();
   const punchInTime = new Date(activeEntry.punch_in);
@@ -52,10 +17,7 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const workedMinutes = totalMinutes - lunchMinutes;
   const workedHours = (workedMinutes / 60).toFixed(2);
 
-  const allFieldsValid = !roleConfig || !roleConfig.fields?.length || 
-    roleConfig.fields.every(f => !f.required || customFields[f.field_id]);
-
-  const canSubmit = lunch !== null && allFieldsValid;
+  const canSubmit = lunch !== null;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -63,23 +25,12 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
     const finalLunch = lunch === "custom" ? parseInt(customLunch) || 0 : lunch;
     const totalHours = Math.max(0, (totalMinutes - finalLunch) / 60);
 
-    const updateData = {
+    await base44.entities.PunchEntry.update(activeEntry.id, {
       punch_out: now.toISOString(),
       lunch_break: finalLunch,
       total_hours: parseFloat(totalHours.toFixed(2)),
       status: "completed",
-    };
-
-    // Add custom fields if they exist
-    if (roleConfig?.fields?.length > 0) {
-      roleConfig.fields.forEach(field => {
-        if (customFields[field.field_id] !== undefined) {
-          updateData[field.field_id] = customFields[field.field_id];
-        }
-      });
-    }
-
-    await base44.entities.PunchEntry.update(activeEntry.id, updateData);
+    });
     onSuccess();
     setLoading(false);
   };
@@ -155,47 +106,6 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
           />
         )}
       </div>
-
-      {/* Custom Role Fields */}
-      {roleConfig?.fields?.length > 0 && (
-        <div className="mb-6">
-          {roleConfig.fields.map(field => (
-            <div key={field.field_id} className="mb-4">
-              <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2.5 block">
-                {field.label} {field.required && "*"}
-              </label>
-              {field.field_type === "select" && (
-                <select
-                  value={customFields[field.field_id] || ""}
-                  onChange={e => setCustomFields(f => ({ ...f, [field.field_id]: e.target.value }))}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-600"
-                >
-                  <option value="">Sélectionner...</option>
-                  {field.options?.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-              )}
-              {field.field_type === "text" && (
-                <input
-                  type="text"
-                  value={customFields[field.field_id] || ""}
-                  onChange={e => setCustomFields(f => ({ ...f, [field.field_id]: e.target.value }))}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-green-600"
-                />
-              )}
-              {field.field_type === "number" && (
-                <input
-                  type="number"
-                  value={customFields[field.field_id] || ""}
-                  onChange={e => setCustomFields(f => ({ ...f, [field.field_id]: e.target.value }))}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-green-600"
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Total Preview */}
       {canSubmit && (

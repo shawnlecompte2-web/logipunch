@@ -7,13 +7,19 @@ const AUTO_APPROVE_ROLES = ["Administrateur", "Surintendant", "Chargé de projet
 
 export default function PunchInForm({ user, projects, onSuccess, onBack }) {
   const [selectedProject, setSelectedProject] = useState("");
+  const [machine, setMachine] = useState("");
+  const [plateNumber, setPlateNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const needsMachine = user.role === "Opérateur";
+  const needsPlate = user.role === "Chauffeur";
   const needsProject = ["Manœuvre", "Opérateur", "Estimateur", "Chauffeur"].includes(user.role);
 
   const availableProjects = projects;
 
-  const canSubmit = selectedProject;
+  const canSubmit = selectedProject &&
+    (!needsMachine || machine) &&
+    (!needsPlate || plateNumber);
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -35,6 +41,8 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
       role: user.role,
       lunch_break: 0,
     };
+    if (needsMachine) entry.machine = machine;
+    if (needsPlate) entry.plate_number = plateNumber;
 
     const created = await base44.entities.PunchEntry.create(entry);
     onSuccess(created);
@@ -79,9 +87,35 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
             </button>
           ))}
         </div>
-        </div>
+      </div>
 
-        <button
+      {/* Machine (Opérateur) */}
+      {needsMachine && (
+        <div className="mb-4">
+          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Machine utilisée *</label>
+          <input
+            value={machine}
+            onChange={e => setMachine(e.target.value)}
+            placeholder="Ex: Excavatrice 320, Compacteur..."
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm"
+          />
+        </div>
+      )}
+
+      {/* Plate Number (Chauffeur) */}
+      {needsPlate && (
+        <div className="mb-4">
+          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Numéro de plaque *</label>
+          <input
+            value={plateNumber}
+            onChange={e => setPlateNumber(e.target.value.toUpperCase())}
+            placeholder="Ex: ABC-1234"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm font-mono"
+          />
+        </div>
+      )}
+
+      <button
         onClick={handleSubmit}
         disabled={!canSubmit || loading}
         className={`mt-4 w-full h-14 rounded-2xl font-bold text-base transition-all flex items-center justify-between px-6 ${
