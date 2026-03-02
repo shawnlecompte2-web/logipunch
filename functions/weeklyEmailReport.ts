@@ -529,10 +529,17 @@ Deno.serve(async (req) => {
       const xlsxBlob = new Blob([xlsxBuf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       const { file_url: xlsxUrl } = await base44.asServiceRole.integrations.Core.UploadFile({ file: xlsxBlob });
 
-      // Send email
+      // Send email to group recipient
       const emailHtml = buildEmailHtml(groupName, groupUsers, groupEntries, weekStart, weekEnd, pdfLinks, xlsxUrl);
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: recipientEmail,
+        subject: `TapIN · Rapport ${groupName} — Semaine du ${weekStartStr}`,
+        body: emailHtml,
+      });
+
+      // Also send to Shawn (receives all groups)
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: CC_ALL_EMAIL,
         subject: `TapIN · Rapport ${groupName} — Semaine du ${weekStartStr}`,
         body: emailHtml,
       });
