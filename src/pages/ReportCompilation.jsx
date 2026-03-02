@@ -123,7 +123,7 @@ export default function ReportCompilationPage() {
         totalHours
       });
 
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const blob = new Blob([new Uint8Array(response.data)], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
