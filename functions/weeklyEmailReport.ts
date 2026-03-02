@@ -519,17 +519,15 @@ Deno.serve(async (req) => {
         const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0].toUpperCase() : "";
         const fileName = `rapport_${weekStartStr}_${firstName}${lastInitial}.pdf`;
 
-        const formData = new FormData();
-        formData.append("file", new Blob([pdfBuf], { type: "application/pdf" }), fileName);
-        const { file_url } = await base44.asServiceRole.integrations.Core.UploadFile(formData);
+        const pdfBlob = new Blob([pdfBuf], { type: "application/pdf" });
+        const { file_url } = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfBlob });
         pdfLinks[user.id] = file_url;
       }
 
       // Generate XLSX
       const xlsxBuf = generateXLSX(groupName, groupUsers, groupEntries, weekStart, weekEnd);
-      const xlsxFormData = new FormData();
-      xlsxFormData.append("file", new Blob([xlsxBuf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `${groupName}_${weekStartStr}.xlsx`);
-      const { file_url: xlsxUrl } = await base44.asServiceRole.integrations.Core.UploadFile(xlsxFormData);
+      const xlsxBlob = new Blob([xlsxBuf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const { file_url: xlsxUrl } = await base44.asServiceRole.integrations.Core.UploadFile({ file: xlsxBlob });
 
       // Send email to group recipient
       const emailHtml = buildEmailHtml(groupName, groupUsers, groupEntries, weekStart, weekEnd, pdfLinks, xlsxUrl);
