@@ -15,10 +15,7 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
   const needsPlate = user.role === "Chauffeur";
   const needsProject = ["Manœuvre", "Opérateur", "Estimateur", "Chauffeur"].includes(user.role);
 
-  // Mécano only gets Mécanique project
-  const availableProjects = user.role === "Mécano"
-    ? projects.filter(p => p.name === "Mécanique" || p.project_number === "26-MEC")
-    : projects;
+  const availableProjects = projects;
 
   const canSubmit = selectedProject &&
     (!needsMachine || machine) &&
