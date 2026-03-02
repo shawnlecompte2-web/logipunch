@@ -52,8 +52,7 @@ export default function CreateDailyReportPage() {
     setLoading(true);
     try {
       const project = projects.find(p => p.id === selectedProject);
-      const today = new Date().toISOString().split("T")[0];
-      const weekStart = new Date();
+      const weekStart = new Date(reportDate + "T12:00:00");
       const day = weekStart.getDay();
       weekStart.setDate(weekStart.getDate() - (day === 0 ? 6 : day - 1));
       const weekStartStr = weekStart.toISOString().split("T")[0];
@@ -63,7 +62,7 @@ export default function CreateDailyReportPage() {
         user_name: currentUser.full_name,
         project_id: selectedProject,
         project_name: project?.name,
-        report_date: today,
+        report_date: reportDate,
         week_start: weekStartStr,
         machine: formData.machine,
         truck_count: formData.truck_count ? parseInt(formData.truck_count) : null,
