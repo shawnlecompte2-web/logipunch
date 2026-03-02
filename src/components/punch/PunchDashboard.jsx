@@ -63,9 +63,9 @@ export default function PunchDashboard({ user, activeEntry, setActiveEntry, onLo
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             <div className="w-7 h-7 rounded-lg bg-green-500 flex items-center justify-center">
-              <span className="text-white font-black text-xs">L</span>
+              <span className="text-white font-black text-xs">{(company?.name || "T")[0].toUpperCase()}</span>
             </div>
-            <span className="text-white font-black text-lg tracking-tight">LOGIPUNCH</span>
+            <span className="text-white font-black text-lg tracking-tight">{company?.name || "TapIN"}</span>
           </div>
         </div>
         <button onClick={onLogout} className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 text-sm transition-colors">
