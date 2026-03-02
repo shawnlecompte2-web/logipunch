@@ -230,6 +230,7 @@ function UsersTab({ users, projects, companyId, onRefresh }) {
 }
 
 const EXTRA_PAGES = [
+  { key: "DailyReports", label: "Rapports" },
   { key: "Approvals", label: "Approbation" },
   { key: "TimeSheet", label: "Heures" },
   { key: "ActiveUsers", label: "Actifs" },
