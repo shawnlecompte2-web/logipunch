@@ -13,19 +13,13 @@ const CC_ALL_EMAIL = "shawn@groupeddl.ca";
 
 function getPreviousWeekRange() {
   const now = new Date();
-  // Sunday = 0, so go back to last Sunday midnight
-  const dayOfWeek = now.getDay(); // 0=Sun
-  const lastSunday = new Date(now);
-  lastSunday.setDate(now.getDate() - 7 - dayOfWeek + (dayOfWeek === 0 ? 0 : 0));
-  // Actually: last week = the full week (Sun-Sat) that just ended
-  // "last Sunday" = today minus (dayOfWeek + 7) if we're on Sunday, or minus (dayOfWeek + 7) days
-  // Since this runs on Sunday at 00:01, "last week" = yesterday (Sat) back to last Sunday
+  const dayOfWeek = now.getDay();
   const weekEnd = new Date(now);
-  weekEnd.setDate(now.getDate() - 1); // yesterday = Saturday
+  weekEnd.setDate(now.getDate() - 1);
   weekEnd.setHours(23, 59, 59, 999);
 
   const weekStart = new Date(weekEnd);
-  weekStart.setDate(weekEnd.getDate() - 6); // 6 days back = last Sunday
+  weekStart.setDate(weekEnd.getDate() - 6);
   weekStart.setHours(0, 0, 0, 0);
 
   const toDateStr = (d) => d.toISOString().split("T")[0];
@@ -375,10 +369,6 @@ async function generatePDF(user, entries, weekStart, weekEnd, companyName, compa
   return doc.output("arraybuffer");
 }
 
-function arrayBufferToFile(buffer, filename, mimeType) {
-  return new File([new Uint8Array(buffer)], filename, { type: mimeType });
-}
-
 function buildEmailHtml(groupName, users, entries, weekStart, weekEnd, pdfLinks, xlsxLink) {
   const weekLabel = `${frDate(weekStart.toISOString().split("T")[0])} au ${frDate(weekEnd.toISOString().split("T")[0])}`;
   const usersWithHours = users.filter(u => entries.some(e => e.user_id === u.id));
@@ -506,7 +496,7 @@ Deno.serve(async (req) => {
         const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0].toUpperCase() : "";
         const fileName = `rapport_${weekStartStr}_${firstName}${lastInitial}.pdf`;
 
-        const pdfFile = arrayBufferToFile(pdfBuf, fileName, "application/pdf");
+        const pdfFile = new File([new Uint8Array(pdfBuf)], fileName, { type: "application/pdf" });
         const { file_url } = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfFile });
         pdfLinks[user.id] = file_url;
       }
@@ -514,7 +504,7 @@ Deno.serve(async (req) => {
       // Generate XLSX
       const xlsxBuf = generateXLSX(groupName, groupUsers, groupEntries, weekStart, weekEnd);
       const xlsxFileName = `${groupName.replace(/\s+/g, "_")}_${weekStartStr}.xlsx`;
-      const xlsxFile = arrayBufferToFile(xlsxBuf, xlsxFileName, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      const xlsxFile = new File([new Uint8Array(xlsxBuf)], xlsxFileName, { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       const { file_url: xlsxUrl } = await base44.asServiceRole.integrations.Core.UploadFile({ file: xlsxFile });
 
       // Send email to group recipient
