@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Plus, Edit2, Trash2, X, Users, FolderOpen, ChevronDown, AlertTriangle, Building2, ShieldCheck, Tag, Check } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import CompanySettingsTab from "@/components/company/CompanySettingsTab";
+import RoleConfigTab from "@/components/RoleConfigTab";
 
 function getStoredCompany() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
