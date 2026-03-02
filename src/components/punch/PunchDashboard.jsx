@@ -9,7 +9,12 @@ import ChangeProjectForm from "./ChangeProjectForm";
 
 const AUTO_APPROVE_ROLES = ["Administrateur", "Surintendant", "Chargé de projet"];
 
+function getStoredCompany() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
+}
+
 export default function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
+  const company = getStoredCompany();
   const [view, setView] = useState("main"); // main | punchin | punchout | changeproject
   const [projects, setProjects] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
