@@ -292,6 +292,7 @@ function ChangeProjectForm({ user, activeEntry, projects, onSuccess, onBack }) {
 
 // ─── PUNCH DASHBOARD ─────────────────────────────────────────────────────────
 function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
+  const company = getStoredCompany();
   const [view, setView] = useState("main");
   const [direction, setDirection] = useState(1);
   const [projects, setProjects] = useState([]);
