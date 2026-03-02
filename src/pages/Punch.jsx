@@ -307,9 +307,17 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
     const company = getStoredCompany();
     const filter = { is_active: true, ...(company?.id ? { company_id: company.id } : {}) };
     base44.entities.Project.filter(filter).then(all => {
-      if (user.assigned_projects && user.assigned_projects.length > 0) {
-        setProjects(all.filter(p => user.assigned_projects.includes(p.id)));
-      } else setProjects(all);
+      const hasAssignedProjects = user.assigned_projects && user.assigned_projects.length > 0;
+      const hasAssignedUsers = all.some(p => (p.assigned_users || []).includes(user.id));
+
+      if (hasAssignedProjects || hasAssignedUsers) {
+        setProjects(all.filter(p =>
+          (user.assigned_projects || []).includes(p.id) ||
+          (p.assigned_users || []).includes(user.id)
+        ));
+      } else {
+        setProjects(all);
+      }
     });
   }, [user]);
 
