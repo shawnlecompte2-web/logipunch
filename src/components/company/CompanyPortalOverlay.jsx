@@ -69,6 +69,7 @@ export default function CompanyPortalOverlay({ onSuccess }) {
       setLoading(false);
       return;
     }
+    localStorage.setItem(SAVED_CODE_KEY, joinCode.toUpperCase());
     onSuccess(companies[0]);
     setLoading(false);
   };
