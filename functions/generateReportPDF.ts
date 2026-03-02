@@ -1,5 +1,25 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import PDFDocument from 'npm:pdfkit@0.14.0';
+import { jsPDF } from 'npm:jspdf@4.0.0';
+
+function toHM(hours) {
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  return `${h}h${m.toString().padStart(2, '0')}`;
+}
+
+function formatDate(isoStr) {
+  const date = new Date(isoStr);
+  const days = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}`;
+}
+
+function formatTime(isoStr) {
+  const date = new Date(isoStr);
+  const h = date.getHours().toString().padStart(2, '0');
+  const m = date.getMinutes().toString().padStart(2, '0');
+  return `${h}:${m}`;
+}
 
 Deno.serve(async (req) => {
   try {
@@ -13,154 +33,228 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { type, projectId, projectName, date, weekStart, reports, workers, totalHours } = body;
 
-    const doc = new PDFDocument({ bufferPages: true, margin: 40 });
-    const chunks = [];
+    const doc = new jsPDF();
+    const pageW = 210;
+    const margin = 14;
+    const colW = pageW - margin * 2;
 
-    doc.on('data', chunk => chunks.push(chunk));
-    const docFinish = new Promise(resolve => doc.on('end', resolve));
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, pageW, 297, "F");
 
-    const margin = 40;
-    const pageWidth = doc.page.width;
+    let y = 14;
 
     // Header
-    doc.fontSize(24).fillColor('#22c55e').font('Helvetica-Bold').text(type === 'day' ? 'Rapport Journalier' : 'Rapport Hebdomadaire');
-    doc.moveDown(0.5);
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 30, 30);
+    doc.text(projectName.toUpperCase(), margin, y + 12);
 
-    // Info box
-    doc.fontSize(10).fillColor('#000000').font('Helvetica');
-    doc.rect(margin, doc.y, pageWidth - 2 * margin, 60).stroke('#22c55e');
-    
-    const infoY = doc.y + 8;
-    doc.fontSize(10).text(`Projet: ${projectName}`, margin + 10, infoY);
-    
+    doc.setFillColor(20, 20, 20);
+    doc.roundedRect(pageW - margin - 52, y + 2, 52, 12, 1, 1, "F");
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text(type === 'day' ? 'RAPPORT JOUR' : 'RAPPORT SEMAINE', pageW - margin - 49, y + 10);
+
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(140, 140, 140);
+    doc.text("TRAVAUX ET HEURES  ·  SITE", margin, y + 20);
+    doc.setFontSize(7);
+    doc.text("DOCUMENT GÉNÉRÉ ÉLECTRONIQUEMENT", pageW - margin - 51, y + 20);
+
+    y += 26;
+    doc.setDrawColor(30, 30, 30);
+    doc.setLineWidth(0.8);
+    doc.line(margin, y, pageW - margin, y);
+    y += 6;
+
+    // Info card
+    const cardH = 28;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.rect(margin, y, colW, cardH, "S");
+    doc.line(margin + colW / 2, y, margin + colW / 2, y + cardH);
+
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(140, 140, 140);
+    doc.text("PROJET", margin + 4, y + 8);
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(20, 20, 20);
+    doc.text(projectName.substring(0, 30), margin + 4, y + 18);
+
+    const midX = margin + colW / 2 + 4;
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(140, 140, 140);
+    doc.text("TOTAL HEURES", midX, y + 8);
+
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 200, 80);
+    doc.text(toHM(parseFloat(totalHours)), midX, y + 19);
+
     if (type === 'day') {
       const dateObj = new Date(date + 'T12:00:00');
-      const formattedDate = dateObj.toLocaleDateString('fr-CA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      doc.text(`Date: ${formattedDate}`, margin + 10);
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(140, 140, 140);
+      doc.text(`DATE : ${formatDate(date + 'T12:00:00').toUpperCase()}`, midX, y + cardH - 4);
     } else {
       const startDate = new Date(weekStart + 'T12:00:00');
       const endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + 6);
-      const dateRange = `${startDate.toLocaleDateString('fr-CA', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('fr-CA', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-      doc.text(`Semaine du: ${dateRange}`, margin + 10);
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(140, 140, 140);
+      doc.text(`SEMAINE : ${startDate.toLocaleDateString('fr-CA', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('fr-CA', { month: 'short', day: 'numeric' })}`, midX, y + cardH - 4);
     }
-    doc.text(`Généré le: ${new Date().toLocaleDateString('fr-CA')}`, margin + 10);
-    
-    doc.y = infoY + 65;
-    doc.moveDown(0.5);
 
-    // Total hours
-    doc.fontSize(14).fillColor('#22c55e').font('Helvetica-Bold').text(`Heures totales: ${parseFloat(totalHours).toFixed(2)}h`);
-    doc.moveDown(1);
+    y += cardH + 8;
 
-    // Workers section
+    // Workers table
     if (workers && workers.length > 0) {
-      doc.fontSize(12).fillColor('#22c55e').font('Helvetica-Bold').text('Employés');
-      doc.moveDown(0.5);
+      doc.setFillColor(240, 242, 245);
+      doc.rect(margin, y, colW, 9, "F");
 
-      doc.fontSize(9).fillColor('#000000').font('Helvetica');
-      
-      const tableTop = doc.y;
-      const colWidths = [(pageWidth - 2 * margin) / 5, (pageWidth - 2 * margin) / 5, (pageWidth - 2 * margin) / 5, (pageWidth - 2 * margin) / 5, (pageWidth - 2 * margin) / 5];
-      const headers = ['Nom', 'Arrivée', 'Départ', 'Dîner', 'Total'];
-      
-      // Draw headers
-      doc.rect(margin, tableTop, pageWidth - 2 * margin, 20).fillColor('#22c55e').stroke('#22c55e');
-      doc.fillColor('#ffffff').fontSize(9).font('Helvetica-Bold');
-      let xPos = margin + 5;
-      headers.forEach((header, i) => {
-        doc.text(header, xPos, tableTop + 5, { width: colWidths[i] - 10, align: 'center' });
-        xPos += colWidths[i];
+      const cName = margin + 2;
+      const cIn = margin + 50;
+      const cOut = margin + 80;
+      const cLunch = margin + 108;
+      const cTotal = pageW - margin - 2;
+
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(80, 80, 80);
+      doc.text("EMPLOYÉ", cName, y + 6);
+      doc.text("ARRIVÉE", cIn, y + 6);
+      doc.text("DÉPART", cOut, y + 6);
+      doc.text("DÎNER", cLunch, y + 6);
+      doc.text("TOTAL", cTotal, y + 6, { align: "right" });
+      y += 12;
+
+      workers.forEach((worker, idx) => {
+        if (y > 255) {
+          doc.addPage();
+          doc.setFillColor(255, 255, 255);
+          doc.rect(0, 0, pageW, 297, "F");
+          y = 14;
+        }
+
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.2);
+        doc.line(margin, y + 7, pageW - margin, y + 7);
+
+        doc.setFontSize(8.5);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(30, 30, 30);
+        doc.text(worker.name.substring(0, 28), cName, y + 5);
+
+        doc.setFontSize(8);
+        doc.setTextColor(60, 60, 60);
+        doc.text(worker.punchIn ? formatTime(worker.punchIn) : "-", cIn, y + 5);
+        doc.text(worker.punchOut ? formatTime(worker.punchOut) : "-", cOut, y + 5);
+
+        if (worker.lunchBreak > 0) {
+          doc.setTextColor(220, 130, 30);
+          doc.text(`${worker.lunchBreak}m`, cLunch, y + 5);
+        } else {
+          doc.setTextColor(180, 180, 180);
+          doc.text("--", cLunch, y + 5);
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(100, 200, 80);
+        doc.text(toHM(parseFloat(worker.totalHours)), cTotal, y + 5, { align: "right" });
+        y += 8;
       });
 
-      // Draw rows
-      doc.fillColor('#000000').font('Helvetica').fontSize(8);
-      let rowY = tableTop + 25;
-      const rowHeight = 18;
-      let rowIndex = 0;
+      y += 4;
+    }
 
-      workers.forEach(worker => {
-        if (rowY + rowHeight > doc.page.height - 40) {
+    // Details box
+    if (reports && reports.length > 0) {
+      const boxH = 20;
+      if (y + boxH > 260) { doc.addPage(); doc.setFillColor(255,255,255); doc.rect(0,0,pageW,297,"F"); y = 14; }
+      
+      doc.setFillColor(20, 25, 40);
+      doc.roundedRect(margin, y, colW, boxH, 2, 2, "F");
+
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(100, 200, 80);
+      doc.text(`${reports.length} RAPPORT(S) DE TRAVAUX`, margin + 6, y + 12);
+
+      y += boxH + 6;
+
+      // List reports
+      reports.forEach((report, idx) => {
+        if (y > 260) {
           doc.addPage();
-          rowY = margin;
+          doc.setFillColor(255, 255, 255);
+          doc.rect(0, 0, pageW, 297, "F");
+          y = 14;
         }
 
-        const rowData = [
-          worker.name,
-          worker.punchIn ? new Date(worker.punchIn).toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' }) : '-',
-          worker.punchOut ? new Date(worker.punchOut).toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' }) : '-',
-          worker.lunchBreak > 0 ? `${worker.lunchBreak} min` : '-',
-          `${parseFloat(worker.totalHours).toFixed(2)}h`
-        ];
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(30, 30, 30);
+        doc.text(`${idx + 1}. ${report.user_name}`, margin, y);
+        y += 4;
 
-        // Background color for alternating rows
-        if (rowIndex % 2 === 1) {
-          doc.rect(margin, rowY - 8, pageWidth - 2 * margin, rowHeight).fill('#f5f5f5');
-          doc.fillColor('#000000');
-        } else {
-          doc.fillColor('#000000');
-        }
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(60, 60, 60);
 
-        // Draw border
-        doc.rect(margin, rowY - 8, pageWidth - 2 * margin, rowHeight).stroke('#c8c8c8');
+        if (report.machine) doc.text(`Machine: ${report.machine}`, margin + 4, y), (y += 3);
+        if (report.truck_count) doc.text(`Camions: ${report.truck_count}`, margin + 4, y), (y += 3);
+        if (report.subcontractor) doc.text(`Sous-traitant: ${report.subcontractor}`, margin + 4, y), (y += 3);
 
-        xPos = margin + 5;
-        rowData.forEach((cell, i) => {
-          const isBold = i === 4;
-          if (isBold) {
-            doc.font('Helvetica-Bold').fillColor('#22c55e');
-          } else {
-            doc.font('Helvetica').fillColor('#000000');
-          }
-          doc.fontSize(8).text(cell, xPos, rowY - 3, { width: colWidths[i] - 10, align: i === 0 ? 'left' : 'center' });
-          xPos += colWidths[i];
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(30, 30, 30);
+        doc.text("Travaux:", margin + 4, y);
+        y += 3;
+
+        const lines = doc.splitTextToSize(report.work_description, colW - 8);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(80, 80, 80);
+        lines.forEach(line => {
+          if (y > 270) { doc.addPage(); doc.setFillColor(255,255,255); doc.rect(0,0,pageW,297,"F"); y = 14; }
+          doc.text(line, margin + 4, y);
+          y += 3;
         });
 
-        rowY += rowHeight;
-        rowIndex++;
-      });
-
-      doc.moveDown(2);
-    }
-
-    // Reports details
-    if (reports && reports.length > 0) {
-      if (doc.y + 40 > doc.page.height - 40) {
-        doc.addPage();
-      }
-
-      doc.fontSize(12).fillColor('#22c55e').font('Helvetica-Bold').text('Détails des travaux');
-      doc.moveDown(0.5);
-
-      reports.forEach((report, idx) => {
-        if (doc.y + 50 > doc.page.height - 40) {
-          doc.addPage();
-        }
-
-        doc.fontSize(10).fillColor('#000000').font('Helvetica-Bold').text(`Rapport ${idx + 1}`);
-        doc.fontSize(9).font('Helvetica').fillColor('#505050');
-        
-        doc.text(`Employé: ${report.user_name}`);
-        if (report.machine) doc.text(`Machine: ${report.machine}`);
-        if (report.truck_count) doc.text(`Camions: ${report.truck_count}`);
-        if (report.subcontractor) doc.text(`Sous-traitant: ${report.subcontractor}`);
-        
-        doc.fillColor('#000000').font('Helvetica-Bold').text('Travaux effectués:');
-        doc.font('Helvetica').fillColor('#505050').text(report.work_description, { width: pageWidth - 2 * margin - 20 });
-        
         if (report.other_notes) {
-          doc.fillColor('#000000').font('Helvetica-Bold').text('Notes:');
-          doc.font('Helvetica').fillColor('#505050').text(report.other_notes, { width: pageWidth - 2 * margin - 20 });
+          if (y > 270) { doc.addPage(); doc.setFillColor(255,255,255); doc.rect(0,0,pageW,297,"F"); y = 14; }
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(30, 30, 30);
+          doc.text("Notes:", margin + 4, y);
+          y += 3;
+          const noteLines = doc.splitTextToSize(report.other_notes, colW - 8);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(80, 80, 80);
+          noteLines.forEach(line => {
+            if (y > 270) { doc.addPage(); doc.setFillColor(255,255,255); doc.rect(0,0,pageW,297,"F"); y = 14; }
+            doc.text(line, margin + 4, y);
+            y += 3;
+          });
         }
 
-        doc.moveDown(0.5);
+        y += 2;
       });
     }
 
-    doc.end();
-    await docFinish;
+    // Footer
+    doc.setFontSize(7);
+    doc.setTextColor(180, 180, 180);
+    const now = new Date();
+    doc.text(`Généré par TapIN · ${now.toLocaleDateString("fr-CA")} à ${now.toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" })}`, pageW / 2, 290, { align: "center" });
 
-    const pdfBuffer = new Uint8Array(chunks.reduce((acc, chunk) => [...acc, ...chunk], []));
+    const pdfBuf = doc.output("arraybuffer");
+    const pdfBuffer = new Uint8Array(pdfBuf);
     const filename = type === 'day' 
       ? `rapport_${new Date(date + 'T12:00:00').toLocaleDateString('fr-CA')}.pdf`
       : `rapport_semaine_${weekStart}.pdf`;
