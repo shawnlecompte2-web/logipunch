@@ -194,8 +194,8 @@ function UsersTab({ users, projects, companyId, onRefresh }) {
             return acc;
           }, {})
         ).sort(([a], [b]) => a.localeCompare(b)).map(([role, roleUsers]) => (
-          <div key={role}>
-            <p className="text-zinc-500 text-xs uppercase tracking-widest font-semibold mb-2 mt-4 first:mt-0">{role} <span className="text-zinc-700">({roleUsers.length})</span></p>
+          <div key={role} className="space-y-2">
+            <p className="text-zinc-500 text-xs uppercase tracking-widest font-semibold mb-2 mt-4">{role} <span className="text-zinc-700">({roleUsers.length})</span></p>
             {roleUsers.map(user => (
               <div key={user.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
