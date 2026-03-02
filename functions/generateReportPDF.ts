@@ -160,7 +160,7 @@ Deno.serve(async (req) => {
     doc.end();
     await docFinish;
 
-    const pdfBuffer = Buffer.concat(chunks);
+    const pdfBuffer = new Uint8Array(chunks.reduce((acc, chunk) => [...acc, ...chunk], []));
     const filename = type === 'day' 
       ? `rapport_${new Date(date + 'T12:00:00').toLocaleDateString('fr-CA')}.pdf`
       : `rapport_semaine_${weekStart}.pdf`;
