@@ -52,6 +52,7 @@ import MyHours from './pages/MyHours';
 import Punch from './pages/Punch';
 import Settings from './pages/Settings';
 import TimeSheet from './pages/TimeSheet';
+import ActiveUsers from './pages/ActiveUsers';
 import __Layout from './Layout.jsx';
 
 
@@ -61,6 +62,7 @@ export const PAGES = {
     "Punch": Punch,
     "Settings": Settings,
     "TimeSheet": TimeSheet,
+    "ActiveUsers": ActiveUsers,
 }
 
 export const pagesConfig = {
