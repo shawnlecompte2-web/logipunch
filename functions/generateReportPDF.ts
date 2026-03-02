@@ -200,24 +200,27 @@ Deno.serve(async (req) => {
           y = 14;
         }
 
-        doc.setFontSize(7.5);
+        // Employee name - BIGGER
+        doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(30, 30, 30);
         doc.text(`${idx + 1}. ${report.user_name}`, margin, y);
-        y += 4;
+        y += 6;
 
-        doc.setFontSize(7);
+        // Details - LARGER
+        doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(60, 60, 60);
 
-        if (report.machine) doc.text(`Machine: ${report.machine}`, margin + 4, y), (y += 3);
-        if (report.truck_count) doc.text(`Camions: ${report.truck_count}`, margin + 4, y), (y += 3);
-        if (report.subcontractor) doc.text(`Sous-traitant: ${report.subcontractor}`, margin + 4, y), (y += 3);
+        if (report.machine) doc.text(`Machine: ${report.machine}`, margin + 4, y), (y += 4);
+        if (report.truck_count) doc.text(`Camions: ${report.truck_count}`, margin + 4, y), (y += 4);
+        if (report.subcontractor) doc.text(`Sous-traitant: ${report.subcontractor}`, margin + 4, y), (y += 4);
 
+        // Work section title
         doc.setFont("helvetica", "bold");
         doc.setTextColor(30, 30, 30);
         doc.text("Travaux:", margin + 4, y);
-        y += 3;
+        y += 4;
 
         const lines = doc.splitTextToSize(report.work_description, colW - 8);
         doc.setFont("helvetica", "normal");
@@ -225,26 +228,27 @@ Deno.serve(async (req) => {
         lines.forEach(line => {
           if (y > 270) { doc.addPage(); doc.setFillColor(255,255,255); doc.rect(0,0,pageW,297,"F"); y = 14; }
           doc.text(line, margin + 4, y);
-          y += 3;
+          y += 4;
         });
 
         if (report.other_notes) {
+          y += 2;
           if (y > 270) { doc.addPage(); doc.setFillColor(255,255,255); doc.rect(0,0,pageW,297,"F"); y = 14; }
           doc.setFont("helvetica", "bold");
           doc.setTextColor(30, 30, 30);
           doc.text("Notes:", margin + 4, y);
-          y += 3;
+          y += 4;
           const noteLines = doc.splitTextToSize(report.other_notes, colW - 8);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(80, 80, 80);
           noteLines.forEach(line => {
             if (y > 270) { doc.addPage(); doc.setFillColor(255,255,255); doc.rect(0,0,pageW,297,"F"); y = 14; }
             doc.text(line, margin + 4, y);
-            y += 3;
+            y += 4;
           });
         }
 
-        y += 2;
+        y += 4;
       });
     }
 
