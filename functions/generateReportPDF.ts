@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     doc.setTextColor(140, 140, 140);
     doc.text("TRAVAUX ET HEURES  ·  SITE", margin, y + 20);
     doc.setFontSize(7);
-    doc.text("DOCUMENT GÉNÉRÉ ÉLECTRONIQUEMENT", pageW - margin - 51, y + 20);
+    doc.text("DOCUMENT GENERE ELECTRONIQUEMENT", pageW - margin - 51, y + 20);
 
     y += 26;
     doc.setDrawColor(30, 30, 30);
