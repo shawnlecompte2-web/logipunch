@@ -137,9 +137,50 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
             className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm"
           />
         )}
-      </div>
+        </div>
 
-      {/* Total Preview */}
+        {/* Custom Role Fields */}
+        {roleConfig?.fields?.length > 0 && (
+         <div className="mb-6">
+           {roleConfig.fields.map(field => (
+             <div key={field.field_id} className="mb-4">
+               <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2.5 block">
+                 {field.label} {field.required && "*"}
+               </label>
+               {field.field_type === "select" && (
+                 <select
+                   value={customFields[field.field_id] || ""}
+                   onChange={e => setCustomFields(f => ({ ...f, [field.field_id]: e.target.value }))}
+                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-600"
+                 >
+                   <option value="">Sélectionner...</option>
+                   {field.options?.map(opt => (
+                     <option key={opt} value={opt}>{opt}</option>
+                   ))}
+                 </select>
+               )}
+               {field.field_type === "text" && (
+                 <input
+                   type="text"
+                   value={customFields[field.field_id] || ""}
+                   onChange={e => setCustomFields(f => ({ ...f, [field.field_id]: e.target.value }))}
+                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-green-600"
+                 />
+               )}
+               {field.field_type === "number" && (
+                 <input
+                   type="number"
+                   value={customFields[field.field_id] || ""}
+                   onChange={e => setCustomFields(f => ({ ...f, [field.field_id]: e.target.value }))}
+                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-green-600"
+                 />
+               )}
+             </div>
+           ))}
+         </div>
+        )}
+
+        {/* Total Preview */}
       {canSubmit && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-6">
           <div className="grid grid-cols-3 gap-3 text-center">
