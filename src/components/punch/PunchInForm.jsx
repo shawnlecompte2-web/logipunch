@@ -35,8 +35,6 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
       role: user.role,
       lunch_break: 0,
     };
-    if (needsMachine) entry.machine = machine;
-    if (needsPlate) entry.plate_number = plateNumber;
 
     const created = await base44.entities.PunchEntry.create(entry);
     onSuccess(created);
