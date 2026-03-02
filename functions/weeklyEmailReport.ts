@@ -519,15 +519,31 @@ Deno.serve(async (req) => {
         const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0].toUpperCase() : "";
         const fileName = `rapport_${weekStartStr}_${firstName}${lastInitial}.pdf`;
 
-        const pdfBlob = new Blob([pdfBuf], { type: "application/pdf" });
-        const { file_url } = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfBlob });
+        // Write to temp file
+        const pdfPath = `/tmp/${fileName}`;
+        await Deno.writeFile(pdfPath, new Uint8Array(pdfBuf));
+        const pdfFile = await Deno.open(pdfPath);
+        
+        const formData = new FormData();
+        formData.append("file", new Deno.FsFile(pdfFile.rid), fileName);
+        const { file_url } = await base44.asServiceRole.integrations.Core.UploadFile(formData);
         pdfLinks[user.id] = file_url;
+        
+        await Deno.remove(pdfPath);
       }
 
       // Generate XLSX
       const xlsxBuf = generateXLSX(groupName, groupUsers, groupEntries, weekStart, weekEnd);
-      const xlsxBlob = new Blob([xlsxBuf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-      const { file_url: xlsxUrl } = await base44.asServiceRole.integrations.Core.UploadFile({ file: xlsxBlob });
+      const xlsxFileName = `${groupName.replace(/\s+/g, "_")}_${weekStartStr}.xlsx`;
+      const xlsxPath = `/tmp/${xlsxFileName}`;
+      await Deno.writeFile(xlsxPath, new Uint8Array(xlsxBuf));
+      const xlsxFile = await Deno.open(xlsxPath);
+      
+      const xlsxFormData = new FormData();
+      xlsxFormData.append("file", new Deno.FsFile(xlsxFile.rid), xlsxFileName);
+      const { file_url: xlsxUrl } = await base44.asServiceRole.integrations.Core.UploadFile(xlsxFormData);
+      
+      await Deno.remove(xlsxPath);
 
       // Send email to group recipient
       const emailHtml = buildEmailHtml(groupName, groupUsers, groupEntries, weekStart, weekEnd, pdfLinks, xlsxUrl);
