@@ -208,7 +208,8 @@ function PinModal({ onSuccess, company }) {
 }
 
 export default function Layout({ children, currentPageName }) {
-  const [currentUser, setCurrentUser] = useState(getStoredUser);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [permissionsReady, setPermissionsReady] = useState(false);
   const [currentCompany, setCurrentCompany] = useState(getStoredCompany);
   const navigate = useNavigate();
 
