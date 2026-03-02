@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { type, projectId, projectName, date, weekStart, reports, workers, totalHours } = body;
 
-    const doc = new PDFDocument({ bufferPages: true });
+    const doc = new PDFDocument({ bufferPages: true, margin: 40 });
     const chunks = [];
 
     doc.on('data', chunk => chunks.push(chunk));
@@ -21,14 +21,13 @@ Deno.serve(async (req) => {
 
     const margin = 40;
     const pageWidth = doc.page.width;
-    const lineHeight = 20;
 
     // Header
-    doc.fontSize(24).fillColor('#22c55e').text(type === 'day' ? 'Rapport Journalier' : 'Rapport Hebdomadaire', margin, 40);
+    doc.fontSize(24).fillColor('#22c55e').font('Helvetica-Bold').text(type === 'day' ? 'Rapport Journalier' : 'Rapport Hebdomadaire');
     doc.moveDown(0.5);
 
     // Info box
-    doc.fontSize(10).fillColor('#000000');
+    doc.fontSize(10).fillColor('#000000').font('Helvetica');
     doc.rect(margin, doc.y, pageWidth - 2 * margin, 60).stroke('#22c55e');
     
     const infoY = doc.y + 8;
@@ -47,16 +46,16 @@ Deno.serve(async (req) => {
     }
     doc.text(`Généré le: ${new Date().toLocaleDateString('fr-CA')}`, margin + 10);
     
-    doc.y += 45;
-    doc.moveDown();
+    doc.y = infoY + 65;
+    doc.moveDown(0.5);
 
     // Total hours
-    doc.fontSize(14).fillColor('#22c55e').font('Helvetica-Bold').text(`Heures totales: ${parseFloat(totalHours).toFixed(2)}h`, margin);
-    doc.moveDown();
+    doc.fontSize(14).fillColor('#22c55e').font('Helvetica-Bold').text(`Heures totales: ${parseFloat(totalHours).toFixed(2)}h`);
+    doc.moveDown(1);
 
     // Workers section
     if (workers && workers.length > 0) {
-      doc.fontSize(12).fillColor('#22c55e').font('Helvetica-Bold').text('Employés', margin);
+      doc.fontSize(12).fillColor('#22c55e').font('Helvetica-Bold').text('Employés');
       doc.moveDown(0.5);
 
       doc.fontSize(9).fillColor('#000000').font('Helvetica');
@@ -66,8 +65,8 @@ Deno.serve(async (req) => {
       const headers = ['Nom', 'Arrivée', 'Départ', 'Dîner', 'Total'];
       
       // Draw headers
-      doc.rect(margin, tableTop, pageWidth - 2 * margin, 20).stroke('#22c55e');
-      doc.fillColor('#22c55e').fontSize(9).font('Helvetica-Bold');
+      doc.rect(margin, tableTop, pageWidth - 2 * margin, 20).fillColor('#22c55e').stroke('#22c55e');
+      doc.fillColor('#ffffff').fontSize(9).font('Helvetica-Bold');
       let xPos = margin + 5;
       headers.forEach((header, i) => {
         doc.text(header, xPos, tableTop + 5, { width: colWidths[i] - 10, align: 'center' });
@@ -81,6 +80,11 @@ Deno.serve(async (req) => {
       let rowIndex = 0;
 
       workers.forEach(worker => {
+        if (rowY + rowHeight > doc.page.height - 40) {
+          doc.addPage();
+          rowY = margin;
+        }
+
         const rowData = [
           worker.name,
           worker.punchIn ? new Date(worker.punchIn).toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' }) : '-',
@@ -89,14 +93,11 @@ Deno.serve(async (req) => {
           `${parseFloat(worker.totalHours).toFixed(2)}h`
         ];
 
-        if (rowY + rowHeight > doc.page.height - 40) {
-          doc.addPage();
-          rowY = margin;
-        }
-
         // Background color for alternating rows
         if (rowIndex % 2 === 1) {
           doc.rect(margin, rowY - 8, pageWidth - 2 * margin, rowHeight).fill('#f5f5f5');
+          doc.fillColor('#000000');
+        } else {
           doc.fillColor('#000000');
         }
 
@@ -128,7 +129,7 @@ Deno.serve(async (req) => {
         doc.addPage();
       }
 
-      doc.fontSize(12).fillColor('#22c55e').font('Helvetica-Bold').text('Détails des travaux', margin);
+      doc.fontSize(12).fillColor('#22c55e').font('Helvetica-Bold').text('Détails des travaux');
       doc.moveDown(0.5);
 
       reports.forEach((report, idx) => {
@@ -136,20 +137,20 @@ Deno.serve(async (req) => {
           doc.addPage();
         }
 
-        doc.fontSize(10).fillColor('#000000').font('Helvetica-Bold').text(`Rapport ${idx + 1}`, margin);
+        doc.fontSize(10).fillColor('#000000').font('Helvetica-Bold').text(`Rapport ${idx + 1}`);
         doc.fontSize(9).font('Helvetica').fillColor('#505050');
         
-        doc.text(`Employé: ${report.user_name}`, margin + 10);
-        if (report.machine) doc.text(`Machine: ${report.machine}`, margin + 10);
-        if (report.truck_count) doc.text(`Camions: ${report.truck_count}`, margin + 10);
-        if (report.subcontractor) doc.text(`Sous-traitant: ${report.subcontractor}`, margin + 10);
+        doc.text(`Employé: ${report.user_name}`);
+        if (report.machine) doc.text(`Machine: ${report.machine}`);
+        if (report.truck_count) doc.text(`Camions: ${report.truck_count}`);
+        if (report.subcontractor) doc.text(`Sous-traitant: ${report.subcontractor}`);
         
-        doc.fillColor('#000000').font('Helvetica-Bold').text('Travaux effectués:', margin + 10);
-        doc.font('Helvetica').fillColor('#505050').text(report.work_description, margin + 15, { width: pageWidth - 2 * margin - 15 });
+        doc.fillColor('#000000').font('Helvetica-Bold').text('Travaux effectués:');
+        doc.font('Helvetica').fillColor('#505050').text(report.work_description, { width: pageWidth - 2 * margin - 20 });
         
         if (report.other_notes) {
-          doc.fillColor('#000000').font('Helvetica-Bold').text('Notes:', margin + 10);
-          doc.font('Helvetica').fillColor('#505050').text(report.other_notes, margin + 15, { width: pageWidth - 2 * margin - 15 });
+          doc.fillColor('#000000').font('Helvetica-Bold').text('Notes:');
+          doc.font('Helvetica').fillColor('#505050').text(report.other_notes, { width: pageWidth - 2 * margin - 20 });
         }
 
         doc.moveDown(0.5);
@@ -159,12 +160,12 @@ Deno.serve(async (req) => {
     doc.end();
     await docFinish;
 
-    const pdfBytes = Buffer.concat(chunks);
+    const pdfBuffer = Buffer.concat(chunks);
     const filename = type === 'day' 
       ? `rapport_${new Date(date + 'T12:00:00').toLocaleDateString('fr-CA')}.pdf`
       : `rapport_semaine_${weekStart}.pdf`;
 
-    return new Response(pdfBytes, {
+    return new Response(pdfBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
@@ -172,6 +173,7 @@ Deno.serve(async (req) => {
       }
     });
   } catch (error) {
+    console.error('PDF generation error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
