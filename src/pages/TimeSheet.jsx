@@ -98,11 +98,30 @@ export default function TimeSheet() {
   const [selectedDay, setSelectedDay] = useState(format(new Date(), "yyyy-MM-dd"));
   const [editEntry, setEditEntry] = useState(null);
   const [company] = useState(getStoredCompany);
-  const currentUser = getStoredUser();
+  const [currentUser, setCurrentUser] = useState(getStoredUser);
+  const [accessChecked, setAccessChecked] = useState(false);
   const isAdmin = currentUser?.is_admin === true || currentUser?.role === "Administrateur";
 
+  // Always fetch fresh user data to check permissions
+  useEffect(() => {
+    const stored = getStoredUser();
+    if (!stored?.id) { setAccessChecked(true); return; }
+    base44.entities.AppUser.get(stored.id).then(freshUser => {
+      if (freshUser) {
+        sessionStorage.setItem("logipunch_user", JSON.stringify(freshUser));
+        window.dispatchEvent(new Event("logipunch_user_change"));
+        setCurrentUser(freshUser);
+      }
+      setAccessChecked(true);
+    }).catch(() => setAccessChecked(true));
+  }, []);
+
+  if (!accessChecked) {
+    return <div className="min-h-screen flex items-center justify-center"><p className="text-zinc-500 animate-pulse">Vérification...</p></div>;
+  }
+
   // Access control: only admins or users with explicit TimeSheet permission
-  const hasAccess = isAdminUser(currentUser) || (currentUser?.allowed_pages || []).includes("TimeSheet");
+  const hasAccess = isAdminUser(currentUser) || (Array.isArray(currentUser?.allowed_pages) && currentUser.allowed_pages.includes("TimeSheet"));
   if (!hasAccess) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4">
