@@ -25,6 +25,7 @@ export default function CreateDailyReportPage() {
   const currentCompany = getStoredCompany();
   
   const [selectedProject, setSelectedProject] = useState("");
+  const [reportDate, setReportDate] = useState(new Date().toISOString().split("T")[0]);
   const [formData, setFormData] = useState({
     machine: "",
     truck_count: "",
