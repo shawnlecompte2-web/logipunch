@@ -7,19 +7,13 @@ const AUTO_APPROVE_ROLES = ["Administrateur", "Surintendant", "Chargé de projet
 
 export default function PunchInForm({ user, projects, onSuccess, onBack }) {
   const [selectedProject, setSelectedProject] = useState("");
-  const [machine, setMachine] = useState("");
-  const [plateNumber, setPlateNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const needsMachine = user.role === "Opérateur";
-  const needsPlate = user.role === "Chauffeur";
   const needsProject = ["Manœuvre", "Opérateur", "Estimateur", "Chauffeur"].includes(user.role);
 
   const availableProjects = projects;
 
-  const canSubmit = selectedProject &&
-    (!needsMachine || machine) &&
-    (!needsPlate || plateNumber);
+  const canSubmit = selectedProject;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
