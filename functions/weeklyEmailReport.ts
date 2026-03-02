@@ -5,11 +5,11 @@ import { jsPDF } from 'npm:jspdf@4.0.0';
 // Group → recipient email mapping
 const GROUP_EMAILS = {
   "DDL Excavation": "shawn@groupeddl.ca",
-  "DDL Logistique": "shawn@groupeddl.ca",
+  "DDL Logistique": "manon@groupeddl.ca",
 };
 
 // Always CC'd on all groups
-const CC_ALL_EMAIL = "shawn@groupeddl.ca";
+const CC_ALL_EMAIL = "julie@groupeddl.ca";
 
 function getPreviousWeekRange() {
   const now = new Date();
