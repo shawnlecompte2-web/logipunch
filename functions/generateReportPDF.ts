@@ -33,7 +33,8 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { type, projectId, projectName, date, weekStart, reports, workers, totalHours } = body;
 
-    const doc = new jsPDF();
+    const doc = new jsPDF({ compress: true });
+    doc.setLanguage("fr");
     const pageW = 210;
     const margin = 14;
     const colW = pageW - margin * 2;
