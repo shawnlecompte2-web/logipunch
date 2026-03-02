@@ -47,7 +47,6 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import ActiveUsers from './pages/ActiveUsers';
 import Approvals from './pages/Approvals';
 import MyHours from './pages/MyHours';
 import Punch from './pages/Punch';
@@ -57,7 +56,6 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "ActiveUsers": ActiveUsers,
     "Approvals": Approvals,
     "MyHours": MyHours,
     "Punch": Punch,
