@@ -115,7 +115,13 @@ export default function Approvals() {
   const [users, setUsers] = useState([]);
   const [approverUser] = useState(() => {
     const u = getStoredUser();
-    return u && (u.is_admin === true || APPROVE_ROLES.includes(u.role)) ? u : null;
+    // Allow access if: admin, has approver role, OR has Approvals in allowed_pages
+    const hasAccess = u && (
+      u.is_admin === true ||
+      APPROVE_ROLES.includes(u.role) ||
+      (u.allowed_pages || []).includes("Approvals")
+    );
+    return hasAccess ? u : null;
   });
   const [loading, setLoading] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
