@@ -223,7 +223,7 @@ export default function Layout({ children, currentPageName }) {
     };
   }, []);
 
-  // Refresh user permissions from DB on mount to always have up-to-date data
+  // Refresh user permissions from DB every time the page changes
   useEffect(() => {
     const storedUser = getStoredUser();
     if (!storedUser?.id) return;
@@ -232,7 +232,7 @@ export default function Layout({ children, currentPageName }) {
       sessionStorage.setItem("logipunch_user", JSON.stringify(freshUser));
       setCurrentUser(freshUser);
     }).catch(() => {});
-  }, []);
+  }, [currentPageName]);
 
   const handleCompanySelect = (company) => {
     sessionStorage.setItem("logipunch_company", JSON.stringify(company));
