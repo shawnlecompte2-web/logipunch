@@ -94,13 +94,19 @@ export default function TimeSheet() {
   const [weekDate, setWeekDate] = useState(new Date());
   const [activeGroup, setActiveGroup] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState("week"); // week | day
-  const [selectedDay, setSelectedDay] = useState(format(new Date(), "yyyy-MM-dd"));
   const [editEntry, setEditEntry] = useState(null);
   const [company] = useState(getStoredCompany);
   const [currentUser, setCurrentUser] = useState(getStoredUser);
   const [accessChecked, setAccessChecked] = useState(false);
+
+  const weekStart = startOfWeek(weekDate, { weekStartsOn: 0 });
+  const weekEnd = endOfWeek(weekDate, { weekStartsOn: 0 });
+  const weekStartStr = format(weekStart, "yyyy-MM-dd");
+  const weekEndStr = format(weekEnd, "yyyy-MM-dd");
+  const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
   const isAdmin = currentUser?.is_admin === true || currentUser?.role === "Administrateur";
+  const hasAccess = isAdminUser(currentUser) || (Array.isArray(currentUser?.allowed_pages) && currentUser.allowed_pages.includes("TimeSheet"));
 
   // Always fetch fresh user data to check permissions
   useEffect(() => {
@@ -116,22 +122,14 @@ export default function TimeSheet() {
     }).catch(() => setAccessChecked(true));
   }, []);
 
-  const weekStart = startOfWeek(weekDate, { weekStartsOn: 0 });
-  const weekEnd = endOfWeek(weekDate, { weekStartsOn: 0 });
-  const weekStartStr = format(weekStart, "yyyy-MM-dd");
-  const weekEndStr = format(weekEnd, "yyyy-MM-dd");
-  const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
-
   useEffect(() => {
-    if (accessChecked) loadData();
+    if (accessChecked && hasAccess) loadData();
   }, [weekDate, accessChecked]);
 
   if (!accessChecked) {
     return <div className="min-h-screen flex items-center justify-center"><p className="text-zinc-500 animate-pulse">Vérification...</p></div>;
   }
 
-  // Access control: only admins or users with explicit TimeSheet permission
-  const hasAccess = isAdminUser(currentUser) || (Array.isArray(currentUser?.allowed_pages) && currentUser.allowed_pages.includes("TimeSheet"));
   if (!hasAccess) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4">
