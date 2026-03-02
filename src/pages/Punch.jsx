@@ -127,18 +127,6 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
           ))}
         </div>
       </div>
-      {needsMachine && (
-        <div className="mb-4">
-          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Machine utilisée *</label>
-          <input value={machine} onChange={e => setMachine(e.target.value)} placeholder="Ex: Excavatrice 320, Compacteur..." className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm" />
-        </div>
-      )}
-      {needsPlate && (
-        <div className="mb-4">
-          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Numéro de plaque *</label>
-          <input value={plateNumber} onChange={e => setPlateNumber(e.target.value.toUpperCase())} placeholder="Ex: ABC-1234" className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm font-mono" />
-        </div>
-      )}
       <button onClick={handleSubmit} disabled={!canSubmit || loading} className={`mt-4 w-full h-14 rounded-2xl font-bold text-base transition-all flex items-center justify-between px-6 ${canSubmit && !loading ? "bg-green-600 hover:bg-green-500 text-white glow-green" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"}`}>
         <span>{loading ? "Enregistrement..." : "CONFIRMER PUNCH IN"}</span>
         {!loading && <ChevronRight size={20} />}
