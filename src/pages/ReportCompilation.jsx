@@ -253,7 +253,17 @@ export default function ReportCompilationPage() {
                                         <div key={date} className="bg-zinc-800/30 rounded p-3 border border-zinc-700">
                                           <div className="flex justify-between items-start mb-3">
                                             <p className="font-semibold text-sm">{formatDate(date)}</p>
-                                            <p className="text-xs bg-green-900/40 text-green-400 px-2 py-1 rounded">{totalHours}h d'heures</p>
+                                            <div className="flex items-center gap-2">
+                                              <p className="text-xs bg-green-900/40 text-green-400 px-2 py-1 rounded">{totalHours}h d'heures</p>
+                                              <Button
+                                                onClick={() => downloadPDF('day', projectId, project?.name, date, weekStart, dayReports, workers)}
+                                                size="sm"
+                                                className="bg-blue-700 hover:bg-blue-600 text-white h-6 gap-1 text-xs px-2"
+                                              >
+                                                <Download className="w-3 h-3" />
+                                                PDF
+                                              </Button>
+                                            </div>
                                           </div>
 
                                           {workers.length > 0 && (
