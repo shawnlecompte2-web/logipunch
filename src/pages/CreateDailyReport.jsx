@@ -100,7 +100,7 @@ export default function CreateDailyReportPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Project Selection */}
               <div>
-                <label className="block text-sm font-medium mb-2">Projet</label>
+                <label className="block text-sm font-medium mb-2 text-white">Projet</label>
                 <Select value={selectedProject} onValueChange={setSelectedProject}>
                   <SelectTrigger className="bg-zinc-800 border-zinc-700">
                     <SelectValue placeholder="Sélectionnez un projet" />
