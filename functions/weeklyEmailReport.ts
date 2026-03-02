@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import * as XLSX from 'npm:xlsx@0.18.5';
-import jsPDF from 'npm:jspdf@4.0.0';
+import jsPDF from 'npm:jspdf';
 
 // Group → recipient email mapping
 const GROUP_EMAILS = {
