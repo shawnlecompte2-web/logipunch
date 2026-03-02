@@ -17,10 +17,21 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
     const loadRoleConfig = async () => {
       if (!user?.role) return;
       try {
-        const filter = { role_name: user.role };
-        if (user.company_id) filter.company_id = user.company_id;
-        const configs = await base44.entities.RoleConfig.filter(filter);
+        // Try with company_id first if available
+        let filter = { role_name: user.role };
+        if (user.company_id) {
+          filter.company_id = user.company_id;
+        }
+        let configs = await base44.entities.RoleConfig.filter(filter);
         console.log("RoleConfig filter:", filter, "Results:", configs);
+        
+        // If not found and we had company_id, try without it
+        if ((!configs || configs.length === 0) && user.company_id) {
+          console.log("No config found with company_id, trying without...");
+          configs = await base44.entities.RoleConfig.filter({ role_name: user.role });
+          console.log("RoleConfig filter (no company):", { role_name: user.role }, "Results:", configs);
+        }
+        
         if (configs && configs.length > 0) {
           console.log("Loaded config:", configs[0]);
           setRoleConfig(configs[0]);
