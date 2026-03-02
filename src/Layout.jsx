@@ -213,21 +213,10 @@ export default function Layout({ children, currentPageName }) {
   const [currentCompany, setCurrentCompany] = useState(getStoredCompany);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleUserChange = () => setCurrentUser(getStoredUser());
-    const handleCompanyChange = () => setCurrentCompany(getStoredCompany());
-    window.addEventListener("logipunch_user_change", handleUserChange);
-    window.addEventListener("logipunch_company_change", handleCompanyChange);
-    return () => {
-      window.removeEventListener("logipunch_user_change", handleUserChange);
-      window.removeEventListener("logipunch_company_change", handleCompanyChange);
-    };
-  }, []);
-
-  // Refresh user permissions from DB on mount and on every page change
-  useEffect(() => {
+  const refreshUserFromDB = () => {
     const storedUser = getStoredUser();
     if (!storedUser?.id) { setCurrentUser(null); setPermissionsReady(true); return; }
+    setPermissionsReady(false);
     base44.entities.AppUser.get(storedUser.id).then(freshUser => {
       if (freshUser) {
         sessionStorage.setItem("logipunch_user", JSON.stringify(freshUser));
@@ -237,6 +226,21 @@ export default function Layout({ children, currentPageName }) {
       }
       setPermissionsReady(true);
     }).catch(() => { setCurrentUser(storedUser); setPermissionsReady(true); });
+  };
+
+  useEffect(() => {
+    const handleCompanyChange = () => setCurrentCompany(getStoredCompany());
+    window.addEventListener("logipunch_user_change", refreshUserFromDB);
+    window.addEventListener("logipunch_company_change", handleCompanyChange);
+    return () => {
+      window.removeEventListener("logipunch_user_change", refreshUserFromDB);
+      window.removeEventListener("logipunch_company_change", handleCompanyChange);
+    };
+  }, []);
+
+  // Refresh user permissions from DB on every page change
+  useEffect(() => {
+    refreshUserFromDB();
   }, [currentPageName]);
 
   const handleCompanySelect = (company) => {
