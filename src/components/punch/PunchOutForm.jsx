@@ -9,6 +9,8 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const [lunch, setLunch] = useState(null);
   const [customLunch, setCustomLunch] = useState("");
   const [loading, setLoading] = useState(false);
+  const [roleConfig, setRoleConfig] = useState(null);
+  const [customFields, setCustomFields] = useState({});
 
   const now = new Date();
   const punchInTime = new Date(activeEntry.punch_in);
