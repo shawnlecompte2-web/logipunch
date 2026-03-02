@@ -12,6 +12,22 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const [roleConfig, setRoleConfig] = useState(null);
   const [customFields, setCustomFields] = useState({});
 
+  useEffect(() => {
+    // Load role config for this user
+    const loadRoleConfig = async () => {
+      if (!user?.role) return;
+      try {
+        const configs = await base44.entities.RoleConfig.filter({ role_name: user.role });
+        if (configs && configs.length > 0) {
+          setRoleConfig(configs[0]);
+        }
+      } catch (err) {
+        // No config found, that's ok
+      }
+    };
+    loadRoleConfig();
+  }, [user]);
+
   const now = new Date();
   const punchInTime = new Date(activeEntry.punch_in);
   const totalMinutes = differenceInMinutes(now, punchInTime);
@@ -19,7 +35,10 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const workedMinutes = totalMinutes - lunchMinutes;
   const workedHours = (workedMinutes / 60).toFixed(2);
 
-  const canSubmit = lunch !== null;
+  const allFieldsValid = !roleConfig || !roleConfig.fields?.length || 
+    roleConfig.fields.every(f => !f.required || customFields[f.field_id]);
+
+  const canSubmit = lunch !== null && allFieldsValid;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
