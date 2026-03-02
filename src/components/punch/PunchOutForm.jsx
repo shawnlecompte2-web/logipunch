@@ -18,11 +18,12 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
       if (!user?.role) return;
       try {
         const configs = await base44.entities.RoleConfig.filter({ role_name: user.role });
+        console.log("RoleConfig query for role:", user.role, "Results:", configs);
         if (configs && configs.length > 0) {
           setRoleConfig(configs[0]);
         }
       } catch (err) {
-        // No config found, that's ok
+        console.error("Error loading RoleConfig:", err);
       }
     };
     loadRoleConfig();
