@@ -378,8 +378,8 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
             <div className="min-h-screen w-full flex flex-col max-w-md mx-auto px-4 py-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-green-500 flex items-center justify-center"><span className="text-white font-black text-xs">L</span></div>
-                  <span className="text-white font-black text-lg tracking-tight">LOGIPUNCH</span>
+                  <div className="w-7 h-7 rounded-lg bg-green-500 flex items-center justify-center"><span className="text-white font-black text-xs">{(company?.name || "T")[0].toUpperCase()}</span></div>
+                  <span className="text-white font-black text-lg tracking-tight">{company?.name || "TapIN"}</span>
                 </div>
                 <button onClick={onLogout} className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 text-sm transition-colors"><LogOut size={16} /><span>Quitter</span></button>
               </div>
