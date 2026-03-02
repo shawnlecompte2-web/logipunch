@@ -52,7 +52,9 @@ function PinModal({ onSuccess, company }) {
     try {
       const users = await base44.entities.AppUser.filter({ pin_code: code, is_active: true, company_id: company.id });
       if (!users || users.length === 0) { setError("Code invalide. Réessayez."); setPin(""); setLoading(false); return; }
-      onSuccess(users[0]);
+      // Always fetch fresh user data from DB to get latest permissions
+      const freshUser = await base44.entities.AppUser.get(users[0].id);
+      onSuccess(freshUser || users[0]);
     } catch { setError("Erreur. Réessayez."); setPin(""); }
     setLoading(false);
   };
