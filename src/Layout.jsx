@@ -224,15 +224,19 @@ export default function Layout({ children, currentPageName }) {
     };
   }, []);
 
-  // Refresh user permissions from DB every time the page changes
+  // Refresh user permissions from DB on mount and on every page change
   useEffect(() => {
     const storedUser = getStoredUser();
-    if (!storedUser?.id) return;
+    if (!storedUser?.id) { setCurrentUser(null); setPermissionsReady(true); return; }
     base44.entities.AppUser.get(storedUser.id).then(freshUser => {
-      if (!freshUser) return;
-      sessionStorage.setItem("logipunch_user", JSON.stringify(freshUser));
-      setCurrentUser(freshUser);
-    }).catch(() => {});
+      if (freshUser) {
+        sessionStorage.setItem("logipunch_user", JSON.stringify(freshUser));
+        setCurrentUser(freshUser);
+      } else {
+        setCurrentUser(storedUser);
+      }
+      setPermissionsReady(true);
+    }).catch(() => { setCurrentUser(storedUser); setPermissionsReady(true); });
   }, [currentPageName]);
 
   const handleCompanySelect = (company) => {
