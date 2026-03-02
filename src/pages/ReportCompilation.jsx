@@ -123,14 +123,8 @@ export default function ReportCompilationPage() {
         totalHours
       });
 
-      // response.data is a string starting with %PDF, convert it to proper bytes
-      const pdfString = response.data;
-      const binaryString = atob(pdfString.split(',')[1] || pdfString);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      const blob = new Blob([bytes], { type: 'application/pdf' });
+      // response.data is binary data, convert to Blob directly
+      const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
