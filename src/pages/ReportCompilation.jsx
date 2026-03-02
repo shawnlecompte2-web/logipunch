@@ -79,6 +79,14 @@ export default function ReportCompilationPage() {
       .toFixed(1);
   };
 
+  const getWorkersForDay = (projectId, date) => {
+    const workers = punchEntries
+      .filter(e => e.project_id === projectId && e.work_date === date)
+      .map(e => ({ id: e.user_id, name: e.user_name }))
+      .filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
+    return workers;
+  };
+
   const projectIds = Object.keys(structure).sort();
 
   return (
