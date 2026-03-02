@@ -85,6 +85,9 @@ function EditEntryModal({ entry, onClose, onSaved }) {
   );
 }
 
+const ADMIN_ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "Gestionnaire Chauffeur", "Gestionnaire Cour", "Gestionnaire Mécanique", "Contremaitre", "Estimateur"];
+const isAdminUser = (u) => u?.is_admin === true || ADMIN_ROLES.includes(u?.role);
+
 export default function TimeSheet() {
   const [entries, setEntries] = useState([]);
   const [users, setUsers] = useState([]);
@@ -97,6 +100,16 @@ export default function TimeSheet() {
   const [company] = useState(getStoredCompany);
   const currentUser = getStoredUser();
   const isAdmin = currentUser?.is_admin === true || currentUser?.role === "Administrateur";
+
+  // Access control: only admins or users with explicit TimeSheet permission
+  const hasAccess = isAdminUser(currentUser) || (currentUser?.allowed_pages || []).includes("TimeSheet");
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4">
+        <p className="text-zinc-500">Accès refusé.</p>
+      </div>
+    );
+  }
 
   const weekStart = startOfWeek(weekDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(weekDate, { weekStartsOn: 0 });
