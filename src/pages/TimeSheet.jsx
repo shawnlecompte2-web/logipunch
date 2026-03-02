@@ -116,6 +116,16 @@ export default function TimeSheet() {
     }).catch(() => setAccessChecked(true));
   }, []);
 
+  const weekStart = startOfWeek(weekDate, { weekStartsOn: 0 });
+  const weekEnd = endOfWeek(weekDate, { weekStartsOn: 0 });
+  const weekStartStr = format(weekStart, "yyyy-MM-dd");
+  const weekEndStr = format(weekEnd, "yyyy-MM-dd");
+  const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+  useEffect(() => {
+    if (accessChecked) loadData();
+  }, [weekDate, accessChecked]);
+
   if (!accessChecked) {
     return <div className="min-h-screen flex items-center justify-center"><p className="text-zinc-500 animate-pulse">Vérification...</p></div>;
   }
@@ -129,16 +139,6 @@ export default function TimeSheet() {
       </div>
     );
   }
-
-  const weekStart = startOfWeek(weekDate, { weekStartsOn: 0 });
-  const weekEnd = endOfWeek(weekDate, { weekStartsOn: 0 });
-  const weekStartStr = format(weekStart, "yyyy-MM-dd");
-  const weekEndStr = format(weekEnd, "yyyy-MM-dd");
-  const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
-
-  useEffect(() => {
-    loadData();
-  }, [weekDate]);
 
   const loadData = async () => {
     setLoading(true);
