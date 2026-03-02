@@ -159,12 +159,25 @@ export default function ReportCompilationPage() {
                                       const dayReports = structure[projectId][weekStart][date];
                                       const totalHours = getTotalHours(projectId, weekStart, date);
 
+                                      const workers = getWorkersForDay(projectId, date);
+
                                       return (
                                         <div key={date} className="bg-zinc-800/30 rounded p-3 border border-zinc-700">
                                           <div className="flex justify-between items-start mb-3">
                                             <p className="font-semibold text-sm">{formatDate(date)}</p>
                                             <p className="text-xs bg-green-900/40 text-green-400 px-2 py-1 rounded">{totalHours}h d'heures</p>
                                           </div>
+
+                                          {workers.length > 0 && (
+                                            <div className="mb-3 p-2 bg-zinc-900/40 rounded border border-zinc-700/50">
+                                              <p className="text-xs text-zinc-400 mb-1">Employés ayant travaillé:</p>
+                                              <div className="flex flex-wrap gap-2">
+                                                {workers.map(w => (
+                                                  <span key={w.id} className="text-xs bg-blue-900/40 text-blue-300 px-2 py-1 rounded">{w.name}</span>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
 
                                           {dayReports.map(report => (
                                             <div key={report.id} className="text-xs text-zinc-300 space-y-1 bg-zinc-900/50 p-2 rounded border border-zinc-700/50">
