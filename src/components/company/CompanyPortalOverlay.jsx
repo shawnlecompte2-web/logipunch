@@ -3,9 +3,14 @@ import { base44 } from "@/api/base44Client";
 import { ChevronRight, Phone } from "lucide-react";
 import CreateCompanyForm from "./CreateCompanyForm";
 
+const SAVED_CODE_KEY = "tapIN_last_join_code";
+
 export default function CompanyPortalOverlay({ onSuccess }) {
-  const [mode, setMode] = useState("select");
-  const [joinCode, setJoinCode] = useState("");
+  const [mode, setMode] = useState(() => {
+    const saved = localStorage.getItem(SAVED_CODE_KEY);
+    return saved ? "join" : "select";
+  });
+  const [joinCode, setJoinCode] = useState(() => localStorage.getItem(SAVED_CODE_KEY) || "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [now, setNow] = useState(new Date());
