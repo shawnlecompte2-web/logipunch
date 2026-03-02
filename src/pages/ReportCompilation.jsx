@@ -295,13 +295,22 @@ export default function ReportCompilationPage() {
                                           )}
 
                                           {dayReports.map(report => (
-                                            <div key={report.id} className="text-xs text-zinc-300 space-y-1 bg-zinc-900/50 p-2 rounded border border-zinc-700/50">
-                                              <p><span className="text-zinc-500">Employé:</span> {report.user_name}</p>
-                                              {report.machine && <p><span className="text-zinc-500">Machine:</span> {report.machine}</p>}
-                                              {report.truck_count && <p><span className="text-zinc-500">Camions:</span> {report.truck_count}</p>}
-                                              {report.subcontractor && <p><span className="text-zinc-500">Sous-traitant:</span> {report.subcontractor}</p>}
-                                              <p><span className="text-zinc-500">Travaux:</span> {report.work_description}</p>
-                                              {report.other_notes && <p><span className="text-zinc-500">Notes:</span> {report.other_notes}</p>}
+                                            <div key={report.id} className="text-xs text-zinc-300 space-y-1 bg-zinc-900/50 p-2 rounded border border-zinc-700/50 flex justify-between items-start">
+                                              <div className="flex-1">
+                                                <p><span className="text-zinc-500">Employé:</span> {report.user_name}</p>
+                                                {report.machine && <p><span className="text-zinc-500">Machine:</span> {report.machine}</p>}
+                                                {report.truck_count && <p><span className="text-zinc-500">Camions:</span> {report.truck_count}</p>}
+                                                {report.subcontractor && <p><span className="text-zinc-500">Sous-traitant:</span> {report.subcontractor}</p>}
+                                                <p><span className="text-zinc-500">Travaux:</span> {report.work_description}</p>
+                                                {report.other_notes && <p><span className="text-zinc-500">Notes:</span> {report.other_notes}</p>}
+                                              </div>
+                                              <button
+                                                onClick={() => deleteReport(report.id)}
+                                                className="ml-2 p-1 hover:bg-red-900/30 rounded transition-colors text-red-400 hover:text-red-300"
+                                                title="Supprimer le rapport"
+                                              >
+                                                <Trash2 className="w-3 h-3" />
+                                              </button>
                                             </div>
                                           ))}
                                         </div>
