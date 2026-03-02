@@ -80,10 +80,29 @@ export default function ReportCompilationPage() {
   };
 
   const getWorkersForDay = (projectId, date) => {
-    const workers = punchEntries
-      .filter(e => e.project_id === projectId && e.work_date === date)
-      .map(e => ({ id: e.user_id, name: e.user_name }))
-      .filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
+    const entries = punchEntries.filter(e => e.project_id === projectId && e.work_date === date);
+    const workers = [];
+    const seen = new Set();
+    
+    entries.forEach(e => {
+      if (!seen.has(e.user_id)) {
+        seen.add(e.user_id);
+        const userEntries = entries.filter(entry => entry.user_id === e.user_id);
+        const totalHours = userEntries.reduce((sum, entry) => sum + (entry.total_hours || 0), 0);
+        const punchIn = userEntries[0]?.punch_in;
+        const punchOut = userEntries[userEntries.length - 1]?.punch_out;
+        const lunchBreak = userEntries[0]?.lunch_break_custom || userEntries[0]?.lunch_break || 0;
+        
+        workers.push({
+          id: e.user_id,
+          name: e.user_name,
+          punchIn,
+          punchOut,
+          totalHours: totalHours.toFixed(2),
+          lunchBreak
+        });
+      }
+    });
     return workers;
   };
 
