@@ -265,7 +265,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const isAdmin = currentUser && isAdminUser(currentUser);
-  const navItems = currentUser ? allNavItems.filter(item => {
+  const navItems = (currentUser && permissionsReady) ? allNavItems.filter(item => {
     if (item.alwaysVisible) return true;
     if (isAdmin) return true;
     // Check allowed_pages on user
