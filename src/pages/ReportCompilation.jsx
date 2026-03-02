@@ -199,7 +199,45 @@ export default function ReportCompilationPage() {
                                     <div className="flex-1 text-left">
                                       <p className="font-semibold text-sm">Semaine du {formatWeek(weekStart)}</p>
                                     </div>
-                                    <p className="text-xs text-zinc-400">{dates.length} jour(s)</p>
+                                    <p className="text-xs text-zinc-400 mr-2">{dates.length} jour(s)</p>
+                                    <Button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const weekReports = dates.flatMap(d => structure[projectId][weekStart][d]);
+                                        const weekWorkers = [];
+                                        const seenIds = new Set();
+
+                                        punchEntries
+                                          .filter(e => e.project_id === projectId && e.week_start === weekStart)
+                                          .forEach(e => {
+                                            if (!seenIds.has(e.user_id)) {
+                                              seenIds.add(e.user_id);
+                                              const userEntries = punchEntries.filter(entry => entry.user_id === e.user_id && entry.week_start === weekStart);
+                                              const totalHours = userEntries.reduce((sum, entry) => sum + (entry.total_hours || 0), 0);
+                                              const punchIn = userEntries[0]?.punch_in;
+                                              const punchOut = userEntries[userEntries.length - 1]?.punch_out;
+                                              const lunchBreak = userEntries[0]?.lunch_break_custom || userEntries[0]?.lunch_break || 0;
+
+                                              weekWorkers.push({
+                                                id: e.user_id,
+                                                name: e.user_name,
+                                                punchIn,
+                                                punchOut,
+                                                totalHours: totalHours.toFixed(2),
+                                                lunchBreak
+                                              });
+                                            }
+                                          });
+
+                                        const weekTotalHours = weekWorkers.reduce((sum, w) => sum + parseFloat(w.totalHours), 0).toFixed(2);
+                                        downloadPDF('week', projectId, project?.name, null, weekStart, weekReports, weekWorkers);
+                                      }}
+                                      size="sm"
+                                      className="bg-green-700 hover:bg-green-600 text-white h-7 gap-1 text-xs"
+                                    >
+                                      <Download className="w-3 h-3" />
+                                      PDF
+                                    </Button>
                                   </div>
                                 </CollapsibleTrigger>
 
