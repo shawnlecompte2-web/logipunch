@@ -258,8 +258,8 @@ export default function Layout({ children, currentPageName }) {
     if (item.alwaysVisible) return true;
     if (isAdmin) return true;
     // Check allowed_pages on user
-    const allowed = currentUser.allowed_pages || [];
-    return allowed.includes(item.key);
+    const allowed = Array.isArray(currentUser.allowed_pages) ? currentUser.allowed_pages : [];
+    return item.key && allowed.includes(item.key);
   }) : [];
 
   // Step 1: No company selected → show company portal
