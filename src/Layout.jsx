@@ -5,8 +5,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import CompanyPortalOverlay from "@/components/company/CompanyPortalOverlay";
 
-const ADMIN_ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "Gestionnaire Chauffeur", "Gestionnaire Cour", "Gestionnaire Mécanique", "Contremaitre", "Estimateur"];
-const isAdminUser = (user) => user?.is_admin === true || ADMIN_ROLES.includes(user?.role);
+const isAdminUser = (user) => user?.is_admin === true;
 
 const allNavItems = [
   { label: "Punch", page: "Punch", icon: Clock, alwaysVisible: true },
