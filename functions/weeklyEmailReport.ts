@@ -8,6 +8,9 @@ const GROUP_EMAILS = {
   "DDL Logistique": "Manon@groupeddl.ca",
 };
 
+// Always CC'd on all groups
+const CC_ALL_EMAIL = "shawn@groupeddl.ca";
+
 function getPreviousWeekRange() {
   const now = new Date();
   // Sunday = 0, so go back to last Sunday midnight
