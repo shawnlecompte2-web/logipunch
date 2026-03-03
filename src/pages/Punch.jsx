@@ -82,11 +82,10 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
   const [plateNumber, setPlateNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const needsMachine = user.role === "Opérateur";
   const needsPlate = user.role === "Chauffeur";
   const availableProjects = projects;
 
-  const canSubmit = selectedProject && (!needsMachine || machine) && (!needsPlate || plateNumber);
+  const canSubmit = selectedProject && (!needsPlate || plateNumber);
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
