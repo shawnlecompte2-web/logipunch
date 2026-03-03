@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Delete, LogOut, Clock, ChevronRight, ArrowLeft, Coffee } from "lucide-react";
+import { Delete, LogOut, Clock, ChevronRight, ArrowLeft, Coffee, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfWeek, differenceInMinutes } from "date-fns";
 import { fr } from "date-fns/locale";
