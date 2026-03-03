@@ -57,19 +57,20 @@ function EquipmentPicker({ value, onChange }) {
               key={eq}
               type="button"
               onClick={() => toggle(eq)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                 isSelected
                   ? "bg-green-700 border-green-600 text-white"
                   : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
               }`}
             >
               {eq}
+              {isSelected && <X size={11} className="opacity-80" />}
             </button>
           );
         })}
       </div>
 
-      {/* Selected tags */}
+      {/* Custom tags */}
       {selected.filter(s => !DEFAULT_EQUIPMENT.includes(s)).length > 0 && (
         <div className="flex flex-wrap gap-2">
           {selected.filter(s => !DEFAULT_EQUIPMENT.includes(s)).map(s => (
