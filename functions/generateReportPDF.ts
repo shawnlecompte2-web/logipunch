@@ -17,7 +17,7 @@ function frDate(dateStr) {
 function fmtTime(iso) {
   if (!iso) return '-';
   const d = new Date(iso);
-  return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+  return d.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Toronto', hour12: false });
 }
 
 // Draw a section title bar (blue)
