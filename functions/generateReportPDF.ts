@@ -17,7 +17,10 @@ function sanitize(str) {
     .replace(/Ô/g, 'O').replace(/Ö/g, 'O')
     .replace(/Ù/g, 'U').replace(/Û/g, 'U').replace(/Ü/g, 'U')
     .replace(/Ç/g, 'C')
-    .replace(/Œ/g, 'OE').replace(/Æ/g, 'AE');
+    .replace(/Œ/g, 'OE').replace(/Æ/g, 'AE')
+    .replace(/\u2019/g, "'").replace(/\u2018/g, "'")
+    .replace(/\u201C/g, '"').replace(/\u201D/g, '"')
+    .replace(/\u2013/g, '-').replace(/\u2014/g, '-');
 }
 
 function toHM(hours) {
