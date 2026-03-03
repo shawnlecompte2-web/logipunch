@@ -343,10 +343,9 @@ Deno.serve(async (req) => {
       const filename = `rapport_semaine_${weekStartStr}_${sanitize(projectName).replace(/\s+/g, '_')}.pdf`;
 
       // Upload PDF and get a public URL
-      const pdfBlob = new Blob([pdfUint8], { type: 'application/pdf' });
       let downloadUrl = null;
       try {
-        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfBlob });
+        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: new Blob([pdfUint8], { type: 'application/pdf' }) });
         downloadUrl = uploadRes?.file_url || null;
       } catch(e) { console.error('Upload error:', e.message); }
 
