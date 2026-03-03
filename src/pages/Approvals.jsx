@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
-import { Check, X, Edit2, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { Check, X, Edit2, ChevronDown, ChevronUp, Trash2, MapPin } from "lucide-react";
 import PullToRefresh from "@/components/PullToRefresh";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
