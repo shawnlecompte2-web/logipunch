@@ -137,6 +137,7 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
       };
       if (needsMachine) entry.machine = machine;
       if (needsPlate) entry.plate_number = plateNumber;
+      if (onSite !== null) entry.on_site_in = onSite;
       if (location) { entry.punch_in_lat = location.lat; entry.punch_in_lng = location.lng; }
       
       const created = await base44.entities.PunchEntry.create(entry);
