@@ -788,6 +788,8 @@ function ProjectForm({ project, users, companyId, onClose, onSaved }) {
     name: project?.name || "",
     project_number: project?.project_number || "",
     address: project?.address || "",
+    latitude: project?.latitude || "",
+    longitude: project?.longitude || "",
     is_active: project?.is_active !== false,
     assigned_users: project?.assigned_users || [],
   });
