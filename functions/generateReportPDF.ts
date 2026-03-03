@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text(companyName || 'TapIN', textX, 16);
+    doc.text(sanitize(companyName || 'TapIN'), textX, 16);
 
     // Title
     doc.setFontSize(10);
