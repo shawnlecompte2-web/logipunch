@@ -259,6 +259,13 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
       <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white mb-6 transition-colors"><ArrowLeft size={18} /><span className="text-sm">Retour</span></button>
       <h2 className="text-white text-2xl font-bold mb-1">Punch Out</h2>
       <p className="text-zinc-500 text-sm mb-6">{user.full_name}</p>
+      
+      {locationStatus === "granted" && (
+        <div className="mb-4 px-4 py-2.5 rounded-xl bg-green-900/20 border border-green-800/40 flex items-center gap-2">
+          <MapPin size={14} className="text-green-400 shrink-0" />
+          <p className="text-green-400 text-xs">Position GPS capturée ✓</p>
+        </div>
+      )}
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-6">
         <div className="grid grid-cols-3 gap-3">
           <div><p className="text-zinc-500 text-xs mb-1">Projet</p><p className="text-white text-sm font-semibold">{activeEntry.project_name}</p></div>
