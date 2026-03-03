@@ -52,7 +52,7 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
   });
 
   // Request GPS permission as soon as the form loads
-  useState(() => {
+  useEffect(() => {
     getLocation().then(loc => { if (loc) setLocationData(loc); });
   }, []);
 
