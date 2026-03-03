@@ -88,7 +88,20 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
   const needsPlate = user.role === "Chauffeur";
   const availableProjects = projects;
 
-  const canSubmit = selectedProject && onSite !== null && (!needsPlate || plateNumber);
+  const canSubmit = selectedProject && (!needsPlate || plateNumber);
+
+  const calculateOnSite = (userLat, userLng, project) => {
+    if (!project?.latitude || !project?.longitude) return null;
+    const R = 6371000;
+    const φ1 = (userLat * Math.PI) / 180;
+    const φ2 = (project.latitude * Math.PI) / 180;
+    const Δφ = ((project.latitude - userLat) * Math.PI) / 180;
+    const Δλ = ((project.longitude - userLng) * Math.PI) / 180;
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance <= 200;
+  };
 
   const getLocation = () => new Promise((resolve) => {
     if (!navigator.geolocation) { resolve(null); return; }
