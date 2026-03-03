@@ -52,7 +52,7 @@ function drawSectionBar(doc, x, y, w, title) {
 
 // Draw a labeled text box
 function drawTextBox(doc, x, y, w, text) {
-  const safe = text && text.trim() ? text.trim() : 'Aucun';
+  const safe = text && text.trim() ? sanitize(text.trim()) : 'Aucun';
   doc.setFontSize(9.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(30, 30, 30);
