@@ -84,6 +84,7 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
   const [locationData, setLocationData] = useState(null);
   const [locationStatus, setLocationStatus] = useState("idle");
 
+  const needsMachine = user.role === "Opérateur";
   const needsPlate = user.role === "Chauffeur";
   const availableProjects = projects;
 
