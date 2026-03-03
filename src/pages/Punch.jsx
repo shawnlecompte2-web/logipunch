@@ -80,6 +80,7 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
   const [selectedProject, setSelectedProject] = useState("");
   const [machine, setMachine] = useState("");
   const [plateNumber, setPlateNumber] = useState("");
+  const [onSite, setOnSite] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locationData, setLocationData] = useState(null);
   const [locationStatus, setLocationStatus] = useState("idle");
@@ -88,7 +89,7 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
   const needsPlate = user.role === "Chauffeur";
   const availableProjects = projects;
 
-  const canSubmit = selectedProject && (!needsPlate || plateNumber);
+  const canSubmit = selectedProject && onSite !== null && (!needsPlate || plateNumber);
 
   const getLocation = () => new Promise((resolve) => {
     if (!navigator.geolocation) { resolve(null); return; }
