@@ -47,9 +47,14 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
     navigator.geolocation.getCurrentPosition(
       pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       () => resolve(null),
-      { timeout: 8000 }
+      { timeout: 10000, enableHighAccuracy: true }
     );
   });
+
+  // Request GPS permission as soon as the form loads
+  useState(() => {
+    getLocation().then(loc => { if (loc) setLocationData(loc); });
+  }, []);
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -58,8 +63,8 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
     const now = new Date();
     const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
 
-    // Get GPS location
-    const location = await getLocation();
+    // Use pre-fetched location or try again
+    const location = locationData || await getLocation();
     let onSite = null;
     if (location && project?.address) {
       const projectCoords = await geocodeAddress(project.address);
