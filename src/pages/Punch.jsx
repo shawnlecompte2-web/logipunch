@@ -242,11 +242,25 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
       { timeout: 8000, enableHighAccuracy: false }
     );
   }, []);
+
   const punchInTime = new Date(activeEntry.punch_in);
   const totalMinutes = differenceInMinutes(punchOutTime, punchInTime);
   const lunchMinutes = lunch === "custom" ? parseInt(customLunch) || 0 : (lunch ?? 0);
   const workedHours = (Math.max(0, totalMinutes - lunchMinutes) / 60).toFixed(2);
-  const canSubmit = lunch !== null && onSite !== null;
+  const canSubmit = lunch !== null;
+
+  const calculateOnSite = (userLat, userLng, project) => {
+    if (!project?.latitude || !project?.longitude) return null;
+    const R = 6371000;
+    const φ1 = (userLat * Math.PI) / 180;
+    const φ2 = (project.latitude * Math.PI) / 180;
+    const Δφ = ((project.latitude - userLat) * Math.PI) / 180;
+    const Δλ = ((project.longitude - userLng) * Math.PI) / 180;
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance <= 200;
+  };
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
