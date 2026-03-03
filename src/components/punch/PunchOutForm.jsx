@@ -62,7 +62,29 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
       </button>
 
       <h2 className="text-white text-2xl font-bold mb-1">Punch Out</h2>
-      <p className="text-zinc-500 text-sm mb-6">{user.full_name}</p>
+      <p className="text-zinc-500 text-sm mb-4">{user.full_name}</p>
+
+      {locationStatus === "loading" && (
+        <div className="mb-4 px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center gap-2">
+          <MapPin size={14} className="text-yellow-400 animate-pulse shrink-0" />
+          <p className="text-zinc-400 text-xs">Localisation en cours...</p>
+        </div>
+      )}
+      {locationStatus === "denied" && (
+        <div className="mb-4 px-4 py-3 rounded-xl bg-orange-900/30 border border-orange-700/50 flex items-start gap-3">
+          <MapPin size={14} className="text-orange-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-orange-300 text-xs font-semibold">Localisation refusée</p>
+            <p className="text-orange-400/70 text-xs mt-0.5">Autorisez dans les réglages puis <button onClick={requestLocation} className="underline">réessayer</button>.</p>
+          </div>
+        </div>
+      )}
+      {locationStatus === "granted" && (
+        <div className="mb-4 px-4 py-2.5 rounded-xl bg-green-900/20 border border-green-800/40 flex items-center gap-2">
+          <MapPin size={14} className="text-green-400 shrink-0" />
+          <p className="text-green-400 text-xs">Position GPS capturée ✓</p>
+        </div>
+      )}
 
       {/* Summary */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-6">
