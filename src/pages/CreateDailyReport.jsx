@@ -23,11 +23,28 @@ const DEFAULT_EQUIPMENT = [
   "Vibrateur de sol",
 ];
 
+const STORAGE_KEY = "logipunch_equipment_list";
+
+function getEquipmentList() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return DEFAULT_EQUIPMENT;
+}
+
+function saveEquipmentList(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
 function EquipmentPicker({ value, onChange }) {
   const selected = value ? value.split(",").map(s => s.trim()).filter(Boolean) : [];
   const [custom, setCustom] = useState("");
+  const [editMode, setEditMode] = useState(false);
+  const [equipList, setEquipList] = useState(getEquipmentList);
 
   const toggle = (item) => {
+    if (editMode) return;
     const exists = selected.includes(item);
     const next = exists ? selected.filter(s => s !== item) : [...selected, item];
     onChange(next.join(", "));
@@ -36,47 +53,73 @@ function EquipmentPicker({ value, onChange }) {
   const addCustom = () => {
     const trimmed = custom.trim();
     if (!trimmed) return;
+    if (!equipList.includes(trimmed)) {
+      const next = [...equipList, trimmed];
+      setEquipList(next);
+      saveEquipmentList(next);
+    }
     if (!selected.includes(trimmed)) {
       onChange([...selected, trimmed].join(", "));
     }
     setCustom("");
   };
 
-  const remove = (item) => {
+  const removeFromList = (item) => {
+    const next = equipList.filter(e => e !== item);
+    setEquipList(next);
+    saveEquipmentList(next);
+    // Also deselect if selected
+    onChange(selected.filter(s => s !== item).join(", "));
+  };
+
+  const removeSelected = (item) => {
     onChange(selected.filter(s => s !== item).join(", "));
   };
 
   return (
     <div className="space-y-3">
-      {/* Predefined chips */}
+      {/* Header with edit toggle */}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => setEditMode(e => !e)}
+          className={`text-xs px-2.5 py-1 rounded-full border transition-all ${editMode ? "bg-red-900/40 border-red-700 text-red-400" : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-white"}`}
+        >
+          {editMode ? "Terminer" : "Modifier la liste"}
+        </button>
+      </div>
+
+      {/* Chips */}
       <div className="flex flex-wrap gap-2">
-        {DEFAULT_EQUIPMENT.map(eq => {
+        {equipList.map(eq => {
           const isSelected = selected.includes(eq);
           return (
             <button
               key={eq}
               type="button"
-              onClick={() => toggle(eq)}
+              onClick={() => editMode ? removeFromList(eq) : toggle(eq)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                isSelected
-                  ? "bg-green-700 border-green-600 text-white"
-                  : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
+                editMode
+                  ? "bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/60"
+                  : isSelected
+                    ? "bg-green-700 border-green-600 text-white"
+                    : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
               }`}
             >
               {eq}
-              {isSelected && <X size={11} className="opacity-80" />}
+              {editMode ? <X size={11} /> : isSelected && <X size={11} className="opacity-80" />}
             </button>
           );
         })}
       </div>
 
-      {/* Custom tags */}
-      {selected.filter(s => !DEFAULT_EQUIPMENT.includes(s)).length > 0 && (
+      {/* Custom tags (not in predefined list) */}
+      {selected.filter(s => !equipList.includes(s)).length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {selected.filter(s => !DEFAULT_EQUIPMENT.includes(s)).map(s => (
+          {selected.filter(s => !equipList.includes(s)).map(s => (
             <span key={s} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-900/50 border border-blue-700 text-blue-300">
               {s}
-              <button type="button" onClick={() => remove(s)} className="ml-0.5 hover:text-white">
+              <button type="button" onClick={() => removeSelected(s)} className="ml-0.5 hover:text-white">
                 <X size={12} />
               </button>
             </span>
@@ -85,18 +128,23 @@ function EquipmentPicker({ value, onChange }) {
       )}
 
       {/* Custom input */}
-      <div className="flex gap-2">
-        <Input
-          value={custom}
-          onChange={e => setCustom(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustom(); }}}
-          placeholder="Ajouter un equipement custom..."
-          className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 text-sm h-9"
-        />
-        <Button type="button" onClick={addCustom} size="sm" variant="outline" className="h-9 px-3 border-zinc-700">
-          <Plus size={15} />
-        </Button>
-      </div>
+      {!editMode && (
+        <div className="flex gap-2">
+          <Input
+            value={custom}
+            onChange={e => setCustom(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustom(); }}}
+            placeholder="Ajouter un equipement..."
+            className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 text-sm h-9"
+          />
+          <Button type="button" onClick={addCustom} size="sm" variant="outline" className="h-9 px-3 border-zinc-700">
+            <Plus size={15} />
+          </Button>
+        </div>
+      )}
+      {editMode && (
+        <p className="text-xs text-red-400/70 text-center">Cliquez sur un equipement pour le supprimer de la liste</p>
+      )}
     </div>
   );
 }
