@@ -54,14 +54,19 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
   });
 
   const requestLocation = () => {
-    if (!navigator.geolocation) { setLocationStatus("denied"); return; }
+    if (!navigator.geolocation) { setLocationStatus("denied"); setLocationError("GPS non disponible sur cet appareil."); return; }
     setLocationStatus("loading");
+    setLocationError("");
     navigator.geolocation.getCurrentPosition(
       pos => {
         setLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocationStatus("granted");
       },
-      () => setLocationStatus("denied"),
+      (err) => {
+        setLocationStatus("denied");
+        const msg = err.code === 1 ? "Permission refusée (code 1)" : err.code === 2 ? "Position indisponible (code 2)" : err.code === 3 ? "Délai dépassé (code 3)" : `Erreur inconnue (code ${err.code})`;
+        setLocationError(msg);
+      },
       { timeout: 12000, enableHighAccuracy: true }
     );
   };
