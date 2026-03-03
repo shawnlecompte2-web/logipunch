@@ -135,19 +135,9 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
             <div>
               <p className="text-orange-300 text-sm font-semibold">Localisation refusée</p>
               <p className="text-orange-400/70 text-xs mt-1">
-                Autorisez la localisation dans les réglages de votre navigateur pour activer la vérification sur site.
+                Autorisez la localisation dans les réglages de votre navigateur puis appuyez sur Réessayer.
               </p>
-              <button
-                onClick={() => {
-                  setLocationStatus("loading");
-                  navigator.geolocation.getCurrentPosition(
-                    pos => { setLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocationStatus("granted"); },
-                    () => setLocationStatus("denied"),
-                    { timeout: 12000, enableHighAccuracy: true }
-                  );
-                }}
-                className="mt-2 text-xs text-orange-300 underline"
-              >
+              <button onClick={requestLocation} className="mt-2 text-xs text-orange-300 underline">
                 Réessayer
               </button>
             </div>
