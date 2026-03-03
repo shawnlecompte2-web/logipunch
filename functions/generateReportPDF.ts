@@ -1,6 +1,25 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { jsPDF } from 'npm:jspdf@4.0.0';
 
+function sanitize(str) {
+  if (!str) return '';
+  return str
+    .replace(/à/g, 'a').replace(/â/g, 'a').replace(/ä/g, 'a')
+    .replace(/é/g, 'e').replace(/è/g, 'e').replace(/ê/g, 'e').replace(/ë/g, 'e')
+    .replace(/î/g, 'i').replace(/ï/g, 'i')
+    .replace(/ô/g, 'o').replace(/ö/g, 'o')
+    .replace(/ù/g, 'u').replace(/û/g, 'u').replace(/ü/g, 'u')
+    .replace(/ç/g, 'c')
+    .replace(/œ/g, 'oe').replace(/æ/g, 'ae')
+    .replace(/À/g, 'A').replace(/Â/g, 'A').replace(/Ä/g, 'A')
+    .replace(/É/g, 'E').replace(/È/g, 'E').replace(/Ê/g, 'E').replace(/Ë/g, 'E')
+    .replace(/Î/g, 'I').replace(/Ï/g, 'I')
+    .replace(/Ô/g, 'O').replace(/Ö/g, 'O')
+    .replace(/Ù/g, 'U').replace(/Û/g, 'U').replace(/Ü/g, 'U')
+    .replace(/Ç/g, 'C')
+    .replace(/Œ/g, 'OE').replace(/Æ/g, 'AE');
+}
+
 function toHM(hours) {
   const h = Math.floor(parseFloat(hours) || 0);
   const m = Math.round(((parseFloat(hours) || 0) - h) * 60);
