@@ -87,7 +87,12 @@ export default function ReportCompilationPage() {
   };
 
   const getWorkersForDay = (projectId, date) => {
-    const entries = punchEntries.filter(e => e.project_id === projectId && e.work_date === date);
+    const entries = punchEntries.filter(e => {
+      if (e.project_id !== projectId) return false;
+      // fallback: extract date from punch_in if work_date is missing
+      const entryDate = e.work_date || (e.punch_in ? e.punch_in.substring(0, 10) : null);
+      return entryDate === date;
+    });
     const workers = [];
     const seen = new Set();
     
