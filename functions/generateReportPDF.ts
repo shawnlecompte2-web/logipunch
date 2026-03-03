@@ -81,7 +81,7 @@ function drawCell(doc, x, y, w, h, label, value) {
   doc.setFontSize(9.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(20, 20, 20);
-  const lines = doc.splitTextToSize(String(value || '-'), w - 6);
+  const lines = doc.splitTextToSize(sanitize(String(value || '-')), w - 6);
   doc.text(lines[0] || '-', x + 3, y + 11);
 }
 
