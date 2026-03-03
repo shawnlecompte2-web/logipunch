@@ -21,7 +21,6 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
   const availableProjects = projects;
 
   const canSubmit = selectedProject &&
-    (!needsMachine || machine) &&
     (!needsPlate || plateNumber);
 
   // Geocode project address to lat/lng using nominatim
