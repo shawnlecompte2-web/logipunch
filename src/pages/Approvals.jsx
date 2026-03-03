@@ -269,6 +269,28 @@ export default function Approvals() {
                             {entry.machine && <div><span className="text-zinc-500">Machine</span><p className="text-zinc-300">{entry.machine}</p></div>}
                             {entry.plate_number && <div><span className="text-zinc-500">Plaque</span><p className="text-zinc-300">{entry.plate_number}</p></div>}
                           </div>
+                          {entry.punch_in_lat && (
+                            <div className="mt-2 flex items-center gap-2">
+                              {entry.on_site === true && (
+                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-900/40 border border-green-700/40 text-green-400">
+                                  <MapPin size={10} /> Sur site
+                                </span>
+                              )}
+                              {entry.on_site === false && (
+                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-900/40 border border-red-700/40 text-red-400">
+                                  <MapPin size={10} /> Hors site
+                                </span>
+                              )}
+                              <a
+                                href={`https://www.google.com/maps?q=${entry.punch_in_lat},${entry.punch_in_lng}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-xs text-zinc-500 hover:text-blue-400 underline transition-colors"
+                              >
+                                Voir sur Maps
+                              </a>
+                            </div>
+                          )}
                           {entry.approved_by && <p className="text-zinc-600 text-xs mt-1">Approuvé par {entry.approved_by}</p>}
                         </div>
                         <div className="flex items-center gap-2 ml-3">
