@@ -77,11 +77,11 @@ export default function ReportCompilationPage() {
 
   const getTotalHours = (projectId, weekStart, date) => {
     return punchEntries
-      .filter(e => 
-        e.project_id === projectId && 
-        e.week_start === weekStart && 
-        e.work_date === date
-      )
+      .filter(e => {
+        if (e.project_id !== projectId) return false;
+        const entryDate = e.work_date || (e.punch_in ? e.punch_in.substring(0, 10) : null);
+        return entryDate === date;
+      })
       .reduce((sum, e) => sum + (e.total_hours || 0), 0)
       .toFixed(1);
   };
