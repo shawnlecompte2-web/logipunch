@@ -122,6 +122,8 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
     const now = new Date();
     const weekStart = format(startOfWeek(now, { weekStartsOn: 0 }), "yyyy-MM-dd");
     const company = getStoredCompany();
+    
+    const location = locationData || await getLocation();
     const entry = {
       user_id: user.id, user_name: user.full_name, project_id: selectedProject,
       project_name: project?.name || "", punch_in: now.toISOString(),
@@ -132,6 +134,8 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
     };
     if (needsMachine) entry.machine = machine;
     if (needsPlate) entry.plate_number = plateNumber;
+    if (location) { entry.punch_in_lat = location.lat; entry.punch_in_lng = location.lng; }
+    
     const created = await base44.entities.PunchEntry.create(entry);
     // Persist immediately so navigation doesn't lose the active entry
     sessionStorage.setItem("logipunch_active_entry", JSON.stringify(created));
