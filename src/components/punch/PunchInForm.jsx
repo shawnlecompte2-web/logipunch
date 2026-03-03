@@ -177,18 +177,7 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
         </div>
       </div>
 
-      {/* Machine (Opérateur) */}
-      {needsMachine && (
-        <div className="mb-4">
-          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Machine utilisée *</label>
-          <input
-            value={machine}
-            onChange={e => setMachine(e.target.value)}
-            placeholder="Ex: Excavatrice 320, Compacteur..."
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm"
-          />
-        </div>
-      )}
+
 
       {/* Plate Number (Chauffeur) */}
       {needsPlate && (
