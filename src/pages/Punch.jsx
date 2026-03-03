@@ -208,6 +208,7 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
 function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const [lunch, setLunch] = useState(null);
   const [customLunch, setCustomLunch] = useState("");
+  const [onSite, setOnSite] = useState(null);
   const [loading, setLoading] = useState(false);
   const [punchOutTime] = useState(new Date());
   const [locationData, setLocationData] = useState(null);
