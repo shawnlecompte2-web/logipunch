@@ -54,7 +54,16 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
 
   // Request GPS permission as soon as the form loads
   useEffect(() => {
-    getLocation().then(loc => { if (loc) setLocationData(loc); });
+    if (!navigator.geolocation) return;
+    setLocationStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationStatus("granted");
+      },
+      () => setLocationStatus("denied"),
+      { timeout: 12000, enableHighAccuracy: true }
+    );
   }, []);
 
   const handleSubmit = async () => {
