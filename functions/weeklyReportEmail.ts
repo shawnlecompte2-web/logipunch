@@ -228,16 +228,17 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Compute previous week (Monday to Sunday)
+    // Compute previous week (Sunday to Saturday)
     const now = new Date();
     const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon...
+    const daysToLastSunday = dayOfWeek === 0 ? 7 : dayOfWeek;
     const lastSunday = new Date(now);
-    lastSunday.setDate(now.getDate() - dayOfWeek);
-    const lastMonday = new Date(lastSunday);
-    lastMonday.setDate(lastSunday.getDate() - 6);
+    lastSunday.setDate(now.getDate() - daysToLastSunday);
+    const lastSaturday = new Date(lastSunday);
+    lastSaturday.setDate(lastSunday.getDate() + 6);
 
-    const weekStartStr = lastMonday.toISOString().split('T')[0];
-    const weekEndStr = lastSunday.toISOString().split('T')[0];
+    const weekStartStr = lastSunday.toISOString().split('T')[0];
+    const weekEndStr = lastSaturday.toISOString().split('T')[0];
 
     // Fetch all reports for the past week across all companies
     const allReports = await base44.asServiceRole.entities.DailyReport.filter({
