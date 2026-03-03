@@ -80,7 +80,6 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
   const [selectedProject, setSelectedProject] = useState("");
   const [machine, setMachine] = useState("");
   const [plateNumber, setPlateNumber] = useState("");
-  const [onSite, setOnSite] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locationData, setLocationData] = useState(null);
   const [locationStatus, setLocationStatus] = useState("idle");
