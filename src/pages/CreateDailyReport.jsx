@@ -267,12 +267,9 @@ export default function CreateDailyReportPage() {
               <SectionTitle label="Équipements & machinerie" />
 
               <Field label="Equipements et machinerie utilises">
-                <Textarea
+                <EquipmentPicker
                   value={formData.machine}
-                  onChange={(e) => setFormData({...formData, machine: e.target.value})}
-                  placeholder="Ex: Excavatrice Cat 320, Compacteur Dynapac..."
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 resize-none"
-                  rows={3}
+                  onChange={(val) => setFormData({...formData, machine: val})}
                 />
               </Field>
 
