@@ -21,12 +21,52 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
     (!needsMachine || machine) &&
     (!needsPlate || plateNumber);
 
+  // Geocode project address to lat/lng using nominatim
+  const geocodeAddress = async (address) => {
+    if (!address) return null;
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`);
+      const data = await res.json();
+      if (data && data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    } catch(e) {}
+    return null;
+  };
+
+  // Haversine distance in meters
+  const distanceM = (lat1, lng1, lat2, lng2) => {
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  };
+
+  const getLocation = () => new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => resolve(null),
+      { timeout: 8000 }
+    );
+  });
+
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setLoading(true);
     const project = projects.find(p => p.id === selectedProject);
     const now = new Date();
     const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
+
+    // Get GPS location
+    const location = await getLocation();
+    let onSite = null;
+    if (location && project?.address) {
+      const projectCoords = await geocodeAddress(project.address);
+      if (projectCoords) {
+        const dist = distanceM(location.lat, location.lng, projectCoords.lat, projectCoords.lng);
+        onSite = dist <= 500; // within 500m = on site
+      }
+    }
 
     const entry = {
       user_id: user.id,
@@ -43,6 +83,8 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
     };
     if (needsMachine) entry.machine = machine;
     if (needsPlate) entry.plate_number = plateNumber;
+    if (location) { entry.punch_in_lat = location.lat; entry.punch_in_lng = location.lng; }
+    if (onSite !== null) entry.on_site = onSite;
 
     const created = await base44.entities.PunchEntry.create(entry);
     onSuccess(created);
