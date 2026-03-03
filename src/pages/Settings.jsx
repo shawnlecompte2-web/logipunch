@@ -835,7 +835,15 @@ function ProjectForm({ project, users, companyId, onClose, onSaved }) {
           <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Adresse</label>
           <input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600" />
         </div>
-      </div>
+        <div>
+          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Latitude (manuel)</label>
+          <input type="number" step="0.000001" value={form.latitude} onChange={e => setForm(f => ({ ...f, latitude: e.target.value }))} placeholder="Ex: 45.5017" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600 placeholder:text-zinc-600" />
+        </div>
+        <div>
+          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Longitude (manuel)</label>
+          <input type="number" step="0.000001" value={form.longitude} onChange={e => setForm(f => ({ ...f, longitude: e.target.value }))} placeholder="Ex: -73.5673" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600 placeholder:text-zinc-600" />
+        </div>
+        </div>
       <div className="mb-4">
         <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Utilisateurs assignés</label>
         <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
