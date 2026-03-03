@@ -4,23 +4,16 @@ import { jsPDF } from 'npm:jspdf@4.0.0';
 function sanitize(str) {
   if (!str) return '';
   return str
-    .replace(/à/g, 'a').replace(/â/g, 'a').replace(/ä/g, 'a')
-    .replace(/é/g, 'e').replace(/è/g, 'e').replace(/ê/g, 'e').replace(/ë/g, 'e')
-    .replace(/î/g, 'i').replace(/ï/g, 'i')
-    .replace(/ô/g, 'o').replace(/ö/g, 'o')
-    .replace(/ù/g, 'u').replace(/û/g, 'u').replace(/ü/g, 'u')
-    .replace(/ç/g, 'c')
-    .replace(/œ/g, 'oe').replace(/æ/g, 'ae')
-    .replace(/À/g, 'A').replace(/Â/g, 'A').replace(/Ä/g, 'A')
-    .replace(/É/g, 'E').replace(/È/g, 'E').replace(/Ê/g, 'E').replace(/Ë/g, 'E')
-    .replace(/Î/g, 'I').replace(/Ï/g, 'I')
-    .replace(/Ô/g, 'O').replace(/Ö/g, 'O')
-    .replace(/Ù/g, 'U').replace(/Û/g, 'U').replace(/Ü/g, 'U')
-    .replace(/Ç/g, 'C')
-    .replace(/Œ/g, 'OE').replace(/Æ/g, 'AE')
-    .replace(/\u2019/g, "'").replace(/\u2018/g, "'")
-    .replace(/\u201C/g, '"').replace(/\u201D/g, '"')
-    .replace(/\u2013/g, '-').replace(/\u2014/g, '-');
+    // Normalize ligatures before NFD decomposition
+    .replace(/œ/gi, (m) => m === m.toUpperCase() ? 'OE' : 'oe')
+    .replace(/æ/gi, (m) => m === m.toUpperCase() ? 'AE' : 'ae')
+    // Normalize to NFD and strip combining diacritical marks (accents)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    // Apostrophes and quotes
+    .replace(/[\u2018\u2019\u02BC\u02BB]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    // Dashes
+    .replace(/[\u2013\u2014]/g, '-');
 }
 
 function toHM(hours) {
