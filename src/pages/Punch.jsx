@@ -189,6 +189,13 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
           <input value={plateNumber} onChange={e => setPlateNumber(e.target.value.toUpperCase())} placeholder="Ex: ABC-1234" className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm font-mono" />
         </div>
       )}
+      <div className="mb-4">
+        <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Localisation *</label>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => setOnSite(true)} className={`flex-1 py-3 rounded-xl border text-sm font-semibold transition-all ${onSite === true ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>Sur site</button>
+          <button type="button" onClick={() => setOnSite(false)} className={`flex-1 py-3 rounded-xl border text-sm font-semibold transition-all ${onSite === false ? "bg-red-900/30 border-red-600 text-red-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>Hors site</button>
+        </div>
+      </div>
       <button onClick={handleSubmit} disabled={!canSubmit || loading} className={`mt-4 w-full h-14 rounded-2xl font-bold text-base transition-all flex items-center justify-between px-6 ${canSubmit && !loading ? "bg-green-600 hover:bg-green-500 text-white glow-green" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"}`}>
         <span>{loading ? "Enregistrement..." : "CONFIRMER PUNCH IN"}</span>
         {!loading && <ChevronRight size={20} />}
