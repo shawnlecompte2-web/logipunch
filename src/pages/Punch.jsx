@@ -253,6 +253,7 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
         status: autoApprove ? "approved" : "completed",
         ...(autoApprove ? { approved_by: "Automatique", approved_at: new Date().toISOString() } : {}),
       };
+      if (onSite !== null) updateData.on_site_out = onSite;
       if (location) { updateData.punch_out_lat = location.lat; updateData.punch_out_lng = location.lng; }
       await base44.entities.PunchEntry.update(activeEntry.id, updateData);
       sessionStorage.removeItem("logipunch_active_entry");
