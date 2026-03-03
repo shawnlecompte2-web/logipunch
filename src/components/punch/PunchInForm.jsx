@@ -140,29 +140,6 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
       <p className="text-zinc-500 text-sm mb-4">{user.full_name} · {user.role}</p>
 
       {/* GPS status banner */}
-      {locationStatus === "loading" && (
-        <div className="mb-4 px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center gap-3">
-          <MapPin size={16} className="text-yellow-400 animate-pulse shrink-0" />
-          <p className="text-zinc-300 text-sm">Localisation en cours...</p>
-        </div>
-      )}
-      {locationStatus === "denied" && (
-        <div className="mb-4 px-4 py-3 rounded-xl bg-orange-900/30 border border-orange-700/50">
-          <div className="flex items-start gap-3">
-            <MapPin size={16} className="text-orange-400 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-orange-300 text-sm font-semibold">Localisation bloquée</p>
-              {locationError && <p className="text-red-400 text-xs mt-1 font-mono bg-red-900/20 px-2 py-1 rounded">{locationError}</p>}
-              <p className="text-orange-400/70 text-xs mt-1">
-                Pour débloquer : <strong className="text-orange-300">Réglages du navigateur → Confidentialité → Localisation → trouvez cette URL → choisir "Autoriser"</strong>, puis revenez et appuyez sur Réessayer.
-              </p>
-              <button onClick={requestLocation} className="mt-2 text-xs text-orange-300 underline font-bold">
-                ↺ Réessayer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {locationStatus === "granted" && (
         <div className="mb-4 px-4 py-2.5 rounded-xl bg-green-900/20 border border-green-800/40 flex items-center gap-2">
           <MapPin size={14} className="text-green-400 shrink-0" />
