@@ -115,7 +115,47 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
       </button>
 
       <h2 className="text-white text-2xl font-bold mb-1">Punch In</h2>
-      <p className="text-zinc-500 text-sm mb-6">{user.full_name} · {user.role}</p>
+      <p className="text-zinc-500 text-sm mb-4">{user.full_name} · {user.role}</p>
+
+      {/* GPS status banner */}
+      {locationStatus === "loading" && (
+        <div className="mb-4 px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center gap-3">
+          <MapPin size={16} className="text-yellow-400 animate-pulse shrink-0" />
+          <p className="text-zinc-300 text-sm">Localisation en cours...</p>
+        </div>
+      )}
+      {locationStatus === "denied" && (
+        <div className="mb-4 px-4 py-3 rounded-xl bg-orange-900/30 border border-orange-700/50">
+          <div className="flex items-start gap-3">
+            <MapPin size={16} className="text-orange-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-orange-300 text-sm font-semibold">Localisation refusée</p>
+              <p className="text-orange-400/70 text-xs mt-1">
+                Autorisez la localisation dans les réglages de votre navigateur pour activer la vérification sur site.
+              </p>
+              <button
+                onClick={() => {
+                  setLocationStatus("loading");
+                  navigator.geolocation.getCurrentPosition(
+                    pos => { setLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocationStatus("granted"); },
+                    () => setLocationStatus("denied"),
+                    { timeout: 12000, enableHighAccuracy: true }
+                  );
+                }}
+                className="mt-2 text-xs text-orange-300 underline"
+              >
+                Réessayer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {locationStatus === "granted" && (
+        <div className="mb-4 px-4 py-2.5 rounded-xl bg-green-900/20 border border-green-800/40 flex items-center gap-2">
+          <MapPin size={14} className="text-green-400 shrink-0" />
+          <p className="text-green-400 text-xs">Position GPS capturée ✓</p>
+        </div>
+      )}
 
       {/* Project Selection */}
       <div className="mb-4">
