@@ -285,37 +285,48 @@ export default function Approvals() {
                             {entry.machine && <div><span className="text-zinc-500">Machine</span><p className="text-zinc-300">{entry.machine}</p></div>}
                             {entry.plate_number && <div><span className="text-zinc-500">Plaque</span><p className="text-zinc-300">{entry.plate_number}</p></div>}
                             </div>
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                            {(entry.on_site_in !== null && entry.on_site_in !== undefined) && (
-                              <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${entry.on_site_in ? "bg-green-900/40 border border-green-700/40 text-green-400" : "bg-red-900/40 border border-red-700/40 text-red-400"}`}>
-                                <MapPin size={10} /> Entrée: {entry.on_site_in ? "Sur site" : "Hors site"}
-                              </span>
-                            )}
-                            {(entry.on_site_out !== null && entry.on_site_out !== undefined) && (
-                              <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${entry.on_site_out ? "bg-green-900/40 border border-green-700/40 text-green-400" : "bg-red-900/40 border border-red-700/40 text-red-400"}`}>
-                                <MapPin size={10} /> Sortie: {entry.on_site_out ? "Sur site" : "Hors site"}
-                              </span>
-                            )}
-                            {entry.punch_in_lat && (
-                              <a
-                                href={`https://www.google.com/maps?q=${entry.punch_in_lat},${entry.punch_in_lng}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-xs text-zinc-500 hover:text-blue-400 underline transition-colors"
-                              >
-                                Maps Entrée
-                              </a>
-                            )}
-                            {entry.punch_out_lat && (
-                              <a
-                                href={`https://www.google.com/maps?q=${entry.punch_out_lat},${entry.punch_out_lng}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-xs text-zinc-500 hover:text-blue-400 underline transition-colors"
-                              >
-                                Maps Sortie
-                              </a>
-                            )}
+                            <div className="mt-4 space-y-2">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-zinc-500 text-xs uppercase tracking-widest">Localisation:</span>
+                                {(entry.on_site_in !== null && entry.on_site_in !== undefined) && (
+                                  <span className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold ${entry.on_site_in ? "bg-green-900/40 border border-green-700/40 text-green-400" : "bg-red-900/40 border border-red-700/40 text-red-400"}`}>
+                                    <MapPin size={12} /> Entrée: <strong>{entry.on_site_in ? "Sur site" : "Hors site"}</strong>
+                                  </span>
+                                )}
+                                {(entry.on_site_out !== null && entry.on_site_out !== undefined) && (
+                                  <span className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold ${entry.on_site_out ? "bg-green-900/40 border border-green-700/40 text-green-400" : "bg-red-900/40 border border-red-700/40 text-red-400"}`}>
+                                    <MapPin size={12} /> Sortie: <strong>{entry.on_site_out ? "Sur site" : "Hors site"}</strong>
+                                  </span>
+                                )}
+                                {!entry.on_site_in && !entry.on_site_out && (
+                                  <span className="text-zinc-500 text-xs italic">Non enregistré</span>
+                                )}
+                              </div>
+                              {(entry.punch_in_lat || entry.punch_out_lat) && (
+                                <div className="flex items-center gap-2 text-xs">
+                                  <span className="text-zinc-500">Cartes:</span>
+                                  {entry.punch_in_lat && (
+                                    <a
+                                      href={`https://www.google.com/maps?q=${entry.punch_in_lat},${entry.punch_in_lng}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-blue-400 hover:text-blue-300 underline transition-colors"
+                                    >
+                                      📍 Entrée
+                                    </a>
+                                  )}
+                                  {entry.punch_out_lat && (
+                                    <a
+                                      href={`https://www.google.com/maps?q=${entry.punch_out_lat},${entry.punch_out_lng}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-blue-400 hover:text-blue-300 underline transition-colors"
+                                    >
+                                      📍 Sortie
+                                    </a>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           {entry.approved_by && <p className="text-zinc-600 text-xs mt-1">Approuvé par {entry.approved_by}</p>}
                         </div>
