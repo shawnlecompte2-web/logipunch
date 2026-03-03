@@ -324,13 +324,6 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
         </div>
         {lunch === "custom" && <input type="number" value={customLunch} onChange={e => setCustomLunch(e.target.value)} placeholder="Minutes..." min="0" max="120" className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm" />}
       </div>
-      <div className="mb-6">
-        <label className="text-zinc-400 text-xs uppercase tracking-widest mb-3 block">Localisation à la sortie *</label>
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setOnSite(true)} className={`flex-1 py-3 rounded-xl border text-sm font-semibold transition-all ${onSite === true ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>Sur site</button>
-          <button type="button" onClick={() => setOnSite(false)} className={`flex-1 py-3 rounded-xl border text-sm font-semibold transition-all ${onSite === false ? "bg-red-900/30 border-red-600 text-red-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>Hors site</button>
-        </div>
-      </div>
       {canSubmit && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-6">
           <div className="grid grid-cols-3 gap-3 text-center">
