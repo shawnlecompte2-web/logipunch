@@ -52,9 +52,8 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
     );
   });
 
-  // Request GPS permission as soon as the form loads
-  useEffect(() => {
-    if (!navigator.geolocation) return;
+  const requestLocation = () => {
+    if (!navigator.geolocation) { setLocationStatus("denied"); return; }
     setLocationStatus("loading");
     navigator.geolocation.getCurrentPosition(
       pos => {
@@ -64,6 +63,11 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
       () => setLocationStatus("denied"),
       { timeout: 12000, enableHighAccuracy: true }
     );
+  };
+
+  // Request GPS permission as soon as the form loads
+  useEffect(() => {
+    requestLocation();
   }, []);
 
   const handleSubmit = async () => {
