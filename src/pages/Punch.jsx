@@ -118,29 +118,33 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setLoading(true);
-    const project = projects.find(p => p.id === selectedProject);
-    const now = new Date();
-    const weekStart = format(startOfWeek(now, { weekStartsOn: 0 }), "yyyy-MM-dd");
-    const company = getStoredCompany();
-    
-    const location = locationData || await getLocation();
-    const entry = {
-      user_id: user.id, user_name: user.full_name, project_id: selectedProject,
-      project_name: project?.name || "", punch_in: now.toISOString(),
-      status: AUTO_APPROVE_ROLES.includes(user.role) ? "approved" : "active",
-      week_start: weekStart, work_date: format(now, "yyyy-MM-dd"),
-      group: user.group, role: user.role, lunch_break: 0,
-      ...(company?.id ? { company_id: company.id } : {}),
-    };
-    if (needsMachine) entry.machine = machine;
-    if (needsPlate) entry.plate_number = plateNumber;
-    if (location) { entry.punch_in_lat = location.lat; entry.punch_in_lng = location.lng; }
-    
-    const created = await base44.entities.PunchEntry.create(entry);
-    // Persist immediately so navigation doesn't lose the active entry
-    sessionStorage.setItem("logipunch_active_entry", JSON.stringify(created));
-    onSuccess(created);
-    setLoading(false);
+    try {
+      const project = projects.find(p => p.id === selectedProject);
+      const now = new Date();
+      const weekStart = format(startOfWeek(now, { weekStartsOn: 0 }), "yyyy-MM-dd");
+      const company = getStoredCompany();
+      
+      const location = locationData || await getLocation();
+      const entry = {
+        user_id: user.id, user_name: user.full_name, project_id: selectedProject,
+        project_name: project?.name || "", punch_in: now.toISOString(),
+        status: AUTO_APPROVE_ROLES.includes(user.role) ? "approved" : "active",
+        week_start: weekStart, work_date: format(now, "yyyy-MM-dd"),
+        group: user.group, role: user.role, lunch_break: 0,
+        ...(company?.id ? { company_id: company.id } : {}),
+      };
+      if (needsMachine) entry.machine = machine;
+      if (needsPlate) entry.plate_number = plateNumber;
+      if (location) { entry.punch_in_lat = location.lat; entry.punch_in_lng = location.lng; }
+      
+      const created = await base44.entities.PunchEntry.create(entry);
+      sessionStorage.setItem("logipunch_active_entry", JSON.stringify(created));
+      onSuccess(created);
+    } catch (error) {
+      console.error("Erreur punch in:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
