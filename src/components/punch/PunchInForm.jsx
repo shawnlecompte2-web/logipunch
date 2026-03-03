@@ -14,7 +14,7 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
   const [locationStatus, setLocationStatus] = useState("idle"); // idle | loading | granted | denied
   const [locationError, setLocationError] = useState("");
 
-  const needsMachine = user.role === "Opérateur";
+  const needsMachine = false;
   const needsPlate = user.role === "Chauffeur";
   const needsProject = ["Manœuvre", "Opérateur", "Estimateur", "Chauffeur"].includes(user.role);
 
