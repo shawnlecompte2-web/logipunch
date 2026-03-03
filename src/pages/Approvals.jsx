@@ -113,20 +113,36 @@ const APPROVE_ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "G
 export default function Approvals() {
   const [entries, setEntries] = useState([]);
   const [users, setUsers] = useState([]);
-  const [approverUser] = useState(() => {
-    const u = getStoredUser();
-    // Allow access if: admin, has approver role, OR has Approvals in allowed_pages
-    const hasAccess = u && (
-      u.is_admin === true ||
-      APPROVE_ROLES.includes(u.role) ||
-      (u.allowed_pages || []).includes("Approvals")
-    );
-    return hasAccess ? u : null;
-  });
-  const [loading, setLoading] = useState(false);
+  const [approverUser, setApproverUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [editEntry, setEditEntry] = useState(null);
   const [filter, setFilter] = useState("pending");
   const [expandedUser, setExpandedUser] = useState(null);
+
+  useEffect(() => {
+    // Always fetch fresh user data from DB to avoid stale session data
+    const storedUser = getStoredUser();
+    if (!storedUser?.id) { setLoading(false); return; }
+    base44.entities.AppUser.get(storedUser.id).then(freshUser => {
+      const u = freshUser || storedUser;
+      const hasAccess = u && (
+        u.is_admin === true ||
+        APPROVE_ROLES.includes(u.role) ||
+        (u.allowed_pages || []).includes("Approvals")
+      );
+      setApproverUser(hasAccess ? u : null);
+      if (!hasAccess) setLoading(false);
+    }).catch(() => {
+      const u = storedUser;
+      const hasAccess = u && (
+        u.is_admin === true ||
+        APPROVE_ROLES.includes(u.role) ||
+        (u.allowed_pages || []).includes("Approvals")
+      );
+      setApproverUser(hasAccess ? u : null);
+      if (!hasAccess) setLoading(false);
+    });
+  }, []);
 
   useEffect(() => {
     if (!approverUser) return;
