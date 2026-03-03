@@ -118,15 +118,19 @@ export default function ReportCompilationPage() {
   const downloadPDF = async (type, projectId, projectName, date, weekStart, dayReports, workers) => {
     try {
       const totalHours = type === 'day' ? getTotalHours(projectId, weekStart, date) : workers.reduce((sum, w) => sum + parseFloat(w.totalHours), 0).toFixed(2);
+      const projectObj = projects.find(p => p.id === projectId);
       const response = await base44.functions.invoke('generateReportPDF', {
         type,
         projectId,
         projectName,
+        projectAddress: projectObj?.address || "",
         date,
         weekStart,
         reports: dayReports,
         workers,
-        totalHours
+        totalHours,
+        companyName: company?.name || currentCompany?.name || "",
+        companyLogo: company?.logo_url || ""
       });
 
       // response.data is binary data, convert to Blob directly
