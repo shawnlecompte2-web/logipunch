@@ -238,7 +238,7 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const totalMinutes = differenceInMinutes(punchOutTime, punchInTime);
   const lunchMinutes = lunch === "custom" ? parseInt(customLunch) || 0 : (lunch ?? 0);
   const workedHours = (Math.max(0, totalMinutes - lunchMinutes) / 60).toFixed(2);
-  const canSubmit = lunch !== null;
+  const canSubmit = lunch !== null && onSite !== null;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
