@@ -300,7 +300,7 @@ Deno.serve(async (req) => {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(20, 20, 20);
-    doc.text(foreman, M + 4, y + 15);
+    doc.text(sanitize(foreman), M + 4, y + 15);
 
     doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
