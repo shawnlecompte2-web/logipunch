@@ -284,29 +284,39 @@ export default function Approvals() {
                             <div><span className="text-zinc-500">Total</span><p className="text-green-400 font-bold">{entry.total_hours?.toFixed(2) || "-"}h</p></div>
                             {entry.machine && <div><span className="text-zinc-500">Machine</span><p className="text-zinc-300">{entry.machine}</p></div>}
                             {entry.plate_number && <div><span className="text-zinc-500">Plaque</span><p className="text-zinc-300">{entry.plate_number}</p></div>}
-                          </div>
-                          {entry.punch_in_lat && (
-                            <div className="mt-2 flex items-center gap-2">
-                              {entry.on_site === true && (
-                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-900/40 border border-green-700/40 text-green-400">
-                                  <MapPin size={10} /> Sur site
-                                </span>
-                              )}
-                              {entry.on_site === false && (
-                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-900/40 border border-red-700/40 text-red-400">
-                                  <MapPin size={10} /> Hors site
-                                </span>
-                              )}
+                            </div>
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                            {(entry.on_site_in !== null && entry.on_site_in !== undefined) && (
+                              <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${entry.on_site_in ? "bg-green-900/40 border border-green-700/40 text-green-400" : "bg-red-900/40 border border-red-700/40 text-red-400"}`}>
+                                <MapPin size={10} /> Entrée: {entry.on_site_in ? "Sur site" : "Hors site"}
+                              </span>
+                            )}
+                            {(entry.on_site_out !== null && entry.on_site_out !== undefined) && (
+                              <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${entry.on_site_out ? "bg-green-900/40 border border-green-700/40 text-green-400" : "bg-red-900/40 border border-red-700/40 text-red-400"}`}>
+                                <MapPin size={10} /> Sortie: {entry.on_site_out ? "Sur site" : "Hors site"}
+                              </span>
+                            )}
+                            {entry.punch_in_lat && (
                               <a
                                 href={`https://www.google.com/maps?q=${entry.punch_in_lat},${entry.punch_in_lng}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-xs text-zinc-500 hover:text-blue-400 underline transition-colors"
                               >
-                                Voir sur Maps
+                                Maps Entrée
                               </a>
+                            )}
+                            {entry.punch_out_lat && (
+                              <a
+                                href={`https://www.google.com/maps?q=${entry.punch_out_lat},${entry.punch_out_lng}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-xs text-zinc-500 hover:text-blue-400 underline transition-colors"
+                              >
+                                Maps Sortie
+                              </a>
+                            )}
                             </div>
-                          )}
                           {entry.approved_by && <p className="text-zinc-600 text-xs mt-1">Approuvé par {entry.approved_by}</p>}
                         </div>
                         <div className="flex items-center gap-2 ml-3">
