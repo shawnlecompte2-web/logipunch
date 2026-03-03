@@ -140,6 +140,7 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
             <MapPin size={16} className="text-orange-400 shrink-0 mt-0.5" />
             <div>
               <p className="text-orange-300 text-sm font-semibold">Localisation bloquée</p>
+              {locationError && <p className="text-red-400 text-xs mt-1 font-mono bg-red-900/20 px-2 py-1 rounded">{locationError}</p>}
               <p className="text-orange-400/70 text-xs mt-1">
                 Pour débloquer : <strong className="text-orange-300">Réglages du navigateur → Confidentialité → Localisation → trouvez cette URL → choisir "Autoriser"</strong>, puis revenez et appuyez sur Réessayer.
               </p>
