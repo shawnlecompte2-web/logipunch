@@ -118,22 +118,21 @@ Deno.serve(async (req) => {
     let logoLoaded = false;
     if (companyLogo) {
       try {
-        const res = await fetch(companyLogo);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(companyLogo, { signal: controller.signal });
+        clearTimeout(timeout);
         const contentType = res.headers.get('content-type') || '';
         const buf = await res.arrayBuffer();
         const bytes = new Uint8Array(buf);
         let bin = '';
         for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
         const b64 = btoa(bin);
-
         let fmt = 'JPEG';
         let mime = 'image/jpeg';
         if (contentType.includes('png') || companyLogo.toLowerCase().includes('.png')) {
           fmt = 'PNG'; mime = 'image/png';
-        } else if (contentType.includes('webp') || companyLogo.toLowerCase().includes('.webp')) {
-          fmt = 'WEBP'; mime = 'image/webp';
         }
-
         doc.addImage(`data:${mime};base64,${b64}`, fmt, 9, 5, 22, 22);
         logoLoaded = true;
       } catch(e) { console.error('Logo load error:', e.message); }
