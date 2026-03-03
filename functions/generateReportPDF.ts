@@ -107,35 +107,7 @@ Deno.serve(async (req) => {
     doc.setFillColor(34, 197, 94);
     doc.rect(0, 0, 5, 38, 'F');
 
-    // Logo
-    let logoLoaded = false;
-    if (companyLogo) {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 3000);
-        const res = await fetch(companyLogo, { 
-          signal: controller.signal,
-          headers: { 'User-Agent': 'TapIN-PDF-Generator' }
-        });
-        clearTimeout(timeout);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const contentType = res.headers.get('content-type') || '';
-        const buf = await res.arrayBuffer();
-        const bytes = new Uint8Array(buf);
-        let bin = '';
-        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-        const b64 = btoa(bin);
-        let fmt = 'JPEG';
-        let mime = 'image/jpeg';
-        if (contentType.includes('png') || companyLogo.toLowerCase().includes('.png')) {
-          fmt = 'PNG'; mime = 'image/png';
-        }
-        doc.addImage(`data:${mime};base64,${b64}`, fmt, 9, 5, 22, 22);
-        logoLoaded = true;
-      } catch(e) { 
-        console.error('Logo load error:', e.message);
-      }
-    }
+    // Logo — disabled for now
 
     // Company name
     const textX = logoLoaded ? 35 : 10;
