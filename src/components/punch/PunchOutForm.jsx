@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Coffee } from "lucide-react";
+import { ArrowLeft, Coffee, MapPin } from "lucide-react";
 import { format, differenceInMinutes } from "date-fns";
 
 const LUNCH_OPTIONS = [0, 15, 30, 45, 60];
@@ -9,6 +9,20 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const [lunch, setLunch] = useState(null);
   const [customLunch, setCustomLunch] = useState("");
   const [loading, setLoading] = useState(false);
+  const [locationData, setLocationData] = useState(null);
+  const [locationStatus, setLocationStatus] = useState("idle");
+
+  const requestLocation = () => {
+    if (!navigator.geolocation) { setLocationStatus("denied"); return; }
+    setLocationStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      pos => { setLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocationStatus("granted"); },
+      () => setLocationStatus("denied"),
+      { timeout: 12000, enableHighAccuracy: true }
+    );
+  };
+
+  useEffect(() => { requestLocation(); }, []);
 
   const now = new Date();
   const punchInTime = new Date(activeEntry.punch_in);
