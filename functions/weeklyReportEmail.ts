@@ -353,12 +353,24 @@ Deno.serve(async (req) => {
 
       const filename = `rapport_semaine_${weekStartStr}_${sanitize(projectName).replace(/\s+/g, '_')}.pdf`;
 
+      // Upload PDF and get a public URL
+      const pdfBlob = new Blob([pdfUint8], { type: 'application/pdf' });
+      let downloadUrl = null;
+      try {
+        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfBlob });
+        downloadUrl = uploadRes?.file_url || null;
+      } catch(e) { console.error('Upload error:', e.message); }
+
       // Send email to each recipient
       for (const email of RECIPIENTS) {
+        const body = downloadUrl
+          ? `Bonjour,\n\nLe rapport de chantier pour le projet "${sanitize(projectName)}" (semaine du ${weekStartStr} au ${weekEndStr}) est disponible en telechargement :\n\n${downloadUrl}\n\nCe rapport contient ${sortedReports.length} jour(s) de travail.\n\nCordialement,\nTapIN`
+          : `Bonjour,\n\nLe rapport de chantier pour le projet "${sanitize(projectName)}" (semaine du ${weekStartStr} au ${weekEndStr}) a ete genere mais une erreur est survenue lors de l'upload.\n\nCordialement,\nTapIN`;
+
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: email,
           subject: `Rapports de chantier - ${sanitize(projectName)} - Semaine du ${weekStartStr}`,
-          body: `Bonjour,\n\nVeuillez trouver ci-joint le rapport de chantier pour le projet "${sanitize(projectName)}" couvrant la semaine du ${weekStartStr} au ${weekEndStr}.\n\nCe rapport contient ${sortedReports.length} jour(s) de travail.\n\nCordialement,\nTapIN`
+          body
         });
       }
 
