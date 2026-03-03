@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, ChevronRight, MapPin } from "lucide-react";
+import { ArrowLeft, ChevronRight, MapPin, Navigation } from "lucide-react";
 import { format, startOfWeek } from "date-fns";
 
 const AUTO_APPROVE_ROLES = ["Administrateur", "Surintendant", "Chargé de projet"];
