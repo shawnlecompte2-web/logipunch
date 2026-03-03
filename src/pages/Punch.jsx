@@ -89,6 +89,32 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
 
   const canSubmit = selectedProject && (!needsPlate || plateNumber);
 
+  const getLocation = () => new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => resolve(null),
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  });
+
+  const requestLocation = () => {
+    if (!navigator.geolocation) { setLocationStatus("denied"); return; }
+    setLocationStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationStatus("granted");
+      },
+      () => setLocationStatus("denied"),
+      { timeout: 8000, enableHighAccuracy: false }
+    );
+  };
+
+  useEffect(() => {
+    requestLocation();
+  }, []);
+
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setLoading(true);
