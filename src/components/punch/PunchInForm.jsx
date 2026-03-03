@@ -67,7 +67,7 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
         const msg = err.code === 1 ? "Permission refusée (code 1)" : err.code === 2 ? "Position indisponible (code 2)" : err.code === 3 ? "Délai dépassé (code 3)" : `Erreur inconnue (code ${err.code})`;
         setLocationError(msg);
       },
-      { timeout: 12000, enableHighAccuracy: true }
+      { timeout: 8000, enableHighAccuracy: false }
     );
   };
 
@@ -75,6 +75,18 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
   useEffect(() => {
     requestLocation();
   }, []);
+
+  // Auto-dismiss loading after 10s so it doesn't block forever
+  useEffect(() => {
+    if (locationStatus !== "loading") return;
+    const timer = setTimeout(() => {
+      if (locationStatus === "loading") {
+        setLocationStatus("denied");
+        setLocationError("Délai dépassé — GPS non capturé (code 3)");
+      }
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [locationStatus]);
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
