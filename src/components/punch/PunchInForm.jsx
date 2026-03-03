@@ -133,12 +133,12 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
           <div className="flex items-start gap-3">
             <MapPin size={16} className="text-orange-400 shrink-0 mt-0.5" />
             <div>
-              <p className="text-orange-300 text-sm font-semibold">Localisation refusée</p>
+              <p className="text-orange-300 text-sm font-semibold">Localisation bloquée</p>
               <p className="text-orange-400/70 text-xs mt-1">
-                Autorisez la localisation dans les réglages de votre navigateur puis appuyez sur Réessayer.
+                Pour débloquer : <strong className="text-orange-300">Réglages du navigateur → Confidentialité → Localisation → trouvez cette URL → choisir "Autoriser"</strong>, puis revenez et appuyez sur Réessayer.
               </p>
-              <button onClick={requestLocation} className="mt-2 text-xs text-orange-300 underline">
-                Réessayer
+              <button onClick={requestLocation} className="mt-2 text-xs text-orange-300 underline font-bold">
+                ↺ Réessayer
               </button>
             </div>
           </div>
