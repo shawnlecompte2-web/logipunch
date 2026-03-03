@@ -31,6 +31,12 @@ export default function ReportCompilationPage() {
     initialData: []
   });
 
+  const { data: company } = useQuery({
+    queryKey: ['company', currentCompany?.id],
+    queryFn: () => base44.entities.Company.get(currentCompany?.id),
+    enabled: !!currentCompany?.id
+  });
+
   const { data: punchEntries } = useQuery({
     queryKey: ['punchEntries', currentCompany?.id],
     queryFn: () => base44.entities.PunchEntry.filter({ company_id: currentCompany?.id }),
