@@ -8,7 +8,97 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Plus, X } from "lucide-react";
+
+const DEFAULT_EQUIPMENT = [
+  "Excavatrice Cat 320",
+  "Excavatrice Cat 345",
+  "Compacteur Dynapac",
+  "Niveleuse",
+  "Bouteur (Dozer)",
+  "Chargeuse frontale",
+  "Camion benne",
+  "Tractopelle",
+  "Grue mobile",
+  "Vibrateur de sol",
+];
+
+function EquipmentPicker({ value, onChange }) {
+  const selected = value ? value.split(",").map(s => s.trim()).filter(Boolean) : [];
+  const [custom, setCustom] = useState("");
+
+  const toggle = (item) => {
+    const exists = selected.includes(item);
+    const next = exists ? selected.filter(s => s !== item) : [...selected, item];
+    onChange(next.join(", "));
+  };
+
+  const addCustom = () => {
+    const trimmed = custom.trim();
+    if (!trimmed) return;
+    if (!selected.includes(trimmed)) {
+      onChange([...selected, trimmed].join(", "));
+    }
+    setCustom("");
+  };
+
+  const remove = (item) => {
+    onChange(selected.filter(s => s !== item).join(", "));
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Predefined chips */}
+      <div className="flex flex-wrap gap-2">
+        {DEFAULT_EQUIPMENT.map(eq => {
+          const isSelected = selected.includes(eq);
+          return (
+            <button
+              key={eq}
+              type="button"
+              onClick={() => toggle(eq)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                isSelected
+                  ? "bg-green-700 border-green-600 text-white"
+                  : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
+              }`}
+            >
+              {eq}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selected tags */}
+      {selected.filter(s => !DEFAULT_EQUIPMENT.includes(s)).length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {selected.filter(s => !DEFAULT_EQUIPMENT.includes(s)).map(s => (
+            <span key={s} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-900/50 border border-blue-700 text-blue-300">
+              {s}
+              <button type="button" onClick={() => remove(s)} className="ml-0.5 hover:text-white">
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Custom input */}
+      <div className="flex gap-2">
+        <Input
+          value={custom}
+          onChange={e => setCustom(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustom(); }}}
+          placeholder="Ajouter un equipement custom..."
+          className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 text-sm h-9"
+        />
+        <Button type="button" onClick={addCustom} size="sm" variant="outline" className="h-9 px-3 border-zinc-700">
+          <Plus size={15} />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
