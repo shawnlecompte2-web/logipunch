@@ -323,14 +323,29 @@ Deno.serve(async (req) => {
     doc.setTextColor(30, 64, 175);
     doc.text('SIGNATURE:', sigX + 4, y + 7);
 
-    // signature underline
-    doc.setDrawColor(60, 60, 60);
-    doc.setLineWidth(0.6);
-    doc.line(sigX + 6, y + sigBoxH - 5, sigX + sigW - 6, y + sigBoxH - 5);
-    doc.setFontSize(6.5);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(140, 140, 140);
-    doc.text('Signature autorisee', sigX + 6, y + sigBoxH - 1);
+    // Stamp: APPROUVE PAR [foreman]
+    const stampText = `APPROUVE PAR ${sanitize(foreman).toUpperCase()}`;
+    const stampCenterX = sigX + sigW / 2;
+    const stampCenterY = y + sigBoxH / 2 + 2;
+    const stampPad = { x: 8, y: 4 };
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    const stampW = doc.getTextWidth(stampText) + stampPad.x * 2;
+    const stampH = 10;
+
+    doc.setDrawColor(100, 180, 100);
+    doc.setLineWidth(1.2);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(stampCenterX - stampW / 2, stampCenterY - stampH / 2, stampW, stampH, 3, 3, 'FD');
+
+    doc.setTextColor(100, 160, 90);
+    doc.text(stampText, stampCenterX, stampCenterY + 3, { align: 'center' });
+
+    // Underline below stamp
+    doc.setDrawColor(180, 210, 180);
+    doc.setLineWidth(0.4);
+    doc.line(sigX + 6, y + sigBoxH - 3, sigX + sigW - 6, y + sigBoxH - 3);
 
     // =====================================================================
     // FOOTER
