@@ -10,6 +10,7 @@ export default function PunchInForm({ user, projects, onSuccess, onBack }) {
   const [machine, setMachine] = useState("");
   const [plateNumber, setPlateNumber] = useState("");
   const [loading, setLoading] = useState(false);
+  const [locationData, setLocationData] = useState(null); // pre-fetched GPS
 
   const needsMachine = user.role === "Opérateur";
   const needsPlate = user.role === "Chauffeur";
