@@ -39,12 +39,17 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
     const finalLunch = lunch === "custom" ? parseInt(customLunch) || 0 : lunch;
     const totalHours = Math.max(0, (totalMinutes - finalLunch) / 60);
 
-    await base44.entities.PunchEntry.update(activeEntry.id, {
+    const updateData = {
       punch_out: now.toISOString(),
       lunch_break: finalLunch,
       total_hours: parseFloat(totalHours.toFixed(2)),
       status: "completed",
-    });
+    };
+    if (locationData) {
+      updateData.punch_out_lat = locationData.lat;
+      updateData.punch_out_lng = locationData.lng;
+    }
+    await base44.entities.PunchEntry.update(activeEntry.id, updateData);
     onSuccess();
     setLoading(false);
   };
