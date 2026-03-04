@@ -53,7 +53,6 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
   };
 
   const toggle = (item) => {
-    if (editMode) return;
     const exists = selected.includes(item);
     const next = exists ? selected.filter((s) => s !== item) : [...selected, item];
     onChange(next.join(", "));
