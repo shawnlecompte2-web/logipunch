@@ -783,7 +783,7 @@ export default function TimeSheet() {
                     const dateStr = format(d, "yyyy-MM-dd");
                     const day = getDayEntry(user.id, dateStr);
                     return (
-                      <td key={dateStr} className="p-3">
+                      <td key={dateStr} className="p-3 group">
                         {day ? (
                           <div className="text-center">
                             <p className="text-green-400 font-bold text-sm">{day.totalHours.toFixed(1)}h</p>
