@@ -21,6 +21,8 @@ function EditEntryModal({ entry, onClose, onSaved }) {
   const [punchOut, setPunchOut] = useState(entry.punch_out ? format(parseISO(entry.punch_out), "yyyy-MM-dd'T'HH:mm") : "");
   const [lunch, setLunch] = useState(entry.lunch_break ?? 0);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const calcTotal = () => {
     if (!punchIn || !punchOut) return null;
@@ -41,6 +43,13 @@ function EditEntryModal({ entry, onClose, onSaved }) {
       modified_at: new Date().toISOString(),
     });
     setSaving(false);
+    onSaved();
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    await base44.entities.PunchEntry.delete(entry.id);
+    setDeleting(false);
     onSaved();
   };
 
@@ -75,9 +84,120 @@ function EditEntryModal({ entry, onClose, onSaved }) {
           )}
         </div>
         <div className="flex gap-3 p-5 border-t border-zinc-800">
+          {!confirmDelete ? (
+            <>
+              <button onClick={() => setConfirmDelete(true)} className="p-2 rounded-xl bg-red-900/30 hover:bg-red-900/60 text-red-400 transition-all" title="Supprimer">
+                <Trash2 size={16} />
+              </button>
+              <button onClick={onClose} className="flex-1 h-10 rounded-xl bg-zinc-800 text-zinc-300 text-sm font-semibold hover:bg-zinc-700 transition-all">Annuler</button>
+              <button onClick={handleSave} disabled={saving} className="flex-1 h-10 rounded-xl bg-green-700 hover:bg-green-600 text-white text-sm font-bold transition-all">
+                {saving ? "..." : "Sauvegarder"}
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => setConfirmDelete(false)} className="flex-1 h-10 rounded-xl bg-zinc-800 text-zinc-300 text-sm font-semibold hover:bg-zinc-700 transition-all">Annuler</button>
+              <button onClick={handleDelete} disabled={deleting} className="flex-1 h-10 rounded-xl bg-red-700 hover:bg-red-600 text-white text-sm font-bold transition-all">
+                {deleting ? "..." : "Confirmer suppression"}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddEntryModal({ userId, userName, dateStr, projects, company, onClose, onSaved }) {
+  const [projectId, setProjectId] = useState("");
+  const [punchIn, setPunchIn] = useState(`${dateStr}T07:00`);
+  const [punchOut, setPunchOut] = useState(`${dateStr}T15:30`);
+  const [lunch, setLunch] = useState(30);
+  const [saving, setSaving] = useState(false);
+
+  const calcTotal = () => {
+    if (!punchIn || !punchOut) return null;
+    const mins = (new Date(punchOut) - new Date(punchIn)) / 60000 - lunch;
+    return Math.max(0, mins / 60).toFixed(2);
+  };
+
+  const selectedProject = projects.find(p => p.id === projectId);
+
+  const handleSave = async () => {
+    if (!projectId) return;
+    setSaving(true);
+    const total = calcTotal();
+    const currentUser = getStoredUser();
+    // Calculate week_start (Sunday)
+    const date = new Date(dateStr);
+    const day = date.getDay();
+    const sunday = new Date(date);
+    sunday.setDate(date.getDate() - day);
+    const weekStart = sunday.toISOString().split("T")[0];
+
+    await base44.entities.PunchEntry.create({
+      user_id: userId,
+      user_name: userName,
+      project_id: projectId,
+      project_name: selectedProject?.name || "",
+      punch_in: new Date(punchIn).toISOString(),
+      punch_out: punchOut ? new Date(punchOut).toISOString() : undefined,
+      lunch_break: lunch,
+      total_hours: total ? parseFloat(total) : 0,
+      status: "completed",
+      work_date: dateStr,
+      week_start: weekStart,
+      company_id: company?.id,
+      modified_by: currentUser?.full_name,
+      modified_at: new Date().toISOString(),
+    });
+    setSaving(false);
+    onSaved();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-sm">
+        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+          <div>
+            <h3 className="text-white font-bold">Ajouter des heures</h3>
+            <p className="text-zinc-500 text-xs mt-0.5">{userName} · {dateStr}</p>
+          </div>
+          <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors"><X size={18} /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Projet</label>
+            <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600">
+              <option value="">— Choisir un projet —</option>
+              {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Punch In</label>
+            <input type="datetime-local" value={punchIn} onChange={e => setPunchIn(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600" />
+          </div>
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Punch Out</label>
+            <input type="datetime-local" value={punchOut} onChange={e => setPunchOut(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600" />
+          </div>
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Dîner (minutes)</label>
+            <select value={lunch} onChange={e => setLunch(parseInt(e.target.value))} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600">
+              {[0,15,30,45,60].map(v => <option key={v} value={v}>{v === 0 ? "Aucun" : `${v} min`}</option>)}
+            </select>
+          </div>
+          {calcTotal() && (
+            <div className="bg-zinc-800 rounded-xl p-3 text-center">
+              <span className="text-zinc-500 text-xs">Total calculé : </span>
+              <span className="text-green-400 font-bold">{calcTotal()}h</span>
+            </div>
+          )}
+        </div>
+        <div className="flex gap-3 p-5 border-t border-zinc-800">
           <button onClick={onClose} className="flex-1 h-10 rounded-xl bg-zinc-800 text-zinc-300 text-sm font-semibold hover:bg-zinc-700 transition-all">Annuler</button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 h-10 rounded-xl bg-green-700 hover:bg-green-600 text-white text-sm font-bold transition-all">
-            {saving ? "..." : "Sauvegarder"}
+          <button onClick={handleSave} disabled={saving || !projectId} className="flex-1 h-10 rounded-xl bg-green-700 hover:bg-green-600 text-white text-sm font-bold transition-all disabled:opacity-40">
+            {saving ? "..." : "Ajouter"}
           </button>
         </div>
       </div>
