@@ -88,8 +88,7 @@ export default function ActiveUsers() {
       return (
         <div className="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-xs">
           <p className="text-white font-bold mb-1">{d.fullName}</p>
-          <p className="text-green-400">{d.heures}h cumulées</p>
-          <p className="text-zinc-400">{d.employes} employé{d.employes > 1 ? "s" : ""}</p>
+          <p className="text-green-400">{d.heures}h cette semaine</p>
         </div>
       );
     }
