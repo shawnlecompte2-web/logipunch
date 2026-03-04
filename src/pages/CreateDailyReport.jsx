@@ -172,6 +172,12 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
                   className="w-16 bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-white text-sm text-center focus:outline-none focus:border-green-600"
                 />
                 <span className="text-zinc-500 text-xs">h</span>
+                <button
+                  type="button"
+                  onClick={() => toggle(item)}
+                  className="ml-1 text-zinc-500 hover:text-red-400 transition-colors">
+                  <X size={14} />
+                </button>
               </div>
             </div>
           ))}
