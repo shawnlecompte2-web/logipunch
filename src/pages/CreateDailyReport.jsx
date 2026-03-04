@@ -293,7 +293,7 @@ export default function CreateDailyReportPage() {
     subcontractor: "",
     machine: "",
     machine_hours: "",
-    truck_count: "",
+    trucks: "[]",
     work_description: "",
     other_notes: ""
   });
