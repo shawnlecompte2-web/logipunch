@@ -91,8 +91,9 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
   const addCustom = () => {
     const trimmed = custom.trim();
     if (!trimmed) return;
-    if (!equipList.includes(trimmed)) {
-      const next = [...equipList, trimmed];
+    const allEq = getAllEquipment(equipList);
+    if (!allEq.includes(trimmed)) {
+      const next = { ...equipList, "Autres": [...(equipList["Autres"] || []), trimmed] };
       setEquipList(next);
       saveEquipmentList(next);
     }
