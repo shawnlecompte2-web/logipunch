@@ -313,22 +313,50 @@ export default function ReportCompilationPage() {
                                             </div>
                                           </div>
 
-                                          {workers.length > 0 && (
-                                            <div className="mb-3 p-3 bg-zinc-900/40 rounded border border-zinc-700/50 space-y-2">
+                                          <div className="mb-3 p-3 bg-zinc-900/40 rounded border border-zinc-700/50 space-y-2">
+                                            <div className="flex items-center justify-between mb-1">
                                               <p className="text-xs text-zinc-400 font-semibold">Employés:</p>
-                                              {workers.map(w => (
+                                              <button
+                                                onClick={() => setAddingEntry({ projectId, projectName: project?.name, date, weekStart })}
+                                                className="flex items-center gap-1 text-xs text-green-400 hover:text-green-300 transition-colors"
+                                              >
+                                                <Plus className="w-3 h-3" /> Ajouter
+                                              </button>
+                                            </div>
+                                            {workers.length === 0 && (
+                                              <p className="text-xs text-zinc-600 italic">Aucun employé</p>
+                                            )}
+                                            {workers.map(w => {
+                                              // get raw punch entries for this user+day to allow edit/delete per entry
+                                              const userEntries = punchEntries.filter(e => {
+                                                const ed = e.work_date || (e.punch_in ? e.punch_in.substring(0,10) : null);
+                                                return e.project_id === projectId && e.user_id === w.id && ed === date;
+                                              });
+                                              return (
                                                 <div key={w.id} className="text-xs bg-blue-900/20 text-blue-300 px-3 py-2 rounded border border-blue-700/30">
                                                   <p className="font-semibold mb-1">{w.name}</p>
-                                                  <div className="grid grid-cols-2 gap-2 text-zinc-300">
-                                                    {w.punchIn && <p>Arrivée: <span className="text-blue-300">{new Date(w.punchIn).toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })}</span></p>}
-                                                    {w.punchOut && <p>Départ: <span className="text-blue-300">{new Date(w.punchOut).toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })}</span></p>}
-                                                    {w.lunchBreak > 0 && <p>Dîner: <span className="text-blue-300">{w.lunchBreak} min</span></p>}
-                                                    <p>Total: <span className="text-green-400 font-semibold">{w.totalHours}h</span></p>
-                                                  </div>
+                                                  {userEntries.map(entry => (
+                                                    <div key={entry.id} className="flex items-center justify-between mb-1">
+                                                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-zinc-300 flex-1">
+                                                        {entry.punch_in && <p>Arrivée: <span className="text-blue-300">{new Date(entry.punch_in).toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })}</span></p>}
+                                                        {entry.punch_out && <p>Départ: <span className="text-blue-300">{new Date(entry.punch_out).toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })}</span></p>}
+                                                        {entry.lunch_break > 0 && <p>Dîner: <span className="text-blue-300">{entry.lunch_break} min</span></p>}
+                                                        <p>Total: <span className="text-green-400 font-semibold">{(entry.total_hours || 0).toFixed(2)}h</span></p>
+                                                      </div>
+                                                      <div className="flex gap-1 ml-2">
+                                                        <button onClick={() => setEditingEntry(entry)} className="p-1 hover:bg-blue-900/40 rounded transition-colors text-blue-400 hover:text-blue-200">
+                                                          <Pencil className="w-3 h-3" />
+                                                        </button>
+                                                        <button onClick={() => deletePunchEntry(entry.id)} className="p-1 hover:bg-red-900/30 rounded transition-colors text-red-400 hover:text-red-300">
+                                                          <Trash2 className="w-3 h-3" />
+                                                        </button>
+                                                      </div>
+                                                    </div>
+                                                  ))}
                                                 </div>
-                                              ))}
-                                            </div>
-                                          )}
+                                              );
+                                            })}
+                                          </div>
 
                                           {dayReports.map(report => (
                                             <div key={report.id} className="text-xs text-zinc-300 space-y-1 bg-zinc-900/50 p-2 rounded border border-zinc-700/50 flex justify-between items-start">
