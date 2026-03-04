@@ -4,6 +4,7 @@ import { Clock, CheckSquare, BarChart2, Users, Settings, User, Delete, LogOut, P
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import CompanyPortalOverlay from "@/components/company/CompanyPortalOverlay";
+import MobileNav from "@/components/MobileNav";
 
 const isAdminUser = (user) => user?.is_admin === true;
 
