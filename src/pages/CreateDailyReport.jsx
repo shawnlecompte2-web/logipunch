@@ -54,13 +54,16 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
 
   const toggle = (item) => {
     const exists = selected.includes(item);
-    const next = exists ? selected.filter((s) => s !== item) : [...selected, item];
-    onChange(next.join(", "));
+    let next;
     if (exists) {
+      next = selected.filter((s) => s !== item);
       const nextHours = { ...hours };
       delete nextHours[item];
       onHoursChange(JSON.stringify(nextHours));
+    } else {
+      next = [...selected, item];
     }
+    onChange(next.join(", "));
   };
 
   const addCustom = () => {
