@@ -229,13 +229,15 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     // Compute previous week (Sunday to Saturday)
+    // "Previous week" = the last fully completed Sunday-Saturday week
     const now = new Date();
     const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon...
-    const daysToLastSunday = dayOfWeek === 0 ? 7 : dayOfWeek;
-    const lastSunday = new Date(now);
-    lastSunday.setDate(now.getDate() - daysToLastSunday);
-    const lastSaturday = new Date(lastSunday);
-    lastSaturday.setDate(lastSunday.getDate() + 6);
+    // Go back to the most recent Saturday (end of last week)
+    const daysToLastSaturday = dayOfWeek === 6 ? 7 : dayOfWeek + 1;
+    const lastSaturday = new Date(now);
+    lastSaturday.setDate(now.getDate() - daysToLastSaturday);
+    const lastSunday = new Date(lastSaturday);
+    lastSunday.setDate(lastSaturday.getDate() - 6);
 
     const weekStartStr = lastSunday.toISOString().split('T')[0];
     const weekEndStr = lastSaturday.toISOString().split('T')[0];
