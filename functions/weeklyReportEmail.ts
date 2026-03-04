@@ -266,10 +266,9 @@ Deno.serve(async (req) => {
       } catch(e) {}
     }
 
-    // Fetch all punch entries for the week
-    const allPunches = await base44.asServiceRole.entities.PunchEntry.filter({
-      week_start: weekStartStr
-    });
+    // Fetch all punch entries for the week by work_date range
+    const allPunchesRaw = await base44.asServiceRole.entities.PunchEntry.list('-work_date', 2000);
+    const allPunches = (allPunchesRaw || []).filter(p => p.work_date >= weekStartStr && p.work_date <= weekEndStr);
 
     const results = [];
 
