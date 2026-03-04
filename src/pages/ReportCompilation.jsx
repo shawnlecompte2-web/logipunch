@@ -49,6 +49,13 @@ export default function ReportCompilationPage() {
     initialData: []
   });
 
+  const { data: appUsers } = useQuery({
+    queryKey: ['appUsers', currentCompany?.id],
+    queryFn: () => base44.entities.AppUser.filter({ company_id: currentCompany?.id, is_active: true }),
+    enabled: !!currentCompany?.id,
+    initialData: []
+  });
+
   const structure = useMemo(() => {
     const byProject = {};
     
