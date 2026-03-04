@@ -175,16 +175,19 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
       </div>
 
       {/* Custom tags (not in predefined list) */}
-      {selected.filter((s) => !equipList.includes(s)).length > 0 &&
-        <div className="flex flex-wrap gap-2">
-          {selected.filter((s) => !equipList.includes(s)).map((s) =>
-            <span key={s} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-900/50 border border-blue-700 text-blue-300">
-              {s}
-              <button type="button" onClick={() => removeSelected(s)} className="ml-0.5 hover:text-white">
-                <X size={12} />
-              </button>
-            </span>
-          )}
+      {selected.filter((s) => !getAllEquipment(equipList).includes(s)).length > 0 &&
+        <div className="space-y-2">
+          <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">Personnalisé</p>
+          <div className="flex flex-wrap gap-2">
+            {selected.filter((s) => !getAllEquipment(equipList).includes(s)).map((s) =>
+              <span key={s} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-900/50 border border-blue-700 text-blue-300">
+                {s}
+                <button type="button" onClick={() => removeSelected(s)} className="ml-0.5 hover:text-white">
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+          </div>
         </div>
       }
 
