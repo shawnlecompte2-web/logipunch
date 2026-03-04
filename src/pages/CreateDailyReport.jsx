@@ -10,17 +10,31 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, Plus, X } from "lucide-react";
 
-const DEFAULT_EQUIPMENT = [
-"Excavatrice Cat 320",
-"Excavatrice Cat 345",
-"Compacteur Dynapac",
-"Niveleuse",
-"Bouteur (Dozer)",
-"Chargeuse frontale",
-"Camion benne",
-"Tractopelle",
-"Grue mobile",
-"Vibrateur de sol"];
+const DEFAULT_EQUIPMENT = {
+  "Pelle Mécanique": [
+    "Excavatrice Cat 320",
+    "Excavatrice Cat 345",
+    "Pelle Mécanique 336"
+  ],
+  "Chargeur sur roue": [
+    "Chargeuse frontale",
+    "Chargeuse Caterpillar"
+  ],
+  "Bouteurs": [
+    "Bouteur (Dozer)",
+    "Bouteur D6"
+  ],
+  "Compactage": [
+    "Compacteur Dynapac",
+    "Vibrateur de sol"
+  ],
+  "Autres": [
+    "Niveleuse",
+    "Camion benne",
+    "Tractopelle",
+    "Grue mobile"
+  ]
+};
 
 
 const STORAGE_KEY = "logipunch_equipment_list";
