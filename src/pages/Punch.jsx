@@ -633,7 +633,7 @@ export default function Punch() {
   if (!currentUser) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-start">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-start">
       <PunchDashboard user={currentUser} activeEntry={activeEntry} setActiveEntry={handleSetActiveEntry} onLogout={handleLogout} />
     </div>
   );
