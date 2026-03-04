@@ -112,25 +112,22 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
         {equipList.map((eq) => {
           const isSelected = selected.includes(eq);
           return (
-            <button
-              key={eq}
-              type="button"
-              onClick={() => editMode ? removeFromList(eq) : toggle(eq)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+            <div key={eq} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
               editMode ?
-              "bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/60" :
+              "bg-red-900/30 border-red-800 text-red-400" :
               isSelected ?
               "bg-green-700 border-green-600 text-white" :
-              "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}>
+              "bg-zinc-800 border-zinc-700 text-zinc-400"}`}>
               {eq}
-              {editMode ? <X size={11} /> : isSelected && (
-                <X
-                  size={11}
-                  className="opacity-80"
-                  onClick={(e) => { e.stopPropagation(); toggle(eq); }}
-                />
-              )}
-            </button>
+              <button
+                key={`btn-${eq}`}
+                type="button"
+                onClick={() => editMode ? removeFromList(eq) : toggle(eq)}
+                className="hover:opacity-100 transition-opacity"
+              >
+                <X size={11} />
+              </button>
+            </div>
           );
         })}
       </div>
