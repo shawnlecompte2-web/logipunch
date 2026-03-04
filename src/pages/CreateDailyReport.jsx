@@ -228,6 +228,7 @@ export default function CreateDailyReportPage() {
   const [formData, setFormData] = useState({
     subcontractor: "",
     machine: "",
+    machine_hours: "",
     truck_count: "",
     work_description: "",
     other_notes: ""
