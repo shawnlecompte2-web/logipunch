@@ -70,13 +70,11 @@ export default function ReportCompilationPage() {
 
   const formatWeek = (startStr) => {
     const d = new Date(startStr + "T12:00:00");
-    // Force start to Sunday of that week
-    const day = d.getDay(); // 0=Sun
+    // Format week from Monday (week_start) to Sunday
+    const monday = new Date(d);
     const sunday = new Date(d);
-    sunday.setDate(d.getDate() - day);
-    const saturday = new Date(sunday);
-    saturday.setDate(sunday.getDate() + 6);
-    return `${sunday.toLocaleDateString("fr-CA", { month: "short", day: "numeric" })} - ${saturday.toLocaleDateString("fr-CA", { month: "short", day: "numeric", year: "numeric" })}`;
+    sunday.setDate(monday.getDate() + 6);
+    return `${monday.toLocaleDateString("fr-CA", { month: "short", day: "numeric" })} - ${sunday.toLocaleDateString("fr-CA", { month: "short", day: "numeric", year: "numeric" })}`;
   };
 
   const getTotalHours = (projectId, weekStart, date) => {
