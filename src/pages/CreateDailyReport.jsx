@@ -392,6 +392,19 @@ export default function CreateDailyReportPage() {
                 </div>
               }
 
+              <Field label="Météo" required>
+                <Select value={formData.weather} onValueChange={(val) => setFormData({ ...formData, weather: val })}>
+                  <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                    <SelectValue placeholder="Sélectionnez les conditions météo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nuageux">Nuageux</SelectItem>
+                    <SelectItem value="ensoleille">Ensoleillé</SelectItem>
+                    <SelectItem value="chaleur_extreme">Chaleur extrême</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+
               <Field label="Date du rapport" hint="Vous pouvez remplir des rapports des jours precedents">
                 <input
                   type="date"
