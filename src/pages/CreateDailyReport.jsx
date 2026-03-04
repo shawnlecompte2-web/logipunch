@@ -111,23 +111,30 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
       <div className="flex flex-wrap gap-2">
         {equipList.map((eq) => {
           const isSelected = selected.includes(eq);
-          return (
-            <div key={eq} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-              editMode ?
-              "bg-red-900/30 border-red-800 text-red-400" :
-              isSelected ?
-              "bg-green-700 border-green-600 text-white" :
-              "bg-zinc-800 border-zinc-700 text-zinc-400"}`}>
-              {eq}
+          if (editMode) {
+            return (
               <button
-                key={`btn-${eq}`}
+                key={eq}
                 type="button"
-                onClick={() => editMode ? removeFromList(eq) : toggle(eq)}
-                className="hover:opacity-100 transition-opacity"
-              >
+                onClick={() => removeFromList(eq)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/60">
+                {eq}
                 <X size={11} />
               </button>
-            </div>
+            );
+          }
+          return (
+            <button
+              key={eq}
+              type="button"
+              onClick={() => toggle(eq)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                isSelected ?
+                "bg-green-700 border-green-600 text-white hover:bg-green-600" :
+                "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}>
+              {eq}
+              {isSelected && <X size={11} className="opacity-80" />}
+            </button>
           );
         })}
       </div>
