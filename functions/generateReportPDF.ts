@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
     drawCell(doc, M,       y, w2, cellH, 'DATE', type === 'day' ? frDate(date) : dateLabel);
     drawCell(doc, M+w2+2,  y, w2, cellH, 'CONTREMAITRE', foreman);
     y += cellH + 2;
-    drawCell(doc, M,       y, CW, cellH, 'MÉTÉO', report.weather || '-');
+    drawCell(doc, M,       y, CW, cellH, 'MÉTÉO', (report && report.weather) || '-');
     y += cellH + 5;
 
     // =====================================================================
