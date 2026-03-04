@@ -88,7 +88,7 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
   const needsPlate = user.role === "Chauffeur";
   const availableProjects = projects;
 
-  const canSubmit = selectedProject && (!needsPlate || plateNumber);
+  const canSubmit = selectedProject && (!needsPlate || plateNumber) && locationStatus !== "loading";
 
   const calculateOnSite = (userLat, userLng, project) => {
     if (!project?.latitude || !project?.longitude) return null;
