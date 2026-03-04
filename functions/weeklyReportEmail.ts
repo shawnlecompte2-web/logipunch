@@ -255,10 +255,11 @@ Deno.serve(async (req) => {
       weekEndStr = prevWeekEnd.toISOString().split('T')[0];
     }
 
-    // Fetch all reports for the past week across all companies
-    const allReports = await base44.asServiceRole.entities.DailyReport.filter({
-      week_start: weekStartStr
-    });
+    // Fetch all reports where report_date falls within the week range
+    const allReportsRaw = await base44.asServiceRole.entities.DailyReport.list();
+    const allReports = allReportsRaw.filter(r =>
+      r.report_date >= weekStartStr && r.report_date <= weekEndStr
+    );
 
     if (!allReports || allReports.length === 0) {
       return Response.json({ success: true, message: 'No reports found for last week.' });
