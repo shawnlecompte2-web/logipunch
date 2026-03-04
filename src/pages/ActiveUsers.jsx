@@ -14,6 +14,7 @@ const COLORS = ["#22c55e", "#16a34a", "#15803d", "#4ade80", "#86efac", "#bbf7d0"
 
 export default function ActiveUsers() {
   const [activeEntries, setActiveEntries] = useState([]);
+  const [weekEntries, setWeekEntries] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -28,11 +29,14 @@ export default function ActiveUsers() {
     setLoading(true);
     const company = getStoredCompany();
     const companyId = company?.id;
+    const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
     const [allEntries, allUsers] = await Promise.all([
-      base44.entities.PunchEntry.list("-punch_in", 200),
+      base44.entities.PunchEntry.list("-punch_in", 500),
       companyId ? base44.entities.AppUser.filter({ is_active: true, company_id: companyId }) : base44.entities.AppUser.filter({ is_active: true }),
     ]);
-    setActiveEntries(allEntries.filter(e => !e.punch_out && (companyId ? e.company_id === companyId : true)));
+    const companyEntries = allEntries.filter(e => companyId ? e.company_id === companyId : true);
+    setActiveEntries(companyEntries.filter(e => !e.punch_out));
+    setWeekEntries(companyEntries.filter(e => e.week_start === weekStart));
     setUsers(allUsers);
     setLoading(false);
   };
