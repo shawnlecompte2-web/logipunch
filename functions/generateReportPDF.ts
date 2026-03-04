@@ -236,8 +236,6 @@ Deno.serve(async (req) => {
     // =====================================================================
     // 3. SOUS-TRAITANTS
     // =====================================================================
-    const report = (reports && reports.length > 0) ? reports[0] : {};
-
     y = drawSectionBar(doc, M, y, CW, '3.  SOUS-TRAITANTS');
     y += 2;
     y = drawTextBox(doc, M, y, CW, report.subcontractor) + 5;
