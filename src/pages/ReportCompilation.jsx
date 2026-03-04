@@ -2,10 +2,12 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, ChevronLeft, Download, Trash2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronDown, ChevronRight, ChevronLeft, Download, Trash2, Pencil, Plus } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
+import EditPunchModal from "@/components/compilation/EditPunchModal";
+import AddPunchModal from "@/components/compilation/AddPunchModal";
 
 function getStoredCompany() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
