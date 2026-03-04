@@ -345,16 +345,112 @@ Deno.serve(async (req) => {
         downloadUrl = uploadRes?.file_url || null;
       } catch(e) { console.error('Upload error:', e.message); }
 
-      // Send email to each recipient
-      for (const email of RECIPIENTS) {
-        const body = downloadUrl
-          ? `Bonjour,\n\nLe rapport de chantier pour le projet "${sanitize(projectName)}" (semaine du ${weekStartStr} au ${weekEndStr}) est disponible en telechargement :\n\n${downloadUrl}\n\nCe rapport contient ${sortedReports.length} jour(s) de travail.\n\nCordialement,\nTapIN`
-          : `Bonjour,\n\nLe rapport de chantier pour le projet "${sanitize(projectName)}" (semaine du ${weekStartStr} au ${weekEndStr}) a ete genere mais une erreur est survenue lors de l'upload.\n\nCordialement,\nTapIN`;
+      // Build HTML email body
+      const daysListHtml = sortedReports.map(r => {
+        const dayWorkers = allPunches.filter(p =>
+          p.project_id === projectId &&
+          p.work_date === r.report_date &&
+          p.status !== 'active'
+        );
+        const totalH = dayWorkers.reduce((sum, p) => sum + (parseFloat(p.total_hours) || 0), 0);
+        return `
+          <tr>
+            <td style="padding:10px 14px; border-bottom:1px solid #2a2a2a; color:#e0e0e0;">${frDate(r.report_date)}</td>
+            <td style="padding:10px 14px; border-bottom:1px solid #2a2a2a; color:#e0e0e0;">${dayWorkers.length} employé(s)</td>
+            <td style="padding:10px 14px; border-bottom:1px solid #2a2a2a; color:#22c55e; font-weight:bold;">${toHM(totalH)}</td>
+          </tr>`;
+      }).join('');
 
+      const totalWeekHours = allPunches
+        .filter(p => p.project_id === projectId && p.work_date >= weekStartStr && p.work_date <= weekEndStr && p.status !== 'active')
+        .reduce((sum, p) => sum + (parseFloat(p.total_hours) || 0), 0);
+
+      const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0; padding:0; background:#0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a; padding:40px 20px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%;">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:#0f2878; border-radius:12px 12px 0 0; padding:0; overflow:hidden;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td width="5" style="background:#22c55e; padding:0;">&nbsp;</td>
+                <td style="padding:28px 30px;">
+                  <p style="margin:0; color:#22c55e; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase;">TapIN — Rapport automatique</p>
+                  <h1 style="margin:8px 0 0; color:#ffffff; font-size:26px; font-weight:800;">Rapport de chantier</h1>
+                  <p style="margin:6px 0 0; color:#b4d2ff; font-size:14px;">Semaine du <strong>${weekStartStr}</strong> au <strong>${weekEndStr}</strong></p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Project Info -->
+        <tr>
+          <td style="background:#111827; padding:24px 30px; border-left:1px solid #1f2937; border-right:1px solid #1f2937;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td width="50%" style="padding-right:10px;">
+                  <p style="margin:0; color:#6b7280; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Projet</p>
+                  <p style="margin:4px 0 0; color:#f9fafb; font-size:18px; font-weight:700;">${sanitize(projectName)}</p>
+                </td>
+                <td width="50%" style="padding-left:10px; text-align:right;">
+                  <p style="margin:0; color:#6b7280; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Total semaine</p>
+                  <p style="margin:4px 0 0; color:#22c55e; font-size:28px; font-weight:800;">${toHM(totalWeekHours)}</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Days Table -->
+        <tr>
+          <td style="background:#0d0d0d; border-left:1px solid #1f2937; border-right:1px solid #1f2937;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr style="background:#1a1a2e;">
+                <th style="padding:10px 14px; text-align:left; color:#6b7280; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Journée</th>
+                <th style="padding:10px 14px; text-align:left; color:#6b7280; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Effectif</th>
+                <th style="padding:10px 14px; text-align:left; color:#6b7280; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Heures</th>
+              </tr>
+              ${daysListHtml}
+            </table>
+          </td>
+        </tr>
+
+        <!-- Download Button -->
+        ${downloadUrl ? `
+        <tr>
+          <td style="background:#111827; padding:24px 30px; border-left:1px solid #1f2937; border-right:1px solid #1f2937; text-align:center;">
+            <p style="margin:0 0 16px; color:#9ca3af; font-size:13px;">Le rapport PDF complet est disponible en téléchargement :</p>
+            <a href="${downloadUrl}" style="display:inline-block; background:#22c55e; color:#000000; font-weight:700; font-size:14px; padding:14px 32px; border-radius:8px; text-decoration:none; letter-spacing:0.5px;">⬇ Télécharger le PDF</a>
+          </td>
+        </tr>` : ''}
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#0a0a0a; border:1px solid #1f2937; border-top:none; border-radius:0 0 12px 12px; padding:20px 30px; text-align:center;">
+            <p style="margin:0; color:#374151; font-size:12px;">Ce courriel a été généré automatiquement par <strong style="color:#4b5563;">TapIN</strong></p>
+            <p style="margin:4px 0 0; color:#374151; font-size:11px;">${sanitize(company.name || '')}</p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+      // Send email to each recipient
+      for (const recipient of RECIPIENTS) {
         await base44.asServiceRole.integrations.Core.SendEmail({
-          to: email,
-          subject: `Rapports de chantier - ${sanitize(projectName)} - Semaine du ${weekStartStr}`,
-          body
+          to: recipient,
+          subject: `📋 Rapport de chantier — ${sanitize(projectName)} — Semaine du ${weekStartStr}`,
+          body: emailHtml
         });
       }
 
