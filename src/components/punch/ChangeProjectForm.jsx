@@ -46,6 +46,7 @@ export default function ChangeProjectForm({ user, activeEntry, projects, onSucce
       role: user.role,
       lunch_break: 0,
       plate_number: activeEntry?.plate_number,
+      company_id: activeEntry?.company_id,
     };
     if (needsMachine) newEntry.machine = machine;
 
