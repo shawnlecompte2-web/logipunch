@@ -246,15 +246,29 @@ Deno.serve(async (req) => {
     let equipText = '';
     if (report.machine) equipText += report.machine;
     
+    // Handle machine hours
+    let machineHours = {};
+    try {
+      machineHours = JSON.parse(report.machine_hours || '{}');
+    } catch {}
+    if (Object.keys(machineHours).length > 0) {
+      equipText += (equipText ? '\n\nHEURES PAR EQUIPEMENT:\n' : 'HEURES PAR EQUIPEMENT:\n');
+      Object.entries(machineHours).forEach(([machine, hours]) => {
+        if (hours) equipText += `${machine}: ${hours}h\n`;
+      });
+    }
+    
     // Handle trucks (new format)
     let trucks = [];
     try {
       trucks = JSON.parse(report.trucks || '[]');
     } catch {}
-    if (trucks.length > 0) {
-      equipText += (equipText ? '\n\nCAMIONS:\n' : 'CAMIONS:\n');
+    if (trucks && trucks.length > 0) {
+      equipText += (equipText ? '\nCAMIONS:\n' : 'CAMIONS:\n');
       trucks.forEach(t => {
-        equipText += `- ${t.type} (${t.plate}): ${t.trips} voyage${t.trips > 1 ? 's' : ''}\n`;
+        if (t && t.type && t.plate) {
+          equipText += `- ${t.type} (${t.plate}): ${t.trips || 0} voyage${t.trips !== 1 ? 's' : ''}\n`;
+        }
       });
     }
     
