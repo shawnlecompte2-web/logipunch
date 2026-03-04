@@ -290,6 +290,7 @@ export default function CreateDailyReportPage() {
   const [selectedProject, setSelectedProject] = useState("");
   const [reportDate, setReportDate] = useState(new Date().toISOString().split("T")[0]);
   const [formData, setFormData] = useState({
+    weather: "",
     subcontractor: "",
     machine: "",
     machine_hours: "",
