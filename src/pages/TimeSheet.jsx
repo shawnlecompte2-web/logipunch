@@ -215,6 +215,8 @@ export default function TimeSheet() {
   const [activeGroup, setActiveGroup] = useState(null);
   const [loading, setLoading] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
+  const [addEntry, setAddEntry] = useState(null); // { userId, userName, dateStr }
+  const [projects, setProjects] = useState([]);
   const [company] = useState(getStoredCompany);
   const [currentUser, setCurrentUser] = useState(getStoredUser);
   const [accessChecked, setAccessChecked] = useState(false);
