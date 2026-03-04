@@ -29,14 +29,16 @@ export default function ActiveUsers() {
     setLoading(true);
     const company = getStoredCompany();
     const companyId = company?.id;
-    const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+    const weekStartSun = format(startOfWeek(new Date(), { weekStartsOn: 0 }), "yyyy-MM-dd");
+    const weekStartMon = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
     const [allEntries, allUsers] = await Promise.all([
       base44.entities.PunchEntry.list("-punch_in", 500),
       companyId ? base44.entities.AppUser.filter({ is_active: true, company_id: companyId }) : base44.entities.AppUser.filter({ is_active: true }),
     ]);
     const companyEntries = allEntries.filter(e => companyId ? e.company_id === companyId : true);
     setActiveEntries(companyEntries.filter(e => !e.punch_out));
-    setWeekEntries(companyEntries.filter(e => e.week_start === weekStart));
+    // Accept both Sunday-based and Monday-based week_start to cover all entries
+    setWeekEntries(companyEntries.filter(e => e.week_start === weekStartSun || e.week_start === weekStartMon));
     setUsers(allUsers);
     setLoading(false);
   };
