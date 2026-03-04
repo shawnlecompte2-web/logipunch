@@ -103,7 +103,10 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
   };
 
   const removeFromList = (item) => {
-    const next = equipList.filter((e) => e !== item);
+    const next = { ...equipList };
+    Object.keys(next).forEach(cat => {
+      next[cat] = next[cat].filter(e => e !== item);
+    });
     setEquipList(next);
     saveEquipmentList(next);
     onChange(selected.filter((s) => s !== item).join(", "));
