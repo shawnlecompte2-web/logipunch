@@ -44,29 +44,20 @@ export default function ReportCompilationPage() {
     initialData: []
   });
 
-  // Get week start (Sunday) for a given date string
-  const getWeekStart = (dateStr) => {
-    const d = new Date(dateStr + 'T12:00:00');
-    const day = d.getDay(); // 0=Sun
-    d.setDate(d.getDate() - day);
-    return d.toISOString().split('T')[0];
-  };
-
   const structure = useMemo(() => {
     const byProject = {};
     
     reports.forEach(report => {
-      const weekStart = getWeekStart(report.report_date);
       if (!byProject[report.project_id]) {
         byProject[report.project_id] = {};
       }
-      if (!byProject[report.project_id][weekStart]) {
-        byProject[report.project_id][weekStart] = {};
+      if (!byProject[report.project_id][report.week_start]) {
+        byProject[report.project_id][report.week_start] = {};
       }
-      if (!byProject[report.project_id][weekStart][report.report_date]) {
-        byProject[report.project_id][weekStart][report.report_date] = [];
+      if (!byProject[report.project_id][report.week_start][report.report_date]) {
+        byProject[report.project_id][report.week_start][report.report_date] = [];
       }
-      byProject[report.project_id][weekStart][report.report_date].push(report);
+      byProject[report.project_id][report.week_start][report.report_date].push(report);
     });
 
     return byProject;
