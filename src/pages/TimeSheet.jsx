@@ -263,10 +263,12 @@ export default function TimeSheet() {
   const loadData = async () => {
     setLoading(true);
     const companyId = company?.id;
-    const [allUsers, allEntries] = await Promise.all([
+    const [allUsers, allEntries, allProjects] = await Promise.all([
       companyId ? base44.entities.AppUser.filter({ is_active: true, company_id: companyId }) : base44.entities.AppUser.filter({ is_active: true }),
       base44.entities.PunchEntry.list("-punch_in", 500),
+      companyId ? base44.entities.Project.filter({ is_active: true, company_id: companyId }) : base44.entities.Project.filter({ is_active: true }),
     ]);
+    setProjects(allProjects);
     setUsers(allUsers);
 
     // Detect groups from users dynamically
