@@ -228,21 +228,32 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Compute previous week (Sunday to Saturday)
-    const now = new Date();
-    const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon...
-    // Start of current week (Sunday)
-    const startOfCurrentWeek = new Date(now);
-    startOfCurrentWeek.setDate(now.getDate() - dayOfWeek);
-    // Previous Saturday (end of last week)
-    const prevWeekEnd = new Date(startOfCurrentWeek);
-    prevWeekEnd.setDate(startOfCurrentWeek.getDate() - 1);
-    // Previous Sunday (start of last week)
-    const prevWeekStart = new Date(prevWeekEnd);
-    prevWeekStart.setDate(prevWeekEnd.getDate() - 6);
+    // Accept optional week_start override for testing
+    let body = {};
+    try { body = await req.json(); } catch(e) {}
 
-    const weekStartStr = prevWeekStart.toISOString().split('T')[0];
-    const weekEndStr = prevWeekEnd.toISOString().split('T')[0];
+    let weekStartStr, weekEndStr;
+
+    if (body.week_start) {
+      // Manual override: use provided Sunday as start
+      const ws = new Date(body.week_start + 'T12:00:00');
+      const we = new Date(ws);
+      we.setDate(ws.getDate() + 6);
+      weekStartStr = ws.toISOString().split('T')[0];
+      weekEndStr = we.toISOString().split('T')[0];
+    } else {
+      // Default: previous week (Sunday to Saturday)
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const startOfCurrentWeek = new Date(now);
+      startOfCurrentWeek.setDate(now.getDate() - dayOfWeek);
+      const prevWeekEnd = new Date(startOfCurrentWeek);
+      prevWeekEnd.setDate(startOfCurrentWeek.getDate() - 1);
+      const prevWeekStart = new Date(prevWeekEnd);
+      prevWeekStart.setDate(prevWeekEnd.getDate() - 6);
+      weekStartStr = prevWeekStart.toISOString().split('T')[0];
+      weekEndStr = prevWeekEnd.toISOString().split('T')[0];
+    }
 
     // Fetch all reports for the past week across all companies
     const allReports = await base44.asServiceRole.entities.DailyReport.filter({
