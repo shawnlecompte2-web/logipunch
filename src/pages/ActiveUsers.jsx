@@ -57,20 +57,29 @@ export default function ActiveUsers() {
     byProject[e.project_name].push(e);
   });
 
-  // Chart data: total hours per project
-  const chartData = Object.entries(byProject).map(([name, entries]) => ({
+  // Chart data: total hours per project (from week entries)
+  const weekByProject = {};
+  weekEntries.forEach(e => {
+    if (!weekByProject[e.project_name]) weekByProject[e.project_name] = 0;
+    weekByProject[e.project_name] += parseFloat(e.total_hours) || 0;
+  });
+  const chartData = Object.entries(weekByProject).map(([name, heures]) => ({
     name: name.length > 18 ? name.slice(0, 18) + "…" : name,
     fullName: name,
-    heures: parseFloat((entries.reduce((sum, e) => sum + getElapsedMinutes(e.punch_in), 0) / 60).toFixed(1)),
-    employes: entries.length,
+    heures: parseFloat(heures.toFixed(1)),
   }));
 
-  // Total accumulated hours
+  // Total accumulated hours (active right now)
   const totalHours = activeEntries.reduce((sum, e) => sum + getElapsedMinutes(e.punch_in), 0) / 60;
 
-  // Longest punch
-  const longestEntry = activeEntries.length > 0
-    ? activeEntries.reduce((max, e) => getElapsedMinutes(e.punch_in) > getElapsedMinutes(max.punch_in) ? e : max, activeEntries[0])
+  // Top worker of the week (most hours)
+  const weekHoursByUser = {};
+  weekEntries.forEach(e => {
+    if (!weekHoursByUser[e.user_id]) weekHoursByUser[e.user_id] = { user_name: e.user_name, hours: 0 };
+    weekHoursByUser[e.user_id].hours += parseFloat(e.total_hours) || 0;
+  });
+  const topWorker = Object.values(weekHoursByUser).length > 0
+    ? Object.values(weekHoursByUser).reduce((max, u) => u.hours > max.hours ? u : max, Object.values(weekHoursByUser)[0])
     : null;
 
   const CustomTooltip = ({ active, payload }) => {
