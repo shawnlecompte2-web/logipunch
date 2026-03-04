@@ -123,7 +123,13 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
               "bg-green-700 border-green-600 text-white" :
               "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}>
               {eq}
-              {editMode ? <X size={11} /> : isSelected && <X size={11} className="opacity-80" />}
+              {editMode ? <X size={11} /> : isSelected && (
+                <X
+                  size={11}
+                  className="opacity-80"
+                  onClick={(e) => { e.stopPropagation(); toggle(eq); }}
+                />
+              )}
             </button>
           );
         })}
