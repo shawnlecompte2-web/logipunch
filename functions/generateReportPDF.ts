@@ -245,7 +245,19 @@ Deno.serve(async (req) => {
 
     let equipText = '';
     if (report.machine) equipText += report.machine;
-    if (report.truck_count) equipText += (equipText ? '\nCamions: ' : 'Camions: ') + report.truck_count;
+    
+    // Handle trucks (new format)
+    let trucks = [];
+    try {
+      trucks = JSON.parse(report.trucks || '[]');
+    } catch {}
+    if (trucks.length > 0) {
+      equipText += (equipText ? '\n\nCAMIONS:\n' : 'CAMIONS:\n');
+      trucks.forEach(t => {
+        equipText += `- ${t.type} (${t.plate}): ${t.trips} voyage${t.trips > 1 ? 's' : ''}\n`;
+      });
+    }
+    
     y = drawTextBox(doc, M, y, CW, equipText || null) + 5;
 
     // =====================================================================
