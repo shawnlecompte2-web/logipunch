@@ -135,36 +135,43 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
         </button>
       </div>
 
-      {/* Chips */}
-      <div className="flex flex-wrap gap-2">
-        {equipList.map((eq) => {
-          const isSelected = selected.includes(eq);
-          if (editMode) {
-            return (
-              <button
-                key={eq}
-                type="button"
-                onClick={() => removeFromList(eq)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/60">
-                {eq}
-                <X size={11} />
-              </button>
-            );
-          }
-          return (
-            <button
-              key={eq}
-              type="button"
-              onClick={() => toggle(eq)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                isSelected ?
-                "bg-green-700 border-green-600 text-white hover:bg-green-600" :
-                "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}>
-              {eq}
-              {isSelected && <X size={11} className="opacity-80" />}
-            </button>
-          );
-        })}
+      {/* Chips by Category */}
+      <div className="space-y-3">
+        {Object.entries(equipList).map(([category, items]) => (
+          <div key={category}>
+            <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">{category}</p>
+            <div className="flex flex-wrap gap-2">
+              {items.map((eq) => {
+                const isSelected = selected.includes(eq);
+                if (editMode) {
+                  return (
+                    <button
+                      key={eq}
+                      type="button"
+                      onClick={() => removeFromList(eq)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/60">
+                      {eq}
+                      <X size={11} />
+                    </button>
+                  );
+                }
+                return (
+                  <button
+                    key={eq}
+                    type="button"
+                    onClick={() => toggle(eq)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                      isSelected ?
+                      "bg-green-700 border-green-600 text-white hover:bg-green-600" :
+                      "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}>
+                    {eq}
+                    {isSelected && <X size={11} className="opacity-80" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Custom tags (not in predefined list) */}
