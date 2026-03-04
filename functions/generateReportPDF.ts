@@ -88,14 +88,18 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { type, projectName, projectAddress, date, weekStart, reports, workers, totalHours, companyName, companyLogo } = body;
+     const { type, projectName, projectAddress, date, weekStart, reports, workers, totalHours, companyName, companyLogo } = body;
 
-    const doc = new jsPDF();
-    const PW = 210;
-    const M = 12;
-    const CW = PW - M * 2;
+     const doc = new jsPDF();
+     const PW = 210;
+     const M = 12;
+     const CW = PW - M * 2;
 
-    let y = 0;
+     // Consolidate all reports data (handle both single and array)
+     const allReports = Array.isArray(reports) ? reports : [reports];
+     const report = allReports && allReports.length > 0 ? allReports[0] : {};
+
+     let y = 0;
 
     // =====================================================================
     // HEADER BAND - dark blue gradient-look
