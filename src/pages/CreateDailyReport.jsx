@@ -360,7 +360,9 @@ export default function CreateDailyReportPage() {
               <Field label="Equipements et machinerie utilises">
                 <EquipmentPicker
                   value={formData.machine}
-                  onChange={(val) => setFormData({ ...formData, machine: val })} />
+                  onChange={(val) => setFormData({ ...formData, machine: val })}
+                  hoursValue={formData.machine_hours}
+                  onHoursChange={(val) => setFormData({ ...formData, machine_hours: val })} />
 
               </Field>
 
