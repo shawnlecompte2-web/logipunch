@@ -51,6 +51,14 @@ function saveEquipmentList(list) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 }
 
+function getAllEquipment(equipList) {
+  const all = [];
+  Object.values(equipList).forEach(items => {
+    if (Array.isArray(items)) all.push(...items);
+  });
+  return all;
+}
+
 // value = comma-separated names (for backward compat)
 // hoursValue = JSON string: { "Excavatrice Cat 320": 4.5, ... }
 function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
