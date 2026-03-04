@@ -280,8 +280,8 @@ export default function Layout({ children, currentPageName }) {
   // Step 1: No company selected → show company portal
   if (!currentCompany) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white">
-        <style>{`body { background: #0a0a0a; }`}</style>
+      <div className="min-h-screen bg-background text-foreground">
+        <style>{``}</style>
         <CompanyPortalOverlay onSuccess={handleCompanySelect} />
       </div>
     );
