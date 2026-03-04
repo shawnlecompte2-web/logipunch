@@ -73,7 +73,7 @@ function drawCell(doc, x, y, w, h, label, value) {
   doc.setFontSize(6.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(30, 64, 175);
-  doc.text(label, x + 3, y + 4);
+  doc.text(sanitize(label), x + 3, y + 4);
   doc.setFontSize(9.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(20, 20, 20);
