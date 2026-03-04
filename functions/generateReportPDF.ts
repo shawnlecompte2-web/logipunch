@@ -248,34 +248,38 @@ Deno.serve(async (req) => {
     y += 2;
 
     let equipText = '';
-    if (report.machine) equipText += report.machine;
-    
+    if (report && report.machine) equipText += sanitize(report.machine);
+
     // Handle machine hours
     let machineHours = {};
     try {
-      machineHours = JSON.parse(report.machine_hours || '{}');
-    } catch {}
+      machineHours = JSON.parse(report?.machine_hours || '{}');
+    } catch (e) {
+      console.log('Error parsing machine_hours:', e);
+    }
     if (Object.keys(machineHours).length > 0) {
       equipText += (equipText ? '\n\nHEURES PAR EQUIPEMENT:\n' : 'HEURES PAR EQUIPEMENT:\n');
       Object.entries(machineHours).forEach(([machine, hours]) => {
-        if (hours) equipText += `${machine}: ${hours}h\n`;
+        if (hours) equipText += `${sanitize(machine)}: ${hours}h\n`;
       });
     }
-    
+
     // Handle trucks (new format)
     let trucks = [];
     try {
-      trucks = JSON.parse(report.trucks || '[]');
-    } catch {}
+      trucks = JSON.parse(report?.trucks || '[]');
+    } catch (e) {
+      console.log('Error parsing trucks:', e);
+    }
     if (trucks && trucks.length > 0) {
-      equipText += (equipText ? '\nCAMIONS:\n' : 'CAMIONS:\n');
+      equipText += (equipText ? '\n\nCAMIONS:\n' : 'CAMIONS:\n');
       trucks.forEach(t => {
         if (t && t.type && t.plate) {
-          equipText += `- ${t.type} (${t.plate}): ${t.trips || 0} voyage${t.trips !== 1 ? 's' : ''}\n`;
+          equipText += `- ${sanitize(t.type)} (${sanitize(t.plate)}): ${t.trips || 0} voyage${t.trips !== 1 ? 's' : ''}\n`;
         }
       });
     }
-    
+
     y = drawTextBox(doc, M, y, CW, equipText || null) + 5;
 
     // =====================================================================
