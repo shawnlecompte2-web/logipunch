@@ -97,7 +97,7 @@ function PinModal({ onSuccess, company }) {
   const timeStr = now.toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col px-4">
+    <div className="fixed inset-0 bg-background z-50 flex flex-col px-4">
       <div className="flex items-start justify-between pt-6 px-6 pb-8">
         <div className="flex items-center gap-2">
         <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
