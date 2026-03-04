@@ -240,13 +240,12 @@ Deno.serve(async (req) => {
     const weekStartStr = lastSunday.toISOString().split('T')[0];
     const weekEndStr = lastSaturday.toISOString().split('T')[0];
 
-    // Fetch all reports for the past week across all companies
-    const allReports = await base44.asServiceRole.entities.DailyReport.filter({
-      week_start: weekStartStr
-    });
+    // Fetch all reports and filter by report_date range (not week_start)
+    const allReportsRaw = await base44.asServiceRole.entities.DailyReport.list('-report_date', 1000);
+    const allReports = (allReportsRaw || []).filter(r => r.report_date >= weekStartStr && r.report_date <= weekEndStr);
 
     if (!allReports || allReports.length === 0) {
-      return Response.json({ success: true, message: 'No reports found for last week.' });
+      return Response.json({ success: true, message: `No reports found for last week (${weekStartStr} to ${weekEndStr}).` });
     }
 
     // Group reports by company_id then project_id
