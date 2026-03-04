@@ -152,6 +152,11 @@ Deno.serve(async (req) => {
     y += cellH + 2;
     drawCell(doc, M,       y, w2, cellH, 'DATE', type === 'day' ? frDate(date) : dateLabel);
     drawCell(doc, M+w2+2,  y, w2, cellH, 'CONTREMAITRE', foreman);
+    y += cellH + 2;
+    
+    const weatherLabels = { nuageux: 'Nuageux', ensoleille: 'Ensoleillé', chaleur_extreme: 'Chaleur extrême' };
+    const weatherDisplay = weatherLabels[report.weather] || '-';
+    drawCell(doc, M,       y, CW, cellH, 'MÉTÉO', weatherDisplay);
     y += cellH + 5;
 
     // =====================================================================
