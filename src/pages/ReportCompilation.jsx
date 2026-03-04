@@ -180,6 +180,12 @@ export default function ReportCompilationPage() {
     }
   };
 
+  const deletePunchEntry = async (entryId) => {
+    if (!window.confirm('Supprimer cette entrée de temps ?')) return;
+    await base44.entities.PunchEntry.delete(entryId);
+    qc.invalidateQueries({ queryKey: ['punchEntries', currentCompany?.id] });
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
       <div className="max-w-4xl mx-auto">
