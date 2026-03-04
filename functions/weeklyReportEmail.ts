@@ -298,27 +298,6 @@ Deno.serve(async (req) => {
       // Sort reports by date
       const sortedReports = reports.sort((a, b) => a.report_date.localeCompare(b.report_date));
 
-      // Load logo once
-      let logoBase64 = null;
-      let logoFmt = 'JPEG';
-      if (company.logo_url) {
-        try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 5000);
-          const res = await fetch(company.logo_url, { signal: controller.signal });
-          clearTimeout(timeout);
-          const contentType = res.headers.get('content-type') || '';
-          const buf = await res.arrayBuffer();
-          const bytes = new Uint8Array(buf);
-          let bin = '';
-          for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-          logoBase64 = btoa(bin);
-          if (contentType.includes('png') || company.logo_url.toLowerCase().includes('.png')) {
-            logoFmt = 'PNG';
-          }
-        } catch(e) { console.error('Logo error:', e.message); }
-      }
-
       // Build PDF - one page per day
       const doc = new jsPDF();
 
@@ -330,7 +309,7 @@ Deno.serve(async (req) => {
           p.status !== 'active'
         );
 
-        addDayToDoc(doc, dayReport, dayWorkers, company.name, company.logo_url, logoBase64, logoFmt, idx === 0);
+        addDayToDoc(doc, dayReport, dayWorkers, company.name, null, null, null, idx === 0);
       });
 
       // Footer on all pages
