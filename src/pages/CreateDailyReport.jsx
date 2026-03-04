@@ -430,15 +430,10 @@ export default function CreateDailyReportPage() {
 
               </Field>
 
-              <Field label="Nombre de camions au projet">
-                <Input
-                  type="number"
-                  min="0"
-                  value={formData.truck_count}
-                  onChange={(e) => setFormData({ ...formData, truck_count: e.target.value })}
-                  placeholder="Ex: 3"
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500" />
-
+              <Field label="Camions sur le chantier">
+                <TruckPicker
+                  value={formData.trucks}
+                  onChange={(val) => setFormData({ ...formData, trucks: val })} />
               </Field>
 
               {/* TRAVAUX */}
