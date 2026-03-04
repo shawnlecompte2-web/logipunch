@@ -97,7 +97,7 @@ function PinModal({ onSuccess, company }) {
   const timeStr = now.toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="fixed inset-0 bg-background z-50 flex flex-col px-4">
+    <div className="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col px-4">
       <div className="flex items-start justify-between pt-6 px-6 pb-8">
         <div className="flex items-center gap-2">
         <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
@@ -280,8 +280,8 @@ export default function Layout({ children, currentPageName }) {
   // Step 1: No company selected → show company portal
   if (!currentCompany) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <style>{``}</style>
+      <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <style>{`body { background: #0a0a0a; }`}</style>
         <CompanyPortalOverlay onSuccess={handleCompanySelect} />
       </div>
     );
@@ -290,8 +290,8 @@ export default function Layout({ children, currentPageName }) {
   // Step 2: Company selected but no user → show PIN
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <style>{``}</style>
+      <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <style>{`body { background: #0a0a0a; }`}</style>
         <PinModal onSuccess={handleLogin} company={currentCompany} />
       </div>
     );
@@ -299,16 +299,17 @@ export default function Layout({ children, currentPageName }) {
 
   // Step 3: Fully authenticated → show app
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
       <style>{`
+        body { background: #0a0a0a; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: hsl(var(--background)); }
+        ::-webkit-scrollbar-track { background: #111; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #22c55e55; }
       `}</style>
 
       {/* Top bar - desktop */}
-      <div className="hidden md:flex items-center justify-between px-6 py-3 bg-card border-b border-zinc-800/60">
+      <div className="hidden md:flex items-center justify-between px-6 py-3 bg-[#0d0d0d] border-b border-zinc-800/60">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/6b809ffd5_clock_5190346.png" alt="logo" className="w-10 h-10 object-contain" style={{filter: "brightness(0) invert(1)"}} />
@@ -347,7 +348,7 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Bottom nav - mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-zinc-800/60 flex z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-zinc-800/60 flex z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {navItems.map(({ label, page, icon: Icon }) => {
           const isActive = currentPageName === page;
           return (

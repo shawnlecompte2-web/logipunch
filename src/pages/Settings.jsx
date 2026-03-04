@@ -15,68 +15,6 @@ function getStoredUser() {
 const ADMIN_ROLES = ["Administrateur", "Surintendant", "Chargé de projet"];
 const isAdminUser = (user) => user?.is_admin === true || ADMIN_ROLES.includes(user?.role);
 
-function DangerZone({ currentUser }) {
-  const [confirmStep, setConfirmStep] = useState(0); // 0=idle, 1=first confirm, 2=final confirm
-  const [deleting, setDeleting] = useState(false);
-
-  const handleDeactivate = async () => {
-    await base44.entities.AppUser.update(currentUser.id, { is_active: false });
-    sessionStorage.removeItem("logipunch_user");
-    window.dispatchEvent(new Event("logipunch_user_change"));
-    window.location.reload();
-  };
-
-  const handleDelete = async () => {
-    setDeleting(true);
-    await base44.entities.AppUser.delete(currentUser.id);
-    sessionStorage.removeItem("logipunch_user");
-    window.dispatchEvent(new Event("logipunch_user_change"));
-    window.location.reload();
-  };
-
-  return (
-    <div className="mt-10 border-t border-zinc-800/60 pt-6">
-      <div className="flex items-center gap-2 mb-1">
-        <AlertTriangle size={14} className="text-red-500" />
-        <h2 className="text-red-500 font-bold text-sm">Zone de danger</h2>
-      </div>
-      <p className="text-zinc-600 text-xs mb-4">Ces actions sont irréversibles.</p>
-      <div className="flex flex-wrap gap-3">
-        <button
-          onClick={handleDeactivate}
-          className="px-4 py-2 bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-semibold rounded-xl hover:bg-red-900/40 transition-all"
-        >
-          Désactiver mon compte
-        </button>
-        {confirmStep === 0 && (
-          <button
-            onClick={() => setConfirmStep(1)}
-            className="px-4 py-2 bg-red-900/30 border border-red-700/60 text-red-400 text-sm font-semibold rounded-xl hover:bg-red-900/50 transition-all"
-          >
-            Supprimer mon compte
-          </button>
-        )}
-        {confirmStep === 1 && (
-          <div className="flex items-center gap-2 px-4 py-2 bg-red-950/50 border border-red-700 rounded-xl">
-            <span className="text-red-300 text-sm">Êtes-vous sûr ? Cette action est permanente.</span>
-            <button onClick={() => setConfirmStep(2)} className="px-3 py-1 bg-red-700 hover:bg-red-600 text-white text-xs font-bold rounded-lg transition-all">Confirmer</button>
-            <button onClick={() => setConfirmStep(0)} className="px-3 py-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 text-xs font-semibold rounded-lg transition-all">Annuler</button>
-          </div>
-        )}
-        {confirmStep === 2 && (
-          <div className="flex items-center gap-2 px-4 py-2 bg-red-950/80 border border-red-600 rounded-xl">
-            <span className="text-red-200 text-sm font-bold">⚠ Dernière confirmation — suppression définitive.</span>
-            <button onClick={handleDelete} disabled={deleting} className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-all disabled:opacity-50">
-              {deleting ? "..." : "Supprimer"}
-            </button>
-            <button onClick={() => setConfirmStep(0)} className="px-3 py-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 text-xs font-semibold rounded-lg transition-all">Annuler</button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function Settings() {
   const [tab, setTab] = useState("users");
   const [users, setUsers] = useState([]);
@@ -163,7 +101,25 @@ export default function Settings() {
       )}
 
       {/* Danger Zone */}
-      <DangerZone currentUser={currentUser} />
+      <div className="mt-10 border-t border-zinc-800/60 pt-6">
+        <div className="flex items-center gap-2 mb-1">
+          <AlertTriangle size={14} className="text-red-500" />
+          <h2 className="text-red-500 font-bold text-sm">Zone de danger</h2>
+        </div>
+        <p className="text-zinc-600 text-xs mb-4">Désactiver votre compte vous empêchera de vous connecter.</p>
+        <button
+          onClick={async () => {
+            if (!window.confirm("Désactiver votre compte? Vous ne pourrez plus vous connecter.")) return;
+            await base44.entities.AppUser.update(currentUser.id, { is_active: false });
+            sessionStorage.removeItem("logipunch_user");
+            window.dispatchEvent(new Event("logipunch_user_change"));
+            window.location.reload();
+          }}
+          className="px-4 py-2 bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-semibold rounded-xl hover:bg-red-900/40 transition-all"
+        >
+          Désactiver mon compte
+        </button>
+      </div>
     </div>
   );
 }
