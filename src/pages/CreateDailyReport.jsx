@@ -268,6 +268,7 @@ export default function CreateDailyReportPage() {
         week_start: weekStartStr,
         subcontractor: formData.subcontractor,
         machine: formData.machine,
+        machine_hours: formData.machine_hours || null,
         truck_count: formData.truck_count ? parseInt(formData.truck_count) : null,
         work_description: formData.work_description,
         other_notes: formData.other_notes,
