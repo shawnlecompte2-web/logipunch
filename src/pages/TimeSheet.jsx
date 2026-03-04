@@ -857,6 +857,7 @@ export default function TimeSheet() {
         </div>
       )}
       {editEntry && <EditEntryModal entry={editEntry} onClose={() => setEditEntry(null)} onSaved={() => { setEditEntry(null); loadData(); }} />}
+      {addEntry && <AddEntryModal userId={addEntry.userId} userName={addEntry.userName} dateStr={addEntry.dateStr} projects={projects} company={company} onClose={() => setAddEntry(null)} onSaved={() => { setAddEntry(null); loadData(); }} />}
     </div>
   );
 }
