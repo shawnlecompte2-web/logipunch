@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { format, parseISO, differenceInMinutes } from "date-fns";
+import { format, parseISO, differenceInMinutes, startOfWeek } from "date-fns";
 import { fr } from "date-fns/locale";
 import { MapPin, Clock, RefreshCw, Users, TrendingUp, Timer } from "lucide-react";
 import PullToRefresh from "@/components/PullToRefresh";
