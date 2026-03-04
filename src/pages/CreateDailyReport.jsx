@@ -42,7 +42,16 @@ const STORAGE_KEY = "logipunch_equipment_list";
 function getEquipmentList() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // If old array format, migrate to new object format
+      if (Array.isArray(parsed)) {
+        const migrated = { ...DEFAULT_EQUIPMENT, "Autres": parsed };
+        saveEquipmentList(migrated);
+        return migrated;
+      }
+      return parsed;
+    }
   } catch {}
   return DEFAULT_EQUIPMENT;
 }
