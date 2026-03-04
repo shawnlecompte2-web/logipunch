@@ -299,11 +299,10 @@ export default function Layout({ children, currentPageName }) {
 
   // Step 3: Fully authenticated → show app
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <style>{`
-        body { background: #0a0a0a; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-track { background: hsl(var(--background)); }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #22c55e55; }
       `}</style>
