@@ -69,10 +69,14 @@ export default function ReportCompilationPage() {
   };
 
   const formatWeek = (startStr) => {
-    const start = new Date(startStr + "T12:00:00");
-    const end = new Date(start);
-    end.setDate(end.getDate() + 6);
-    return `${start.toLocaleDateString("fr-CA", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("fr-CA", { month: "short", day: "numeric", year: "numeric" })}`;
+    const d = new Date(startStr + "T12:00:00");
+    // Force start to Sunday of that week
+    const day = d.getDay(); // 0=Sun
+    const sunday = new Date(d);
+    sunday.setDate(d.getDate() - day);
+    const saturday = new Date(sunday);
+    saturday.setDate(sunday.getDate() + 6);
+    return `${sunday.toLocaleDateString("fr-CA", { month: "short", day: "numeric" })} - ${saturday.toLocaleDateString("fr-CA", { month: "short", day: "numeric", year: "numeric" })}`;
   };
 
   const getTotalHours = (projectId, weekStart, date) => {
