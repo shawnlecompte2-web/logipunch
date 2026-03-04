@@ -151,7 +151,7 @@ export default function ActiveUsers() {
           {/* Bar chart */}
           {chartData.length > 0 && (
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-5">
-              <p className="text-white font-bold text-sm mb-4">Heures cumulées par projet</p>
+              <p className="text-white font-bold text-sm mb-4">Heures de la semaine par projet</p>
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={chartData} barCategoryGap="30%">
                   <XAxis dataKey="name" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
