@@ -308,7 +308,7 @@ export default function Layout({ children, currentPageName }) {
       `}</style>
 
       {/* Top bar - desktop */}
-      <div className="hidden md:flex items-center justify-between px-6 py-3 bg-[#0d0d0d] border-b border-zinc-800/60">
+      <div className="hidden md:flex items-center justify-between px-6 py-3 bg-card border-b border-zinc-800/60">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/6b809ffd5_clock_5190346.png" alt="logo" className="w-10 h-10 object-contain" style={{filter: "brightness(0) invert(1)"}} />
