@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, Plus, X } from "lucide-react";
+import TruckPicker from "@/components/TruckPicker";
 
 const DEFAULT_EQUIPMENT = {
   "Pelle Mécanique": [
