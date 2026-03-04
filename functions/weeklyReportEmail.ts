@@ -329,20 +329,24 @@ Deno.serve(async (req) => {
         doc.text(`Page ${p} / ${pageCount}`, 200, 293.5, { align: 'right' });
       }
 
-      // Convert PDF to base64
-      const pdfBytes = doc.output('arraybuffer');
-      const pdfUint8 = new Uint8Array(pdfBytes);
-      let pdfBin = '';
-      for (let i = 0; i < pdfUint8.length; i++) pdfBin += String.fromCharCode(pdfUint8[i]);
-      const pdfBase64 = btoa(pdfBin);
-
       const filename = `rapport_semaine_${weekStartStr}_${sanitize(projectName).replace(/\s+/g, '_')}.pdf`;
 
-      // Upload PDF as base64 string
+      // Upload PDF using multipart/form-data
       let downloadUrl = null;
       try {
-        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfBase64 });
-        downloadUrl = uploadRes?.file_url || null;
+        const pdfBytes = doc.output('arraybuffer');
+        const formData = new FormData();
+        formData.append('file', new Blob([pdfBytes], { type: 'application/pdf' }), filename);
+
+        const appId = Deno.env.get('BASE44_APP_ID');
+        const uploadRes = await fetch(`https://base44.app/api/apps/${appId}/integrations/Core/UploadFile`, {
+          method: 'POST',
+          headers: { 'Authorization': req.headers.get('Authorization') || '' },
+          body: formData
+        });
+        const uploadData = await uploadRes.json();
+        downloadUrl = uploadData?.file_url || null;
+        if (!downloadUrl) console.error('Upload error:', JSON.stringify(uploadData));
       } catch(e) { console.error('Upload error:', e.message); }
 
       // Build HTML email body
