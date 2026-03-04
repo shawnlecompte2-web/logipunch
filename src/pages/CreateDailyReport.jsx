@@ -11,17 +11,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ChevronLeft, Plus, X } from "lucide-react";
 
 const DEFAULT_EQUIPMENT = [
-  "Excavatrice Cat 320",
-  "Excavatrice Cat 345",
-  "Compacteur Dynapac",
-  "Niveleuse",
-  "Bouteur (Dozer)",
-  "Chargeuse frontale",
-  "Camion benne",
-  "Tractopelle",
-  "Grue mobile",
-  "Vibrateur de sol",
-];
+"Excavatrice Cat 320",
+"Excavatrice Cat 345",
+"Compacteur Dynapac",
+"Niveleuse",
+"Bouteur (Dozer)",
+"Chargeuse frontale",
+"Camion benne",
+"Tractopelle",
+"Grue mobile",
+"Vibrateur de sol"];
+
 
 const STORAGE_KEY = "logipunch_equipment_list";
 
@@ -38,7 +38,7 @@ function saveEquipmentList(list) {
 }
 
 function EquipmentPicker({ value, onChange }) {
-  const selected = value ? value.split(",").map(s => s.trim()).filter(Boolean) : [];
+  const selected = value ? value.split(",").map((s) => s.trim()).filter(Boolean) : [];
   const [custom, setCustom] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [equipList, setEquipList] = useState(getEquipmentList);
@@ -46,7 +46,7 @@ function EquipmentPicker({ value, onChange }) {
   const toggle = (item) => {
     if (editMode) return;
     const exists = selected.includes(item);
-    const next = exists ? selected.filter(s => s !== item) : [...selected, item];
+    const next = exists ? selected.filter((s) => s !== item) : [...selected, item];
     onChange(next.join(", "));
   };
 
@@ -65,15 +65,15 @@ function EquipmentPicker({ value, onChange }) {
   };
 
   const removeFromList = (item) => {
-    const next = equipList.filter(e => e !== item);
+    const next = equipList.filter((e) => e !== item);
     setEquipList(next);
     saveEquipmentList(next);
     // Also deselect if selected
-    onChange(selected.filter(s => s !== item).join(", "));
+    onChange(selected.filter((s) => s !== item).join(", "));
   };
 
   const removeSelected = (item) => {
-    onChange(selected.filter(s => s !== item).join(", "));
+    onChange(selected.filter((s) => s !== item).join(", "));
   };
 
   return (
@@ -82,16 +82,16 @@ function EquipmentPicker({ value, onChange }) {
       <div className="flex justify-end">
         <button
           type="button"
-          onClick={() => setEditMode(e => !e)}
-          className={`text-xs px-2.5 py-1 rounded-full border transition-all ${editMode ? "bg-red-900/40 border-red-700 text-red-400" : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-white"}`}
-        >
+          onClick={() => setEditMode((e) => !e)}
+          className={`text-xs px-2.5 py-1 rounded-full border transition-all ${editMode ? "bg-red-900/40 border-red-700 text-red-400" : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-white"}`}>
+
           {editMode ? "Terminer" : "Modifier la liste"}
         </button>
       </div>
 
       {/* Chips */}
       <div className="flex flex-wrap gap-2">
-        {equipList.map(eq => {
+        {equipList.map((eq) => {
           const isSelected = selected.includes(eq);
           return (
             <button
@@ -99,62 +99,62 @@ function EquipmentPicker({ value, onChange }) {
               type="button"
               onClick={() => editMode ? removeFromList(eq) : toggle(eq)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                editMode
-                  ? "bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/60"
-                  : isSelected
-                    ? "bg-green-700 border-green-600 text-white"
-                    : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
-              }`}
-            >
+              editMode ?
+              "bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/60" :
+              isSelected ?
+              "bg-green-700 border-green-600 text-white" :
+              "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`
+              }>
+
               {eq}
               {editMode ? <X size={11} /> : isSelected && <X size={11} className="opacity-80" />}
-            </button>
-          );
+            </button>);
+
         })}
       </div>
 
       {/* Custom tags (not in predefined list) */}
-      {selected.filter(s => !equipList.includes(s)).length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {selected.filter(s => !equipList.includes(s)).map(s => (
-            <span key={s} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-900/50 border border-blue-700 text-blue-300">
+      {selected.filter((s) => !equipList.includes(s)).length > 0 &&
+      <div className="flex flex-wrap gap-2">
+          {selected.filter((s) => !equipList.includes(s)).map((s) =>
+        <span key={s} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-900/50 border border-blue-700 text-blue-300">
               {s}
               <button type="button" onClick={() => removeSelected(s)} className="ml-0.5 hover:text-white">
                 <X size={12} />
               </button>
             </span>
-          ))}
+        )}
         </div>
-      )}
+      }
 
       {/* Custom input */}
-      {!editMode && (
-        <div className="flex gap-2">
+      {!editMode &&
+      <div className="flex gap-2">
           <Input
-            value={custom}
-            onChange={e => setCustom(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustom(); }}}
-            placeholder="Ajouter un equipement..."
-            className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 text-sm h-9"
-          />
+          value={custom}
+          onChange={(e) => setCustom(e.target.value)}
+          onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault();addCustom();}}}
+          placeholder="Ajouter un equipement..."
+          className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 text-sm h-9" />
+
           <Button type="button" onClick={addCustom} size="sm" variant="outline" className="h-9 px-3 border-zinc-700">
             <Plus size={15} />
           </Button>
         </div>
-      )}
-      {editMode && (
-        <p className="text-xs text-red-400/70 text-center">Cliquez sur un equipement pour le supprimer de la liste</p>
-      )}
-    </div>
-  );
+      }
+      {editMode &&
+      <p className="text-xs text-red-400/70 text-center">Cliquez sur un equipement pour le supprimer de la liste</p>
+      }
+    </div>);
+
 }
 
 function getStoredUser() {
-  try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
+  try {return JSON.parse(sessionStorage.getItem("logipunch_user") || "null");} catch {return null;}
 }
 
 function getStoredCompany() {
-  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
+  try {return JSON.parse(sessionStorage.getItem("logipunch_company") || "null");} catch {return null;}
 }
 
 function Field({ label, required, children, hint }) {
@@ -165,8 +165,8 @@ function Field({ label, required, children, hint }) {
       </label>
       {children}
       {hint && <p className="text-xs text-zinc-500 mt-1">{hint}</p>}
-    </div>
-  );
+    </div>);
+
 }
 
 function SectionTitle({ label }) {
@@ -174,8 +174,8 @@ function SectionTitle({ label }) {
     <div className="pt-2 pb-1">
       <p className="text-xs font-bold uppercase tracking-widest text-green-500">{label}</p>
       <div className="h-px bg-zinc-800 mt-1" />
-    </div>
-  );
+    </div>);
+
 }
 
 export default function CreateDailyReportPage() {
@@ -201,7 +201,7 @@ export default function CreateDailyReportPage() {
     initialData: []
   });
 
-  const selectedProjectObj = projects.find(p => p.id === selectedProject);
+  const selectedProjectObj = projects.find((p) => p.id === selectedProject);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -211,7 +211,7 @@ export default function CreateDailyReportPage() {
     }
     setLoading(true);
     try {
-      const project = projects.find(p => p.id === selectedProject);
+      const project = projects.find((p) => p.id === selectedProject);
       const weekStart = new Date(reportDate + "T12:00:00");
       const day = weekStart.getDay(); // 0=Dim, 6=Sam
       weekStart.setDate(weekStart.getDate() - day); // Recule au dimanche
@@ -247,15 +247,15 @@ export default function CreateDailyReportPage() {
       <div className="max-w-2xl mx-auto">
         <button
           onClick={() => navigate(createPageUrl("DailyReports"))}
-          className="flex items-center gap-2 text-zinc-400 hover:text-white mb-6 transition-colors"
-        >
+          className="flex items-center gap-2 text-zinc-400 hover:text-white mb-6 transition-colors">
+
           <ChevronLeft className="w-4 h-4" />
           Retour
         </button>
 
         <Card className="bg-zinc-900/50 border-zinc-800">
           <CardHeader>
-            <CardTitle className="text-xl">Rapport journalier de chantier</CardTitle>
+            <CardTitle className="text-slate-50 text-xl font-semibold tracking-tight">Rapport journalier de chantier</CardTitle>
             <CardDescription>Remplissez les informations du chantier</CardDescription>
           </CardHeader>
           <CardContent>
@@ -270,20 +270,20 @@ export default function CreateDailyReportPage() {
                     <SelectValue placeholder="Sélectionnez un projet" />
                   </SelectTrigger>
                   <SelectContent>
-                    {projects.map(p => (
-                      <SelectItem key={p.id} value={p.id}>
+                    {projects.map((p) =>
+                    <SelectItem key={p.id} value={p.id}>
                         {p.name} ({p.project_number})
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </Field>
 
-              {selectedProjectObj?.address && (
-                <div className="bg-zinc-800/50 rounded-lg px-3 py-2 text-sm text-zinc-400 border border-zinc-700/50">
+              {selectedProjectObj?.address &&
+              <div className="bg-zinc-800/50 rounded-lg px-3 py-2 text-sm text-zinc-400 border border-zinc-700/50">
                   <span className="text-zinc-500">Adresse : </span>{selectedProjectObj.address}
                 </div>
-              )}
+              }
 
               <Field label="Date du rapport" hint="Vous pouvez remplir des rapports des jours precedents">
                 <input
@@ -291,8 +291,8 @@ export default function CreateDailyReportPage() {
                   value={reportDate}
                   onChange={(e) => setReportDate(e.target.value)}
                   max={new Date().toISOString().split("T")[0]}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-white"
-                />
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-white" />
+
               </Field>
 
               <div className="bg-zinc-800/30 rounded-lg px-3 py-2 text-sm text-zinc-400 border border-zinc-700/50">
@@ -305,11 +305,11 @@ export default function CreateDailyReportPage() {
               <Field label="Sous-traitants sur le chantier">
                 <Textarea
                   value={formData.subcontractor}
-                  onChange={(e) => setFormData({...formData, subcontractor: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, subcontractor: e.target.value })}
                   placeholder="Noms des sous-traitants presents (optionnel)"
                   className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 resize-none"
-                  rows={2}
-                />
+                  rows={2} />
+
               </Field>
 
               {/* ÉQUIPEMENTS */}
@@ -318,8 +318,8 @@ export default function CreateDailyReportPage() {
               <Field label="Equipements et machinerie utilises">
                 <EquipmentPicker
                   value={formData.machine}
-                  onChange={(val) => setFormData({...formData, machine: val})}
-                />
+                  onChange={(val) => setFormData({ ...formData, machine: val })} />
+
               </Field>
 
               <Field label="Nombre de camions au projet">
@@ -327,10 +327,10 @@ export default function CreateDailyReportPage() {
                   type="number"
                   min="0"
                   value={formData.truck_count}
-                  onChange={(e) => setFormData({...formData, truck_count: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, truck_count: e.target.value })}
                   placeholder="Ex: 3"
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500"
-                />
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500" />
+
               </Field>
 
               {/* TRAVAUX */}
@@ -340,11 +340,11 @@ export default function CreateDailyReportPage() {
                 <Textarea
                   required
                   value={formData.work_description}
-                  onChange={(e) => setFormData({...formData, work_description: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, work_description: e.target.value })}
                   placeholder="Decrivez les travaux effectues durant la journee..."
                   className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 resize-none"
-                  rows={4}
-                />
+                  rows={4} />
+
               </Field>
 
               {/* RETARDS / OBSERVATIONS */}
@@ -353,11 +353,11 @@ export default function CreateDailyReportPage() {
               <Field label="Retards, problemes ou observations">
                 <Textarea
                   value={formData.other_notes}
-                  onChange={(e) => setFormData({...formData, other_notes: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, other_notes: e.target.value })}
                   placeholder="Notez tout retard, probleme rencontre ou observation importante..."
                   className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 resize-none"
-                  rows={3}
-                />
+                  rows={3} />
+
               </Field>
 
               {/* Buttons */}
@@ -366,15 +366,15 @@ export default function CreateDailyReportPage() {
                   type="button"
                   variant="outline"
                   onClick={() => navigate(createPageUrl("DailyReports"))}
-                  className="flex-1"
-                >
+                  className="flex-1">
+
                   Annuler
                 </Button>
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-green-700 hover:bg-green-600"
-                >
+                  className="flex-1 bg-green-700 hover:bg-green-600">
+
                   {loading ? "Creation..." : "Creer le rapport"}
                 </Button>
               </div>
@@ -382,6 +382,6 @@ export default function CreateDailyReportPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 }
