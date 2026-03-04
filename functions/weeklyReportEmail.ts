@@ -331,22 +331,14 @@ Deno.serve(async (req) => {
 
       const filename = `rapport_semaine_${weekStartStr}_${sanitize(projectName).replace(/\s+/g, '_')}.pdf`;
 
-      // Upload PDF using multipart/form-data
+      // Upload PDF using File object
       let downloadUrl = null;
       try {
         const pdfBytes = doc.output('arraybuffer');
-        const formData = new FormData();
-        formData.append('file', new Blob([pdfBytes], { type: 'application/pdf' }), filename);
-
-        const appId = Deno.env.get('BASE44_APP_ID');
-        const uploadRes = await fetch(`https://base44.app/api/apps/${appId}/integrations/Core/UploadFile`, {
-          method: 'POST',
-          headers: { 'Authorization': req.headers.get('Authorization') || '' },
-          body: formData
-        });
-        const uploadData = await uploadRes.json();
-        downloadUrl = uploadData?.file_url || null;
-        if (!downloadUrl) console.error('Upload error:', JSON.stringify(uploadData));
+        const file = new File([pdfBytes], filename, { type: 'application/pdf' });
+        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file });
+        downloadUrl = uploadRes?.file_url || null;
+        if (!downloadUrl) console.error('Upload error: no file_url returned');
       } catch(e) { console.error('Upload error:', e.message); }
 
       // Build HTML email body
