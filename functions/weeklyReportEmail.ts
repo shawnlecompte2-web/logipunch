@@ -351,16 +351,111 @@ Deno.serve(async (req) => {
         downloadUrl = uploadRes?.file_url || null;
       } catch(e) { console.error('Upload error:', e.message); }
 
+      // Build a nice HTML email body
+      const frDateRange = `${frDate(weekStartStr)} au ${frDate(weekEndStr)}`;
+      const totalWorkerHours = allPunches
+        .filter(p => p.project_id === projectId)
+        .reduce((sum, p) => sum + (parseFloat(p.total_hours) || 0), 0);
+      const uniqueWorkers = [...new Set(allPunches.filter(p => p.project_id === projectId).map(p => p.user_id))].length;
+
+      const emailBody = `
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f6fb;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fb;padding:30px 0;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);max-width:600px;">
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#0f2878 0%,#1e3fa8 100%);padding:32px 36px;border-bottom:4px solid #22c55e;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <div style="font-size:24px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;">TapIN</div>
+                  <div style="font-size:13px;color:#b0c8ff;margin-top:4px;">${sanitize(company.name || 'Groupe DDL')}</div>
+                </td>
+                <td align="right">
+                  <div style="background:#22c55e;color:#fff;font-weight:700;font-size:11px;padding:6px 14px;border-radius:20px;letter-spacing:1px;">RAPPORT HEBDOMADAIRE</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <!-- Project Title -->
+        <tr>
+          <td style="padding:28px 36px 0 36px;">
+            <div style="font-size:11px;color:#6b7280;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">Projet</div>
+            <div style="font-size:22px;font-weight:900;color:#0f2878;">${sanitize(projectName)}</div>
+            <div style="font-size:13px;color:#6b7280;margin-top:4px;">Semaine du ${frDateRange}</div>
+          </td>
+        </tr>
+        <!-- Stats -->
+        <tr>
+          <td style="padding:24px 36px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td width="33%" style="padding:0 6px 0 0;">
+                  <div style="background:#f0f5ff;border-radius:10px;padding:16px;text-align:center;border:1px solid #dbeafe;">
+                    <div style="font-size:28px;font-weight:900;color:#1e3fa8;">${sortedReports.length}</div>
+                    <div style="font-size:11px;color:#6b7280;margin-top:4px;font-weight:600;">JOURS TRAVAILLES</div>
+                  </div>
+                </td>
+                <td width="33%" style="padding:0 3px;">
+                  <div style="background:#f0fdf4;border-radius:10px;padding:16px;text-align:center;border:1px solid #bbf7d0;">
+                    <div style="font-size:28px;font-weight:900;color:#16a34a;">${toHM(totalWorkerHours)}</div>
+                    <div style="font-size:11px;color:#6b7280;margin-top:4px;font-weight:600;">HEURES TOTALES</div>
+                  </div>
+                </td>
+                <td width="33%" style="padding:0 0 0 6px;">
+                  <div style="background:#fff7ed;border-radius:10px;padding:16px;text-align:center;border:1px solid #fed7aa;">
+                    <div style="font-size:28px;font-weight:900;color:#ea580c;">${uniqueWorkers}</div>
+                    <div style="font-size:11px;color:#6b7280;margin-top:4px;font-weight:600;">EMPLOYES</div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <!-- Download Button -->
+        ${downloadUrl ? `
+        <tr>
+          <td style="padding:0 36px 28px 36px;">
+            <div style="background:#f8fafc;border-radius:10px;padding:20px;border:1px solid #e2e8f0;text-align:center;">
+              <div style="font-size:13px;color:#374151;margin-bottom:16px;">Le rapport complet en PDF est disponible au telechargement :</div>
+              <a href="${downloadUrl}" style="display:inline-block;background:linear-gradient(135deg,#16a34a,#22c55e);color:#ffffff;font-weight:700;font-size:14px;padding:14px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">
+                &#8659; Telecharger le rapport PDF
+              </a>
+            </div>
+          </td>
+        </tr>` : `
+        <tr>
+          <td style="padding:0 36px 28px 36px;">
+            <div style="background:#fef2f2;border-radius:10px;padding:16px;border:1px solid #fecaca;text-align:center;color:#dc2626;font-size:13px;">
+              Une erreur est survenue lors de la generation du fichier PDF.
+            </div>
+          </td>
+        </tr>`}
+        <!-- Footer -->
+        <tr>
+          <td style="background:#0f2878;padding:20px 36px;border-top:4px solid #22c55e;">
+            <div style="font-size:11px;color:#b0c8ff;text-align:center;">
+              Ce courriel a ete genere automatiquement par <strong style="color:#22c55e;">TapIN</strong> &mdash; Systeme de gestion du temps de chantier
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
       // Send email to each recipient
       for (const email of RECIPIENTS) {
-        const body = downloadUrl
-          ? `Bonjour,\n\nLe rapport de chantier pour le projet "${sanitize(projectName)}" (semaine du ${weekStartStr} au ${weekEndStr}) est disponible en telechargement :\n\n${downloadUrl}\n\nCe rapport contient ${sortedReports.length} jour(s) de travail.\n\nCordialement,\nTapIN`
-          : `Bonjour,\n\nLe rapport de chantier pour le projet "${sanitize(projectName)}" (semaine du ${weekStartStr} au ${weekEndStr}) a ete genere mais une erreur est survenue lors de l'upload.\n\nCordialement,\nTapIN`;
-
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: email,
-          subject: `Rapports de chantier - ${sanitize(projectName)} - Semaine du ${weekStartStr}`,
-          body
+          subject: `📋 Rapport hebdomadaire - ${sanitize(projectName)} - Semaine du ${weekStartStr} au ${weekEndStr}`,
+          body: emailBody
         });
       }
 
