@@ -107,10 +107,8 @@ Deno.serve(async (req) => {
     doc.setFillColor(34, 197, 94);
     doc.rect(0, 0, 5, 38, 'F');
 
-    // Logo — disabled for now
-
     // Company name
-    const textX = logoLoaded ? 35 : 10;
+    const textX = 10;
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
@@ -123,7 +121,15 @@ Deno.serve(async (req) => {
     doc.text('RAPPORT JOURNALIER DE CHANTIER', textX, 25);
 
     // Date top-right
-    const dateLabel = type === 'day' ? frDate(date) : `Semaine du ${new Date(weekStart + 'T12:00:00').toLocaleDateString('fr-CA')}`;
+    let dateLabel;
+    if (type === 'day') {
+      dateLabel = frDate(date);
+    } else {
+      const wStart = new Date(weekStart + 'T12:00:00');
+      const wEnd = new Date(wStart);
+      wEnd.setDate(wEnd.getDate() + 6);
+      dateLabel = `Semaine du ${wStart.toLocaleDateString('fr-CA')} au ${wEnd.toLocaleDateString('fr-CA')}`;
+    }
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(34, 197, 94);

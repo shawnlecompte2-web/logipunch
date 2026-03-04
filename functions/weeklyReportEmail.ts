@@ -228,16 +228,21 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Compute previous week (Monday to Sunday)
+    // Compute previous week (Sunday to Saturday)
     const now = new Date();
     const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon...
-    const lastSunday = new Date(now);
-    lastSunday.setDate(now.getDate() - dayOfWeek);
-    const lastMonday = new Date(lastSunday);
-    lastMonday.setDate(lastSunday.getDate() - 6);
+    // Start of current week (Sunday)
+    const startOfCurrentWeek = new Date(now);
+    startOfCurrentWeek.setDate(now.getDate() - dayOfWeek);
+    // Previous Saturday (end of last week)
+    const prevWeekEnd = new Date(startOfCurrentWeek);
+    prevWeekEnd.setDate(startOfCurrentWeek.getDate() - 1);
+    // Previous Sunday (start of last week)
+    const prevWeekStart = new Date(prevWeekEnd);
+    prevWeekStart.setDate(prevWeekEnd.getDate() - 6);
 
-    const weekStartStr = lastMonday.toISOString().split('T')[0];
-    const weekEndStr = lastSunday.toISOString().split('T')[0];
+    const weekStartStr = prevWeekStart.toISOString().split('T')[0];
+    const weekEndStr = prevWeekEnd.toISOString().split('T')[0];
 
     // Fetch all reports for the past week across all companies
     const allReports = await base44.asServiceRole.entities.DailyReport.filter({
@@ -342,11 +347,10 @@ Deno.serve(async (req) => {
 
       const filename = `rapport_semaine_${weekStartStr}_${sanitize(projectName).replace(/\s+/g, '_')}.pdf`;
 
-      // Upload PDF and get a public URL
-      const pdfBlob = new Blob([pdfUint8], { type: 'application/pdf' });
+      // Upload PDF as base64 string
       let downloadUrl = null;
       try {
-        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfBlob });
+        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfBase64 });
         downloadUrl = uploadRes?.file_url || null;
       } catch(e) { console.error('Upload error:', e.message); }
 
