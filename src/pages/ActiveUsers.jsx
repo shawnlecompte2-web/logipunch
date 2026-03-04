@@ -167,14 +167,13 @@ export default function ActiveUsers() {
             </div>
           )}
 
-          {/* Longest punch */}
-          {longestEntry && (
+          {/* Top worker of the week */}
+          {topWorker && (
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3 mb-5 flex items-center gap-3">
               <Timer size={18} className="text-yellow-400 shrink-0" />
               <div>
-                <p className="text-zinc-400 text-xs">Plus longtemps sur le terrain</p>
-                <p className="text-white text-sm font-bold">{longestEntry.user_name} · <span className="text-yellow-400">{getElapsed(longestEntry.punch_in)}</span></p>
-                <p className="text-zinc-500 text-xs">{longestEntry.project_name}</p>
+                <p className="text-zinc-400 text-xs">Plus d'heures cette semaine</p>
+                <p className="text-white text-sm font-bold">{topWorker.user_name} · <span className="text-yellow-400">{topWorker.hours.toFixed(1)}h</span></p>
               </div>
             </div>
           )}
