@@ -344,7 +344,8 @@ Deno.serve(async (req) => {
       // Upload PDF and get a public URL
       let downloadUrl = null;
       try {
-        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfBytes });
+        const pdfFile = new File([pdfUint8], filename, { type: 'application/pdf' });
+        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfFile });
         downloadUrl = uploadRes?.file_url || null;
       } catch(e) { console.error('Upload error:', e.message); }
 
