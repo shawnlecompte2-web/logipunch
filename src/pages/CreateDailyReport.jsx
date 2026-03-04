@@ -319,8 +319,9 @@ export default function CreateDailyReportPage() {
     try {
       const project = projects.find((p) => p.id === selectedProject);
       const weekStart = new Date(reportDate + "T12:00:00");
-      const day = weekStart.getDay(); // 0=Dim, 6=Sam
-      weekStart.setDate(weekStart.getDate() - day); // Recule au dimanche
+      const day = weekStart.getDay(); // 0=Dim, 1=Lun, ..., 6=Sam
+      const daysToMonday = day === 0 ? 6 : day - 1; // Recule au lundi de la même semaine
+      weekStart.setDate(weekStart.getDate() - daysToMonday);
       const weekStartStr = weekStart.toISOString().split("T")[0];
 
       await base44.entities.DailyReport.create({
