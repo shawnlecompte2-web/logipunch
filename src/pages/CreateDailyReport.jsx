@@ -37,17 +37,31 @@ function saveEquipmentList(list) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 }
 
-function EquipmentPicker({ value, onChange }) {
+// value = comma-separated names (for backward compat)
+// hoursValue = JSON string: { "Excavatrice Cat 320": 4.5, ... }
+function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
   const selected = value ? value.split(",").map((s) => s.trim()).filter(Boolean) : [];
+  const hours = (() => { try { return JSON.parse(hoursValue || "{}"); } catch { return {}; } })();
+
   const [custom, setCustom] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [equipList, setEquipList] = useState(getEquipmentList);
+
+  const setHours = (item, h) => {
+    const next = { ...hours, [item]: h };
+    onHoursChange(JSON.stringify(next));
+  };
 
   const toggle = (item) => {
     if (editMode) return;
     const exists = selected.includes(item);
     const next = exists ? selected.filter((s) => s !== item) : [...selected, item];
     onChange(next.join(", "));
+    if (exists) {
+      const nextHours = { ...hours };
+      delete nextHours[item];
+      onHoursChange(JSON.stringify(nextHours));
+    }
   };
 
   const addCustom = () => {
@@ -68,12 +82,17 @@ function EquipmentPicker({ value, onChange }) {
     const next = equipList.filter((e) => e !== item);
     setEquipList(next);
     saveEquipmentList(next);
-    // Also deselect if selected
     onChange(selected.filter((s) => s !== item).join(", "));
+    const nextHours = { ...hours };
+    delete nextHours[item];
+    onHoursChange(JSON.stringify(nextHours));
   };
 
   const removeSelected = (item) => {
     onChange(selected.filter((s) => s !== item).join(", "));
+    const nextHours = { ...hours };
+    delete nextHours[item];
+    onHoursChange(JSON.stringify(nextHours));
   };
 
   return (
@@ -84,7 +103,6 @@ function EquipmentPicker({ value, onChange }) {
           type="button"
           onClick={() => setEditMode((e) => !e)}
           className={`text-xs px-2.5 py-1 rounded-full border transition-all ${editMode ? "bg-red-900/40 border-red-700 text-red-400" : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-white"}`}>
-
           {editMode ? "Terminer" : "Modifier la liste"}
         </button>
       </div>
@@ -103,50 +121,72 @@ function EquipmentPicker({ value, onChange }) {
               "bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/60" :
               isSelected ?
               "bg-green-700 border-green-600 text-white" :
-              "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`
-              }>
-
+              "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}>
               {eq}
               {editMode ? <X size={11} /> : isSelected && <X size={11} className="opacity-80" />}
-            </button>);
-
+            </button>
+          );
         })}
       </div>
 
       {/* Custom tags (not in predefined list) */}
       {selected.filter((s) => !equipList.includes(s)).length > 0 &&
-      <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
           {selected.filter((s) => !equipList.includes(s)).map((s) =>
-        <span key={s} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-900/50 border border-blue-700 text-blue-300">
+            <span key={s} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-900/50 border border-blue-700 text-blue-300">
               {s}
               <button type="button" onClick={() => removeSelected(s)} className="ml-0.5 hover:text-white">
                 <X size={12} />
               </button>
             </span>
-        )}
+          )}
         </div>
       }
 
+      {/* Hours per selected equipment */}
+      {selected.length > 0 && (
+        <div className="space-y-2 mt-1">
+          <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">Heures par équipement</p>
+          {selected.map((item) => (
+            <div key={item} className="flex items-center gap-3 bg-zinc-800/60 border border-zinc-700/60 rounded-xl px-3 py-2">
+              <span className="text-white text-sm flex-1 truncate">{item}</span>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <input
+                  type="number"
+                  min="0"
+                  max="24"
+                  step="0.5"
+                  value={hours[item] ?? ""}
+                  onChange={(e) => setHours(item, e.target.value)}
+                  placeholder="0"
+                  className="w-16 bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-white text-sm text-center focus:outline-none focus:border-green-600"
+                />
+                <span className="text-zinc-500 text-xs">h</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Custom input */}
       {!editMode &&
-      <div className="flex gap-2">
+        <div className="flex gap-2">
           <Input
-          value={custom}
-          onChange={(e) => setCustom(e.target.value)}
-          onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault();addCustom();}}}
-          placeholder="Ajouter un equipement..."
-          className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 text-sm h-9" />
-
+            value={custom}
+            onChange={(e) => setCustom(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustom(); } }}
+            placeholder="Ajouter un equipement..."
+            className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 text-sm h-9" />
           <Button type="button" onClick={addCustom} size="sm" variant="outline" className="h-9 px-3 border-zinc-700">
             <Plus size={15} />
           </Button>
         </div>
       }
       {editMode &&
-      <p className="text-xs text-red-400/70 text-center">Cliquez sur un equipement pour le supprimer de la liste</p>
+        <p className="text-xs text-red-400/70 text-center">Cliquez sur un equipement pour le supprimer de la liste</p>
       }
-    </div>);
-
+    </div>
+  );
 }
 
 function getStoredUser() {
