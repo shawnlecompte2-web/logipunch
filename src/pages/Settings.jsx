@@ -165,6 +165,7 @@ function BottomSelect({ label, value, onChange, options }) {
 function UsersTab({ users, projects, companyId, onRefresh }) {
   const [showForm, setShowForm] = useState(false);
   const [editUser, setEditUser] = useState(null);
+  const [search, setSearch] = useState("");
 
   const handleDelete = async (userId) => {
     if (!window.confirm("Supprimer cet utilisateur?")) return;
@@ -172,13 +173,47 @@ function UsersTab({ users, projects, companyId, onRefresh }) {
     onRefresh();
   };
 
+  const activeUsers = users.filter(u => u.is_active !== false);
+  const filtered = search.trim()
+    ? activeUsers.filter(u =>
+        u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+        u.role?.toLowerCase().includes(search.toLowerCase()) ||
+        u.group?.toLowerCase().includes(search.toLowerCase())
+      )
+    : activeUsers;
+
+  const grouped = Object.entries(
+    filtered.reduce((acc, user) => {
+      const role = user.role || "Sans rôle";
+      if (!acc[role]) acc[role] = [];
+      acc[role].push(user);
+      return acc;
+    }, {})
+  ).sort(([a], [b]) => a.localeCompare(b));
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-zinc-400 text-sm">{users.filter(u => u.is_active !== false).length} utilisateurs actifs</p>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-zinc-400 text-sm">{activeUsers.length} utilisateurs actifs</p>
         <button onClick={() => { setEditUser(null); setShowForm(true); }} className="flex items-center gap-2 px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm font-semibold rounded-xl transition-all">
           <Plus size={15} /> Ajouter
         </button>
+      </div>
+
+      {/* Search bar */}
+      <div className="relative mb-4">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Rechercher un utilisateur..."
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-700 placeholder:text-zinc-600"
+        />
+        {search && (
+          <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white">
+            <X size={14} />
+          </button>
+        )}
       </div>
 
       {showForm && (
@@ -186,33 +221,26 @@ function UsersTab({ users, projects, companyId, onRefresh }) {
       )}
 
       <div className="space-y-2">
-        {Object.entries(
-          users.filter(u => u.is_active !== false).reduce((acc, user) => {
-            const role = user.role || "Sans rôle";
-            if (!acc[role]) acc[role] = [];
-            acc[role].push(user);
-            return acc;
-          }, {})
-        ).sort(([a], [b]) => a.localeCompare(b)).map(([role, roleUsers]) => (
-          <div key={role} className="space-y-2">
-            <p className="text-zinc-500 text-xs uppercase tracking-widest font-semibold mb-2 mt-4">{role} <span className="text-zinc-700">({roleUsers.length})</span></p>
+        {grouped.map(([role, roleUsers]) => (
+          <div key={role}>
+            <p className="text-zinc-500 text-xs uppercase tracking-widest font-semibold mb-2 mt-4">
+              {role} <span className="text-zinc-700">({roleUsers.length})</span>
+            </p>
             {roleUsers.map(user => (
-              <div key={user.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+              <div key={user.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 shrink-0 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center">
                     <span className="text-white font-bold text-sm">{user.full_name[0]}</span>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-white font-semibold text-sm">{user.full_name}</p>
                       <span className="text-zinc-600 text-xs font-mono">#{user.pin_code}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="px-2 py-0.5 bg-zinc-800 text-zinc-500 text-xs rounded-full">{user.group}</span>
-                    </div>
+                    <span className="px-2 py-0.5 bg-zinc-800 text-zinc-500 text-xs rounded-full">{user.group}</span>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 shrink-0">
                   <button onClick={() => { setEditUser(user); setShowForm(true); }} className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all">
                     <Edit2 size={14} className="text-zinc-400" />
                   </button>
@@ -224,6 +252,9 @@ function UsersTab({ users, projects, companyId, onRefresh }) {
             ))}
           </div>
         ))}
+        {filtered.length === 0 && search && (
+          <p className="text-zinc-600 text-sm text-center py-8">Aucun résultat pour "{search}"</p>
+        )}
       </div>
     </div>
   );
