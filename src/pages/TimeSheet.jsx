@@ -796,14 +796,24 @@ export default function TimeSheet() {
                             {day.entries.length > 1 && (
                               <p className="text-zinc-600 text-xs">{day.entries.length} projets</p>
                             )}
-                            {isAdmin && day.entries.map(e => (
-                              <button key={e.id} onClick={() => setEditEntry(e)} className="mt-1 p-1 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all block mx-auto">
-                                <Edit2 size={11} className="text-zinc-500" />
+                            <div className="flex gap-1 justify-center mt-1">
+                              {day.entries.map(e => (
+                                <button key={e.id} onClick={() => setEditEntry(e)} className="p-1 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all">
+                                  <Edit2 size={11} className="text-zinc-500" />
+                                </button>
+                              ))}
+                              <button onClick={() => setAddEntry({ userId: user.id, userName: user.full_name, dateStr })} className="p-1 bg-zinc-800 hover:bg-green-700 rounded-lg transition-all">
+                                <Plus size={11} className="text-zinc-500 hover:text-white" />
                               </button>
-                            ))}
+                            </div>
                           </div>
                         ) : (
-                          <p className="text-zinc-800 text-center">—</p>
+                          <div className="text-center">
+                            <p className="text-zinc-800">—</p>
+                            <button onClick={() => setAddEntry({ userId: user.id, userName: user.full_name, dateStr })} className="mt-1 p-1 bg-zinc-800/50 hover:bg-green-700 rounded-lg transition-all mx-auto block opacity-0 group-hover:opacity-100">
+                              <Plus size={11} className="text-zinc-600 hover:text-white" />
+                            </button>
+                          </div>
                         )}
                       </td>
                     );
