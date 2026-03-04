@@ -15,9 +15,12 @@ function getStoredCompany() {
 
 export default function ReportCompilationPage() {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const currentCompany = getStoredCompany();
   const [expandedProject, setExpandedProject] = useState(null);
   const [expandedWeek, setExpandedWeek] = useState(null);
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [addingEntry, setAddingEntry] = useState(null); // { projectId, projectName, date, weekStart }
 
   const { data: reports } = useQuery({
     queryKey: ['dailyReports', currentCompany?.id],
