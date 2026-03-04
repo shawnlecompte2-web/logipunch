@@ -101,25 +101,7 @@ export default function Settings() {
       )}
 
       {/* Danger Zone */}
-      <div className="mt-10 border-t border-zinc-800/60 pt-6">
-        <div className="flex items-center gap-2 mb-1">
-          <AlertTriangle size={14} className="text-red-500" />
-          <h2 className="text-red-500 font-bold text-sm">Zone de danger</h2>
-        </div>
-        <p className="text-zinc-600 text-xs mb-4">Désactiver votre compte vous empêchera de vous connecter.</p>
-        <button
-          onClick={async () => {
-            if (!window.confirm("Désactiver votre compte? Vous ne pourrez plus vous connecter.")) return;
-            await base44.entities.AppUser.update(currentUser.id, { is_active: false });
-            sessionStorage.removeItem("logipunch_user");
-            window.dispatchEvent(new Event("logipunch_user_change"));
-            window.location.reload();
-          }}
-          className="px-4 py-2 bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-semibold rounded-xl hover:bg-red-900/40 transition-all"
-        >
-          Désactiver mon compte
-        </button>
-      </div>
+      <DangerZone currentUser={currentUser} />
     </div>
   );
 }
