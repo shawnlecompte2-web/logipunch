@@ -395,6 +395,26 @@ export default function ReportCompilationPage() {
           </div>
         )}
       </div>
+
+      {editingEntry && (
+        <EditPunchModal
+          entry={editingEntry}
+          companyId={currentCompany?.id}
+          onClose={() => setEditingEntry(null)}
+        />
+      )}
+
+      {addingEntry && (
+        <AddPunchModal
+          projectId={addingEntry.projectId}
+          projectName={addingEntry.projectName}
+          date={addingEntry.date}
+          weekStart={addingEntry.weekStart}
+          appUsers={appUsers}
+          companyId={currentCompany?.id}
+          onClose={() => setAddingEntry(null)}
+        />
+      )}
     </div>
   );
 }
