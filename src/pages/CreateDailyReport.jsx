@@ -331,6 +331,7 @@ export default function CreateDailyReportPage() {
         project_address: project?.address || "",
         report_date: reportDate,
         week_start: weekStartStr,
+        weather: formData.weather,
         subcontractor: formData.subcontractor,
         machine: formData.machine,
         machine_hours: formData.machine_hours || null,
