@@ -348,17 +348,7 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Bottom nav - mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-zinc-800/60 flex z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        {navItems.map(({ label, page, icon: Icon }) => {
-          const isActive = currentPageName === page;
-          return (
-            <Link key={page} to={createPageUrl(page)} className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 transition-all ${isActive ? "text-green-400" : "text-zinc-600 hover:text-zinc-400"}`}>
-              <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
-              <span className="text-[9px] font-semibold">{label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+      <MobileNav navItems={navItems} currentPageName={currentPageName} />
     </div>
   );
 }
