@@ -290,8 +290,8 @@ export default function Layout({ children, currentPageName }) {
   // Step 2: Company selected but no user → show PIN
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white">
-        <style>{`body { background: #0a0a0a; }`}</style>
+      <div className="min-h-screen bg-background text-foreground">
+        <style>{``}</style>
         <PinModal onSuccess={handleLogin} company={currentCompany} />
       </div>
     );
