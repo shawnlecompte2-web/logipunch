@@ -123,10 +123,12 @@ export default function MyHours() {
                                 {entry.status === "active" ? "En cours" : entry.status === "approved" ? "Approuvé" : "En attente"}
                               </span>
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-zinc-500">
+                            <div className="flex items-center gap-3 text-xs text-zinc-500 flex-wrap">
                               <span>Entrée: <span className="text-zinc-300">{entry.punch_in ? format(parseISO(entry.punch_in), "HH:mm") : "—"}</span></span>
                               <span>Sortie: <span className="text-zinc-300">{entry.punch_out ? format(parseISO(entry.punch_out), "HH:mm") : "—"}</span></span>
                               {entry.lunch_break > 0 && <span>Diner: <span className="text-zinc-300">{entry.lunch_break}m</span></span>}
+                              {entry.breaks_taken !== undefined && entry.breaks_taken !== null && <span>Pauses: <span className="text-zinc-300">{entry.breaks_taken}/2</span></span>}
+                              {(2 - (entry.breaks_taken ?? 2)) > 0 && <span className="text-green-500">+{(2 - (entry.breaks_taken ?? 2)) * 15}m</span>}
                               {entry.machine && <span>Machine: <span className="text-zinc-300">{entry.machine}</span></span>}
                               {entry.plate_number && <span>Plaque: <span className="text-zinc-300">{entry.plate_number}</span></span>}
                             </div>
