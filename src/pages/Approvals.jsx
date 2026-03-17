@@ -281,6 +281,12 @@ export default function Approvals() {
                             <div><span className="text-zinc-500">Entrée</span><p className="text-zinc-300">{entry.punch_in ? format(parseISO(entry.punch_in), "HH:mm") : "-"}</p></div>
                             <div><span className="text-zinc-500">Sortie</span><p className="text-zinc-300">{entry.punch_out ? format(parseISO(entry.punch_out), "HH:mm") : "-"}</p></div>
                             <div><span className="text-zinc-500">Diner</span><p className="text-zinc-300">{entry.lunch_break ?? 0} min</p></div>
+                            <div>
+                              <span className="text-zinc-500">Pauses</span>
+                              <p className="text-zinc-300">{entry.breaks_taken ?? 2}/2
+                                {(2 - (entry.breaks_taken ?? 2)) > 0 && <span className="text-green-500 ml-1">(+{(2 - (entry.breaks_taken ?? 2)) * 15}m)</span>}
+                              </p>
+                            </div>
                             <div><span className="text-zinc-500">Total</span><p className="text-green-400 font-bold">{entry.total_hours?.toFixed(2) || "-"}h</p></div>
                             {entry.machine && <div><span className="text-zinc-500">Machine</span><p className="text-zinc-300">{entry.machine}</p></div>}
                             {entry.plate_number && <div><span className="text-zinc-500">Plaque</span><p className="text-zinc-300">{entry.plate_number}</p></div>}
