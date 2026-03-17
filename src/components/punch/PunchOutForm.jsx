@@ -60,7 +60,7 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col max-w-md mx-auto px-4 py-6">
+    <div className="min-h-screen w-full flex flex-col max-w-md mx-auto px-4 py-6 overflow-y-auto">
       <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white mb-6 transition-colors">
         <ArrowLeft size={18} />
         <span className="text-sm">Retour</span>
