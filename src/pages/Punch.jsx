@@ -283,9 +283,11 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
       const finalLunch = lunch === "custom" ? parseInt(customLunch) || 0 : lunch;
       const autoApprove = Array.isArray(user.approved_by) && user.approved_by.includes("auto");
       const location = locationData || await getLocation();
+      const bonus = (2 - breaksTaken) * 15;
       const updateData = {
         punch_out: punchOutTime.toISOString(), lunch_break: finalLunch,
-        total_hours: parseFloat(Math.max(0, (totalMinutes - finalLunch) / 60).toFixed(2)),
+        breaks_taken: breaksTaken,
+        total_hours: parseFloat(Math.max(0, (totalMinutes - finalLunch + bonus) / 60).toFixed(2)),
         status: autoApprove ? "approved" : "completed",
         ...(autoApprove ? { approved_by: "Automatique", approved_at: new Date().toISOString() } : {}),
       };
