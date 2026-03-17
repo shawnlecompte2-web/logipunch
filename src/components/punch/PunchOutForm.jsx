@@ -8,6 +8,7 @@ const LUNCH_OPTIONS = [0, 15, 30, 45, 60];
 export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const [lunch, setLunch] = useState(null);
   const [customLunch, setCustomLunch] = useState("");
+  const [breaksTaken, setBreaksTaken] = useState(2);
   const [loading, setLoading] = useState(false);
   const [locationData, setLocationData] = useState(null);
   const [locationStatus, setLocationStatus] = useState("idle");
