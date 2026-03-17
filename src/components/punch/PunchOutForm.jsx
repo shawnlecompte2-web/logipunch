@@ -29,7 +29,9 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const punchInTime = new Date(activeEntry.punch_in);
   const totalMinutes = differenceInMinutes(now, punchInTime);
   const lunchMinutes = lunch === "custom" ? parseInt(customLunch) || 0 : (lunch ?? 0);
-  const workedMinutes = totalMinutes - lunchMinutes;
+  // Unused breaks: 2 allowed - breaksTaken, each adds 15 min
+  const unusedBreakBonus = (2 - breaksTaken) * 15;
+  const workedMinutes = totalMinutes - lunchMinutes + unusedBreakBonus;
   const workedHours = (workedMinutes / 60).toFixed(2);
 
   const canSubmit = lunch !== null;
@@ -38,11 +40,13 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
     if (!canSubmit) return;
     setLoading(true);
     const finalLunch = lunch === "custom" ? parseInt(customLunch) || 0 : lunch;
-    const totalHours = Math.max(0, (totalMinutes - finalLunch) / 60);
+    const bonus = (2 - breaksTaken) * 15;
+    const totalHours = Math.max(0, (totalMinutes - finalLunch + bonus) / 60);
 
     const updateData = {
       punch_out: now.toISOString(),
       lunch_break: finalLunch,
+      breaks_taken: breaksTaken,
       total_hours: parseFloat(totalHours.toFixed(2)),
       status: "completed",
     };
