@@ -259,7 +259,8 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const punchInTime = new Date(activeEntry.punch_in);
   const totalMinutes = differenceInMinutes(punchOutTime, punchInTime);
   const lunchMinutes = lunch === "custom" ? parseInt(customLunch) || 0 : (lunch ?? 0);
-  const workedHours = (Math.max(0, totalMinutes - lunchMinutes) / 60).toFixed(2);
+  const unusedBreakBonus = (2 - breaksTaken) * 15;
+  const workedHours = (Math.max(0, totalMinutes - lunchMinutes + unusedBreakBonus) / 60).toFixed(2);
   const canSubmit = lunch !== null && locationStatus !== "loading";
 
   const calculateOnSite = (userLat, userLng, project) => {
