@@ -581,6 +581,14 @@ export default function TimeSheet() {
           doc.setTextColor(180, 180, 180);
           doc.text("—", cDiner, y + 5);
         }
+        // Breaks info
+        const unusedBreaks = 2 - (e.breaks_taken ?? 2);
+        if (unusedBreaks > 0) {
+          doc.setTextColor(100, 200, 80);
+          doc.setFontSize(7);
+          doc.text(`+${unusedBreaks * 15}m`, cDiner, y + 10);
+          doc.setFontSize(8.5);
+        }
 
         doc.setTextColor(120, 120, 120);
         doc.text((e.project_name || "-").substring(0, 24), cProjet, y + 5);
