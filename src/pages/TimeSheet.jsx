@@ -647,11 +647,17 @@ export default function TimeSheet() {
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(160, 160, 160);
-    doc.text("TOTAL DÎNER", col3x, y + 9);
+    doc.text("DÎNER / PAUSES", col3x, y + 9);
+    const totalBreakBonus = userEntries.reduce((s, e) => s + (2 - (e.breaks_taken ?? 2)) * 15, 0);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(220, 130, 30);
-    doc.text(`-${toHM(totalLunch / 60)}`, col3x, y + 20);
+    doc.text(`-${toHM(totalLunch / 60)}`, col3x, y + 18);
+    if (totalBreakBonus > 0) {
+      doc.setFontSize(8);
+      doc.setTextColor(100, 200, 80);
+      doc.text(`+${toHM(totalBreakBonus / 60)} pauses`, col3x, y + 25);
+    }
 
     // Net à payer
     doc.setFontSize(7);
