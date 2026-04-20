@@ -12,45 +12,52 @@ import { ChevronLeft, Plus, X } from "lucide-react";
 import TruckPicker from "@/components/TruckPicker";
 
 const DEFAULT_EQUIPMENT = {
-  "Pelle Mécanique": [
-    "Excavatrice Cat 320",
-    "Excavatrice Cat 345",
-    "Pelle Mécanique 336"
-  ],
   "Chargeur sur roue": [
-    "Chargeuse frontale",
-    "Chargeuse Caterpillar"
+    "HITZW805",
+    "CAT924K 2.4 M3",
+    "HITLX-150",
+    "VOLVOL150 4.2 M3",
+    "BOUTEUR D1"
   ],
-  "Bouteurs": [
-    "Bouteur (Dozer)",
-    "Bouteur D6"
+  "Machinerie": [
+    "Corniver CT-40",
+    "Bomag 177D",
+    "PLAQUE VIBRANTE",
+    "BOÎTE A TRANCHÉE",
+    "BALAIS MÉCANIQUE",
+    "CAMION A EAU",
+    "CAMION DE SERVICE (OUTILLAGE)",
+    "MARTEAU PIQUEUR",
+    "PULVÉRISATEUR À BÉTON"
   ],
-  "Compactage": [
-    "Compacteur Dynapac",
-    "Vibrateur de sol"
-  ],
-  "Autres": [
-    "Niveleuse",
-    "Camion benne",
-    "Tractopelle",
-    "Grue mobile"
+  "Pelle Mécanique": [
+    "PELLE ZX17",
+    "PELLE ZX75",
+    "PELLE ZX160",
+    "PELLE CAT315",
+    "PELLE ZX245",
+    "PELLE CAT326",
+    "PELLE ZX350"
   ]
 };
 
 
 const STORAGE_KEY = "logipunch_equipment_list";
+const EQUIPMENT_VERSION = "v2";
 
 function getEquipmentList() {
   try {
+    const version = localStorage.getItem(STORAGE_KEY + "_version");
+    if (version !== EQUIPMENT_VERSION) {
+      // Reset to new defaults when version changes
+      saveEquipmentList(DEFAULT_EQUIPMENT);
+      localStorage.setItem(STORAGE_KEY + "_version", EQUIPMENT_VERSION);
+      return DEFAULT_EQUIPMENT;
+    }
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // If old array format, migrate to new object format
-      if (Array.isArray(parsed)) {
-        const migrated = { ...DEFAULT_EQUIPMENT, "Autres": parsed };
-        saveEquipmentList(migrated);
-        return migrated;
-      }
+      if (Array.isArray(parsed)) return DEFAULT_EQUIPMENT;
       return parsed;
     }
   } catch {}
