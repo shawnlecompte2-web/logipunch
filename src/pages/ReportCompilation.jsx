@@ -126,21 +126,17 @@ export default function ReportCompilationPage() {
     try {
       const totalHours = type === 'day' ? getTotalHours(projectId, weekStart, date) : workers.reduce((sum, w) => sum + parseFloat(w.totalHours), 0).toFixed(2);
       const projectObj = projects.find(p => p.id === projectId);
-      const response = await base44.functions.invoke('generateReportPDF', {
-        type,
-        projectId,
-        projectName,
+
+      const payload = {
+        type, projectId, projectName,
         projectAddress: projectObj?.address || "",
-        date,
-        weekStart,
-        reports: dayReports,
-        workers,
-        totalHours,
+        date, weekStart, reports: dayReports, workers, totalHours,
         companyName: company?.name || currentCompany?.name || "",
         companyLogo: company?.logo_url || ""
-      });
+      };
 
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const res = await base44.functions.invoke('generateReportPDF', payload, { responseType: 'arraybuffer' });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -153,7 +149,7 @@ export default function ReportCompilationPage() {
       a.remove();
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      alert('Erreur lors du téléchargement du PDF');
+      alert('Erreur lors du téléchargement du PDF: ' + error.message);
     }
   };
 

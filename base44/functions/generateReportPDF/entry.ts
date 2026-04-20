@@ -1,4 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { jsPDF } from 'npm:jspdf@4.0.0';
 
 function sanitize(str) {
@@ -83,10 +82,6 @@ function drawCell(doc, x, y, w, h, label, value) {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
     const body = await req.json();
      const { type, projectName, projectAddress, date, weekStart, reports, workers, totalHours, companyName, companyLogo } = body;
 
