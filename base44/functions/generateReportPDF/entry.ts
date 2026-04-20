@@ -162,11 +162,12 @@ Deno.serve(async (req) => {
 
     // Table header
     const cols = [
-      { label: 'NOM',      x: M + 2,   w: 60 },
-      { label: 'ARRIVEE', x: M + 62,  w: 30 },
-      { label: 'DEPART',  x: M + 92,  w: 30 },
-      { label: 'DINER',   x: M + 122, w: 22 },
-      { label: 'TOTAL',   x: M + 144, w: 40 },
+      { label: 'NOM',     x: M + 2,   w: 50 },
+      { label: 'ROLE',    x: M + 52,  w: 35 },
+      { label: 'ARRIVEE', x: M + 87,  w: 26 },
+      { label: 'DEPART',  x: M + 113, w: 26 },
+      { label: 'DINER',   x: M + 139, w: 18 },
+      { label: 'TOTAL',   x: M + 157, w: 29 },
     ];
 
     doc.setFillColor(219, 234, 254);
@@ -192,17 +193,22 @@ Deno.serve(async (req) => {
         doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(20, 20, 20);
-        doc.text(sanitize(w.name.substring(0, 30)), cols[0].x, y + 5);
+        doc.text(sanitize(w.name.substring(0, 25)), cols[0].x, y + 5);
 
+        doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
+        doc.setTextColor(80, 80, 80);
+        doc.text(sanitize((w.role || '-').substring(0, 20)), cols[1].x, y + 5);
+
+        doc.setFontSize(9);
         doc.setTextColor(50, 50, 50);
-        doc.text(fmtTime(w.punchIn),  cols[1].x, y + 5);
-        doc.text(fmtTime(w.punchOut), cols[2].x, y + 5);
-        doc.text(w.lunchBreak > 0 ? `${w.lunchBreak}m` : '-', cols[3].x, y + 5);
+        doc.text(fmtTime(w.punchIn),  cols[2].x, y + 5);
+        doc.text(fmtTime(w.punchOut), cols[3].x, y + 5);
+        doc.text(w.lunchBreak > 0 ? `${w.lunchBreak}m` : '-', cols[4].x, y + 5);
 
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(22, 163, 74);
-        doc.text(toHM(w.totalHours), cols[4].x, y + 5);
+        doc.text(toHM(w.totalHours), cols[5].x, y + 5);
         y += 7;
       });
 
@@ -213,7 +219,7 @@ Deno.serve(async (req) => {
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
       doc.text('TOTAL HEURES:', M + 4, y + 5.5);
-      doc.text(toHM(totalHours), cols[4].x, y + 5.5);
+      doc.text(toHM(totalHours), cols[5].x, y + 5.5);
       y += 12;
     } else {
       doc.setFillColor(248, 250, 255);

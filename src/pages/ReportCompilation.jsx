@@ -110,6 +110,7 @@ export default function ReportCompilationPage() {
         workers.push({
           id: e.user_id,
           name: e.user_name,
+          role: e.role || '',
           punchIn,
           punchOut,
           totalHours: totalHours.toFixed(2),
@@ -242,12 +243,13 @@ export default function ReportCompilationPage() {
                                               const lunchBreak = userEntries[0]?.lunch_break_custom || userEntries[0]?.lunch_break || 0;
 
                                               weekWorkers.push({
-                                                id: e.user_id,
-                                                name: e.user_name,
-                                                punchIn,
-                                                punchOut,
-                                                totalHours: totalHours.toFixed(2),
-                                                lunchBreak
+                                               id: e.user_id,
+                                               name: e.user_name,
+                                               role: e.role || '',
+                                               punchIn,
+                                               punchOut,
+                                               totalHours: totalHours.toFixed(2),
+                                               lunchBreak
                                               });
                                             }
                                           });
