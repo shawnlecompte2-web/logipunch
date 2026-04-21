@@ -53,6 +53,7 @@ import CreateDailyReport from './pages/CreateDailyReport';
 import DailyReports from './pages/DailyReports';
 import MyHours from './pages/MyHours';
 import Punch from './pages/Punch';
+import ProjectSummary from './pages/ProjectSummary';
 import ReportCompilation from './pages/ReportCompilation';
 import Settings from './pages/Settings';
 import TimeSheet from './pages/TimeSheet';
@@ -66,6 +67,7 @@ export const PAGES = {
     "DailyReports": DailyReports,
     "MyHours": MyHours,
     "Punch": Punch,
+    "ProjectSummary": ProjectSummary,
     "ReportCompilation": ReportCompilation,
     "Settings": Settings,
     "TimeSheet": TimeSheet,

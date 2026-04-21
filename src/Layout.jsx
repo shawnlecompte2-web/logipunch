@@ -12,6 +12,7 @@ const allNavItems = [
   { label: "Punch", page: "Punch", icon: Clock, alwaysVisible: true },
   { label: "Mes heures", page: "MyHours", icon: User, alwaysVisible: true },
   { label: "Rapports", page: "DailyReports", icon: BarChart2, key: "DailyReports" },
+  { label: "Projets", page: "ProjectSummary", icon: BarChart2, key: "ProjectSummary" },
   { label: "Approbation", page: "Approvals", icon: CheckSquare, key: "Approvals" },
   { label: "Heures", page: "TimeSheet", icon: BarChart2, key: "TimeSheet" },
   { label: "Actifs", page: "ActiveUsers", icon: Users, key: "ActiveUsers" },
