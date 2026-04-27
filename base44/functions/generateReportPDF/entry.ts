@@ -15,9 +15,15 @@ function sanitize(str) {
     .replace(/[\u2013\u2014]/g, '-');
 }
 
+function roundToQuarter(hours) {
+  const h = parseFloat(hours) || 0;
+  return Math.round(h * 4) / 4;
+}
+
 function toHM(hours) {
-  const h = Math.floor(parseFloat(hours) || 0);
-  const m = Math.round(((parseFloat(hours) || 0) - h) * 60);
+  const rounded = roundToQuarter(parseFloat(hours) || 0);
+  const h = Math.floor(rounded);
+  const m = Math.round((rounded - h) * 60);
   return `${h}h${m.toString().padStart(2, '0')}`;
 }
 
