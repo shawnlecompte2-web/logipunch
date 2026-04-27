@@ -7,75 +7,112 @@ import { fr } from "date-fns/locale";
 
 const AUTO_APPROVE_ROLES = ["Administrateur", "Surintendant", "Chargé de projet"];
 
-// ─── PIN ENTRY ───────────────────────────────────────────────────────────────
-function PinEntry({ onSuccess }) {
-  const [pin, setPin] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+function getStoredUser() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
+}
+function getStoredCompany() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
+}
+function getStoredEntry() {
+  try { return JSON.parse(sessionStorage.getItem("logipunch_active_entry") || "null"); } catch { return null; }
+}
+function setStoredEntry(entry) {
+  if (entry) sessionStorage.setItem("logipunch_active_entry", JSON.stringify(entry));
+  else sessionStorage.removeItem("logipunch_active_entry");
+}
 
-  const handleKey = (val) => {
-    if (pin.length < 4) {
-      const newPin = pin + val;
-      setPin(newPin);
-      setError("");
-      if (newPin.length === 4) verifyPin(newPin);
-    }
-  };
+function calculateOnSite(userLat, userLng, project) {
+  if (!project?.latitude || !project?.longitude) return null;
+  const R = 6371000;
+  const φ1 = (userLat * Math.PI) / 180;
+  const φ2 = (project.latitude * Math.PI) / 180;
+  const Δφ = ((project.latitude - userLat) * Math.PI) / 180;
+  const Δλ = ((project.longitude - userLng) * Math.PI) / 180;
+  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) <= 500;
+}
 
-  const handleDelete = () => { setPin(p => p.slice(0, -1)); setError(""); };
+function getLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => resolve(null),
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  });
+}
 
-  const verifyPin = async (code) => {
-    setLoading(true);
-    try {
-      const users = await base44.entities.AppUser.filter({ pin_code: code, is_active: true });
-      if (!users || users.length === 0) { setError("Code invalide. Réessayez."); setPin(""); setLoading(false); return; }
-      const user = users[0];
-      const entries = await base44.entities.PunchEntry.filter({ user_id: user.id, status: "active" });
-      onSuccess(user, entries && entries.length > 0 ? entries[0] : null);
-    } catch (e) { setError("Erreur. Réessayez."); setPin(""); }
-    setLoading(false);
-  };
+// ─── GPS STATUS ───────────────────────────────────────────────────────────────
+function GpsStatus({ status }) {
+  if (status === "loading") return (
+    <div className="mb-4 px-4 py-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 flex items-center gap-2">
+      <MapPin size={14} className="text-zinc-400 shrink-0 animate-pulse" />
+      <p className="text-zinc-400 text-xs">Localisation GPS en cours...</p>
+    </div>
+  );
+  if (status === "granted") return (
+    <div className="mb-4 px-4 py-2.5 rounded-xl bg-green-900/20 border border-green-800/40 flex items-center gap-2">
+      <MapPin size={14} className="text-green-400 shrink-0" />
+      <p className="text-green-400 text-xs">Position GPS capturée ✓</p>
+    </div>
+  );
+  if (status === "denied") return (
+    <div className="mb-4 px-4 py-2.5 rounded-xl bg-red-900/20 border border-red-800/40 flex items-center gap-2">
+      <MapPin size={14} className="text-red-400 shrink-0" />
+      <p className="text-red-400 text-xs">Position GPS NON capturée ✗</p>
+    </div>
+  );
+  return null;
+}
 
-  const keys = ["1","2","3","4","5","6","7","8","9","","0","del"];
-
+// ─── PROJECT PICKER ───────────────────────────────────────────────────────────
+function ProjectPicker({ projects, selected, onSelect }) {
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center px-4">
-      <div className="mb-10 text-center">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center">
-            <span className="text-white font-black text-lg">L</span>
+    <div className="flex flex-col gap-2">
+      {projects.map(p => (
+        <button key={p.id} onClick={() => onSelect(p.id)}
+          className={`w-full p-4 rounded-2xl border text-left transition-all ${selected === p.id ? "bg-green-900/30 border-green-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-semibold">{p.name}</p>
+              <p className="text-xs text-zinc-500 mt-0.5">{p.project_number}{p.address ? ` · ${p.address}` : ""}</p>
+            </div>
+            {selected === p.id && <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center"><div className="w-2 h-2 bg-white rounded-full" /></div>}
           </div>
-          <span className="text-3xl font-black text-white tracking-tight">LOGIPUNCH</span>
-        </div>
-        <p className="text-zinc-500 text-sm mt-1">Entrez votre code à 4 chiffres</p>
-      </div>
-      <div className="flex gap-4 mb-8">
-        {[0,1,2,3].map(i => (
-          <div key={i} className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${i < pin.length ? "bg-green-500 border-green-500 scale-110" : "bg-transparent border-zinc-600"}`} />
-        ))}
-      </div>
-      {error && <div className="mb-5 px-5 py-2.5 bg-red-900/30 border border-red-700/50 rounded-xl text-red-400 text-sm text-center">{error}</div>}
-      <div className="grid grid-cols-3 gap-3 w-full max-w-xs">
-        {keys.map((k, i) => {
-          if (k === "") return <div key={i} />;
-          if (k === "del") return (
-            <button key={i} onClick={handleDelete} disabled={loading} className="h-16 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center active:scale-95 transition-all text-zinc-400 hover:bg-zinc-700">
-              <Delete size={22} />
-            </button>
-          );
-          return (
-            <button key={i} onClick={() => handleKey(k)} disabled={loading || pin.length >= 4} className="h-16 rounded-2xl bg-zinc-800 border border-zinc-700 text-white text-2xl font-semibold active:scale-95 transition-all hover:bg-zinc-700 hover:border-green-600">
-              {k}
-            </button>
-          );
-        })}
-      </div>
-      {loading && <div className="mt-8 text-green-400 text-sm animate-pulse">Vérification...</div>}
+        </button>
+      ))}
     </div>
   );
 }
 
-// ─── PUNCH IN FORM ───────────────────────────────────────────────────────────
+// ─── LUNCH PICKER ─────────────────────────────────────────────────────────────
+function LunchPicker({ lunch, setLunch, customLunch, setCustomLunch }) {
+  return (
+    <>
+      <div className="flex items-center gap-2 mb-3"><Coffee size={16} className="text-zinc-400" /><label className="text-zinc-400 text-xs uppercase tracking-widest">Temps de dîner *</label></div>
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        {[0, 15, 30, 45, 60].map(opt => (
+          <button key={opt} onClick={() => { setLunch(opt); setCustomLunch(""); }}
+            className={`py-3 rounded-xl border text-sm font-semibold transition-all ${lunch === opt ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
+            {opt === 0 ? "Aucun" : `${opt} min`}
+          </button>
+        ))}
+        <button onClick={() => setLunch("custom")}
+          className={`py-3 rounded-xl border text-sm font-semibold transition-all ${lunch === "custom" ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
+          Autre
+        </button>
+      </div>
+      {lunch === "custom" && (
+        <input type="number" value={customLunch} onChange={e => setCustomLunch(e.target.value)}
+          placeholder="Minutes..." min="0" max="120"
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm mb-3" />
+      )}
+    </>
+  );
+}
+
+// ─── PUNCH IN FORM ────────────────────────────────────────────────────────────
 function PunchInForm({ user, projects, onSuccess, onBack }) {
   const [selectedProject, setSelectedProject] = useState("");
   const [machine, setMachine] = useState("");
@@ -86,84 +123,45 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
 
   const needsMachine = user.role === "Opérateur";
   const needsPlate = user.role === "Chauffeur";
-  const availableProjects = projects;
-
   const canSubmit = selectedProject && (!needsPlate || plateNumber) && locationStatus !== "loading";
 
-  const calculateOnSite = (userLat, userLng, project) => {
-    if (!project?.latitude || !project?.longitude) return null;
-    const R = 6371000;
-    const φ1 = (userLat * Math.PI) / 180;
-    const φ2 = (project.latitude * Math.PI) / 180;
-    const Δφ = ((project.latitude - userLat) * Math.PI) / 180;
-    const Δλ = ((project.longitude - userLng) * Math.PI) / 180;
-    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    return distance <= 500;
-  };
-
-  const getLocation = () => new Promise((resolve) => {
-    if (!navigator.geolocation) { resolve(null); return; }
-    navigator.geolocation.getCurrentPosition(
-      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => resolve(null),
-      { timeout: 10000, enableHighAccuracy: true }
-    );
-  });
-
-  const requestLocation = () => {
-    if (!navigator.geolocation) { setLocationStatus("denied"); return; }
+  useEffect(() => {
     setLocationStatus("loading");
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        setLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLocationStatus("granted");
-      },
+    navigator.geolocation?.getCurrentPosition(
+      pos => { setLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocationStatus("granted"); },
       () => setLocationStatus("denied"),
       { timeout: 8000, enableHighAccuracy: false }
     );
-  };
-
-  useEffect(() => {
-    requestLocation();
   }, []);
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setLoading(true);
-    try {
-      const project = projects.find(p => p.id === selectedProject);
-      const now = new Date();
-      const weekStart = format(startOfWeek(now, { weekStartsOn: 0 }), "yyyy-MM-dd");
-      const company = getStoredCompany();
-      
-      const location = locationData || await getLocation();
-      const entry = {
-        user_id: user.id, user_name: user.full_name, project_id: selectedProject,
-        project_name: project?.name || "", punch_in: now.toISOString(),
-        status: AUTO_APPROVE_ROLES.includes(user.role) ? "approved" : "active",
-        week_start: weekStart, work_date: format(now, "yyyy-MM-dd"),
-        group: user.group, role: user.role, lunch_break: 0,
-        ...(company?.id ? { company_id: company.id } : {}),
-      };
-      if (needsMachine) entry.machine = machine;
-      if (needsPlate) entry.plate_number = plateNumber;
-      if (location) {
-        entry.punch_in_lat = location.lat;
-        entry.punch_in_lng = location.lng;
-        const isOnSite = calculateOnSite(location.lat, location.lng, project);
-        if (isOnSite !== null) entry.on_site_in = isOnSite;
-      }
-      
-      const created = await base44.entities.PunchEntry.create(entry);
-      sessionStorage.setItem("logipunch_active_entry", JSON.stringify(created));
-      onSuccess(created);
-    } catch (error) {
-      console.error("Erreur punch in:", error);
-    } finally {
-      setLoading(false);
+    const project = projects.find(p => p.id === selectedProject);
+    const now = new Date();
+    const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
+    const company = getStoredCompany();
+    const location = locationData || await getLocation();
+    const entry = {
+      user_id: user.id, user_name: user.full_name, project_id: selectedProject,
+      project_name: project?.name || "", punch_in: now.toISOString(),
+      status: AUTO_APPROVE_ROLES.includes(user.role) ? "approved" : "active",
+      week_start: weekStart, work_date: format(now, "yyyy-MM-dd"),
+      group: user.group, role: user.role, lunch_break: 0,
+      ...(company?.id ? { company_id: company.id } : {}),
+    };
+    if (needsMachine) entry.machine = machine;
+    if (needsPlate) entry.plate_number = plateNumber;
+    if (location) {
+      entry.punch_in_lat = location.lat;
+      entry.punch_in_lng = location.lng;
+      const isOnSite = calculateOnSite(location.lat, location.lng, project);
+      if (isOnSite !== null) entry.on_site_in = isOnSite;
     }
+    const created = await base44.entities.PunchEntry.create(entry);
+    sessionStorage.setItem("logipunch_active_entry", JSON.stringify(created));
+    onSuccess(created);
+    setLoading(false);
   };
 
   return (
@@ -171,53 +169,25 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
       <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white mb-6 transition-colors"><ArrowLeft size={18} /><span className="text-sm">Retour</span></button>
       <h2 className="text-white text-2xl font-bold mb-1">Punch In</h2>
       <p className="text-zinc-500 text-sm mb-6">{user.full_name} · {user.role}</p>
-      
-      {locationStatus === "loading" && (
-        <div className="mb-4 px-4 py-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 flex items-center gap-2">
-          <MapPin size={14} className="text-zinc-400 shrink-0 animate-pulse" />
-          <p className="text-zinc-400 text-xs">Localisation GPS en cours...</p>
-        </div>
-      )}
-      {locationStatus === "granted" && (
-        <div className="mb-4 px-4 py-2.5 rounded-xl bg-green-900/20 border border-green-800/40 flex items-center gap-2">
-          <MapPin size={14} className="text-green-400 shrink-0" />
-          <p className="text-green-400 text-xs">Position GPS capturée ✓</p>
-        </div>
-      )}
-      {locationStatus === "denied" && (
-        <div className="mb-4 px-4 py-2.5 rounded-xl bg-red-900/20 border border-red-800/40 flex items-center gap-2">
-          <MapPin size={14} className="text-red-400 shrink-0" />
-          <p className="text-red-400 text-xs">Position GPS NON capturée ✗</p>
-        </div>
-      )}
-      
+      <GpsStatus status={locationStatus} />
       <div className="mb-4">
         <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Sélectionner un projet *</label>
-        <div className="flex flex-col gap-2">
-          {availableProjects.map(p => (
-            <button key={p.id} onClick={() => setSelectedProject(p.id)} className={`w-full p-4 rounded-2xl border text-left transition-all ${selectedProject === p.id ? "bg-green-900/30 border-green-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold">{p.name}</p>
-                  <p className="text-xs text-zinc-500 mt-0.5">{p.project_number}{p.address ? ` · ${p.address}` : ""}</p>
-                </div>
-                {selectedProject === p.id && <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center"><div className="w-2 h-2 bg-white rounded-full" /></div>}
-              </div>
-            </button>
-          ))}
-        </div>
+        <ProjectPicker projects={projects} selected={selectedProject} onSelect={setSelectedProject} />
       </div>
       <div className="mb-4">
         <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Machine utilisée</label>
-        <input value={machine} onChange={e => setMachine(e.target.value)} placeholder="Ex: Excavatrice 320, Compacteur..." className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm" />
+        <input value={machine} onChange={e => setMachine(e.target.value)} placeholder="Ex: Excavatrice 320, Compacteur..."
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm" />
       </div>
       {needsPlate && (
         <div className="mb-4">
           <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Numéro de plaque *</label>
-          <input value={plateNumber} onChange={e => setPlateNumber(e.target.value.toUpperCase())} placeholder="Ex: ABC-1234" className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm font-mono" />
+          <input value={plateNumber} onChange={e => setPlateNumber(e.target.value.toUpperCase())} placeholder="Ex: ABC-1234"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm font-mono" />
         </div>
       )}
-      <button onClick={handleSubmit} disabled={!canSubmit || loading} className={`mt-4 w-full h-14 rounded-2xl font-bold text-base transition-all flex items-center justify-between px-6 ${canSubmit && !loading ? "bg-green-600 hover:bg-green-500 text-white glow-green" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"}`}>
+      <button onClick={handleSubmit} disabled={!canSubmit || loading}
+        className={`mt-4 w-full h-14 rounded-2xl font-bold text-base transition-all flex items-center justify-between px-6 ${canSubmit && !loading ? "bg-green-600 hover:bg-green-500 text-white glow-green" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"}`}>
         <span>{loading ? "Enregistrement..." : "CONFIRMER PUNCH IN"}</span>
         {!loading && <ChevronRight size={20} />}
       </button>
@@ -225,7 +195,7 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
   );
 }
 
-// ─── PUNCH OUT FORM ──────────────────────────────────────────────────────────
+// ─── PUNCH OUT FORM ───────────────────────────────────────────────────────────
 function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const [lunch, setLunch] = useState(null);
   const [customLunch, setCustomLunch] = useState("");
@@ -235,22 +205,10 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const [locationData, setLocationData] = useState(null);
   const [locationStatus, setLocationStatus] = useState("idle");
 
-  const getLocation = () => new Promise((resolve) => {
-    if (!navigator.geolocation) { resolve(null); return; }
-    navigator.geolocation.getCurrentPosition(
-      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => resolve(null),
-      { timeout: 10000, enableHighAccuracy: true }
-    );
-  });
-
   useEffect(() => {
     setLocationStatus("loading");
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        setLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLocationStatus("granted");
-      },
+    navigator.geolocation?.getCurrentPosition(
+      pos => { setLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocationStatus("granted"); },
       () => setLocationStatus("denied"),
       { timeout: 8000, enableHighAccuracy: false }
     );
@@ -263,50 +221,31 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const workedHours = (Math.max(0, totalMinutes - lunchMinutes + unusedBreakBonus) / 60).toFixed(2);
   const canSubmit = lunch !== null && locationStatus !== "loading";
 
-  const calculateOnSite = (userLat, userLng, project) => {
-    if (!project?.latitude || !project?.longitude) return null;
-    const R = 6371000;
-    const φ1 = (userLat * Math.PI) / 180;
-    const φ2 = (project.latitude * Math.PI) / 180;
-    const Δφ = ((project.latitude - userLat) * Math.PI) / 180;
-    const Δλ = ((project.longitude - userLng) * Math.PI) / 180;
-    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    return distance <= 500;
-  };
-
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setLoading(true);
-    try {
-      const finalLunch = lunch === "custom" ? parseInt(customLunch) || 0 : lunch;
-      const autoApprove = Array.isArray(user.approved_by) && user.approved_by.includes("auto");
-      const location = locationData || await getLocation();
-      const bonus = (2 - breaksTaken) * 15;
-      const updateData = {
-        punch_out: punchOutTime.toISOString(), lunch_break: finalLunch,
-        breaks_taken: breaksTaken,
-        total_hours: parseFloat(Math.max(0, (totalMinutes - finalLunch + bonus) / 60).toFixed(2)),
-        status: autoApprove ? "approved" : "completed",
-        ...(autoApprove ? { approved_by: "Automatique", approved_at: new Date().toISOString() } : {}),
-      };
-      if (location) {
-        updateData.punch_out_lat = location.lat;
-        updateData.punch_out_lng = location.lng;
-        // Fetch project to calculate on-site status
-        const project = await base44.entities.Project.get(activeEntry.project_id);
-        const isOnSite = calculateOnSite(location.lat, location.lng, project);
-        if (isOnSite !== null) updateData.on_site_out = isOnSite;
-      }
-      await base44.entities.PunchEntry.update(activeEntry.id, updateData);
-      sessionStorage.removeItem("logipunch_active_entry");
-      onSuccess();
-    } catch (error) {
-      console.error("Erreur punch out:", error);
-    } finally {
-      setLoading(false);
+    const finalLunch = lunch === "custom" ? parseInt(customLunch) || 0 : lunch;
+    const autoApprove = Array.isArray(user.approved_by) && user.approved_by.includes("auto");
+    const location = locationData || await getLocation();
+    const bonus = (2 - breaksTaken) * 15;
+    const updateData = {
+      punch_out: punchOutTime.toISOString(), lunch_break: finalLunch,
+      breaks_taken: breaksTaken,
+      total_hours: parseFloat(Math.max(0, (totalMinutes - finalLunch + bonus) / 60).toFixed(2)),
+      status: autoApprove ? "approved" : "completed",
+      ...(autoApprove ? { approved_by: "Automatique", approved_at: new Date().toISOString() } : {}),
+    };
+    if (location) {
+      updateData.punch_out_lat = location.lat;
+      updateData.punch_out_lng = location.lng;
+      const project = await base44.entities.Project.get(activeEntry.project_id);
+      const isOnSite = calculateOnSite(location.lat, location.lng, project);
+      if (isOnSite !== null) updateData.on_site_out = isOnSite;
     }
+    await base44.entities.PunchEntry.update(activeEntry.id, updateData);
+    sessionStorage.removeItem("logipunch_active_entry");
+    onSuccess();
+    setLoading(false);
   };
 
   return (
@@ -314,25 +253,7 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
       <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white mb-6 transition-colors"><ArrowLeft size={18} /><span className="text-sm">Retour</span></button>
       <h2 className="text-white text-2xl font-bold mb-1">Punch Out</h2>
       <p className="text-zinc-500 text-sm mb-6">{user.full_name}</p>
-      
-      {locationStatus === "loading" && (
-        <div className="mb-4 px-4 py-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 flex items-center gap-2">
-          <MapPin size={14} className="text-zinc-400 shrink-0 animate-pulse" />
-          <p className="text-zinc-400 text-xs">Localisation GPS en cours...</p>
-        </div>
-      )}
-      {locationStatus === "granted" && (
-        <div className="mb-4 px-4 py-2.5 rounded-xl bg-green-900/20 border border-green-800/40 flex items-center gap-2">
-          <MapPin size={14} className="text-green-400 shrink-0" />
-          <p className="text-green-400 text-xs">Position GPS capturée ✓</p>
-        </div>
-      )}
-      {locationStatus === "denied" && (
-        <div className="mb-4 px-4 py-2.5 rounded-xl bg-red-900/20 border border-red-800/40 flex items-center gap-2">
-          <MapPin size={14} className="text-red-400 shrink-0" />
-          <p className="text-red-400 text-xs">Position GPS NON capturée ✗</p>
-        </div>
-      )}
+      <GpsStatus status={locationStatus} />
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-6">
         <div className="grid grid-cols-3 gap-3">
           <div><p className="text-zinc-500 text-xs mb-1">Projet</p><p className="text-white text-sm font-semibold">{activeEntry.project_name}</p></div>
@@ -341,22 +262,14 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
         </div>
       </div>
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3"><Coffee size={16} className="text-zinc-400" /><label className="text-zinc-400 text-xs uppercase tracking-widest">Temps de diner *</label></div>
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          {[0,15,30,45,60].map(opt => (
-            <button key={opt} onClick={() => { setLunch(opt); setCustomLunch(""); }} className={`py-3 rounded-xl border text-sm font-semibold transition-all ${lunch === opt ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
-              {opt === 0 ? "Aucun" : `${opt} min`}
-            </button>
-          ))}
-          <button onClick={() => setLunch("custom")} className={`py-3 rounded-xl border text-sm font-semibold transition-all ${lunch === "custom" ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>Autre</button>
-        </div>
-        {lunch === "custom" && <input type="number" value={customLunch} onChange={e => setCustomLunch(e.target.value)} placeholder="Minutes..." min="0" max="120" className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm" />}
+        <LunchPicker lunch={lunch} setLunch={setLunch} customLunch={customLunch} setCustomLunch={setCustomLunch} />
       </div>
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-3"><span className="text-base">☕</span><label className="text-zinc-400 text-xs uppercase tracking-widest">Pauses prises (15 min chacune)</label></div>
         <div className="grid grid-cols-3 gap-2">
           {[0, 1, 2].map(n => (
-            <button key={n} onClick={() => setBreaksTaken(n)} className={`py-3 rounded-xl border text-sm font-semibold transition-all ${breaksTaken === n ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
+            <button key={n} onClick={() => setBreaksTaken(n)}
+              className={`py-3 rounded-xl border text-sm font-semibold transition-all ${breaksTaken === n ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
               {n === 0 ? "Aucune" : n === 1 ? "1 pause" : "2 pauses"}
             </button>
           ))}
@@ -366,28 +279,37 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
       {canSubmit && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-6">
           <div className="grid grid-cols-4 gap-2 text-center">
-            <div><p className="text-zinc-500 text-xs mb-1">Brut</p><p className="text-white text-sm font-bold">{Math.floor(totalMinutes/60)}h{(totalMinutes%60).toString().padStart(2,"0")}</p></div>
-            <div><p className="text-zinc-500 text-xs mb-1">- Diner</p><p className="text-red-400 text-sm font-bold">-{lunchMinutes}m</p></div>
+            <div><p className="text-zinc-500 text-xs mb-1">Brut</p><p className="text-white text-sm font-bold">{Math.floor(totalMinutes / 60)}h{(totalMinutes % 60).toString().padStart(2, "0")}</p></div>
+            <div><p className="text-zinc-500 text-xs mb-1">- Dîner</p><p className="text-red-400 text-sm font-bold">-{lunchMinutes}m</p></div>
             <div><p className="text-zinc-500 text-xs mb-1">+ Pauses</p><p className={`text-sm font-bold ${unusedBreakBonus > 0 ? "text-green-400" : "text-zinc-600"}`}>+{unusedBreakBonus}m</p></div>
             <div><p className="text-zinc-500 text-xs mb-1">Total</p><p className="text-green-400 text-base font-bold">{workedHours}h</p></div>
           </div>
         </div>
       )}
-      <button onClick={handleSubmit} disabled={!canSubmit || loading} className={`w-full h-14 rounded-2xl font-bold text-base transition-all ${canSubmit && !loading ? "bg-red-700 hover:bg-red-600 text-white glow-red" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"}`}>
+      <button onClick={handleSubmit} disabled={!canSubmit || loading}
+        className={`w-full h-14 rounded-2xl font-bold text-base transition-all ${canSubmit && !loading ? "bg-red-700 hover:bg-red-600 text-white glow-red" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"}`}>
         {loading ? "Enregistrement..." : "CONFIRMER PUNCH OUT"}
       </button>
     </div>
   );
 }
 
-// ─── CHANGE PROJECT FORM ─────────────────────────────────────────────────────
+// ─── CHANGE PROJECT FORM ──────────────────────────────────────────────────────
 function ChangeProjectForm({ user, activeEntry, projects, onSuccess, onBack }) {
+  const [step, setStep] = useState("lunch"); // "lunch" | "project"
+  const [lunch, setLunch] = useState(null);
+  const [customLunch, setCustomLunch] = useState("");
   const [selectedProject, setSelectedProject] = useState("");
   const [machine, setMachine] = useState(activeEntry?.machine || "");
+  const [plateNumber, setPlateNumber] = useState(activeEntry?.plate_number || "");
   const [loading, setLoading] = useState(false);
+
   const needsMachine = user.role === "Opérateur";
+  const needsPlate = user.role === "Chauffeur";
   const availableProjects = projects.filter(p => p.id !== activeEntry?.project_id);
-  const canSubmit = selectedProject && (!needsMachine || machine);
+  const lunchMinutes = lunch === "custom" ? parseInt(customLunch) || 0 : (lunch ?? 0);
+  const canGoNext = lunch !== null;
+  const canSubmit = selectedProject && (!needsMachine || machine) && (!needsPlate || plateNumber);
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -396,18 +318,30 @@ function ChangeProjectForm({ user, activeEntry, projects, onSuccess, onBack }) {
     const project = projects.find(p => p.id === selectedProject);
     const punchInTime = new Date(activeEntry.punch_in);
     const totalMinutes = (now - punchInTime) / 1000 / 60;
+    const finalLunch = lunch === "custom" ? parseInt(customLunch) || 0 : (lunch ?? 0);
+
+    // Close current entry with lunch
     await base44.entities.PunchEntry.update(activeEntry.id, {
-      punch_out: now.toISOString(), lunch_break: 0,
-      total_hours: parseFloat((totalMinutes / 60).toFixed(2)), status: "completed",
+      punch_out: now.toISOString(),
+      lunch_break: finalLunch,
+      total_hours: parseFloat(Math.max(0, (totalMinutes - finalLunch) / 60).toFixed(2)),
+      status: "completed",
     });
-    const weekStart = format(startOfWeek(now, { weekStartsOn: 0 }), "yyyy-MM-dd");
+
+    const company = getStoredCompany();
+    const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
     const newEntry = {
-      user_id: user.id, user_name: user.full_name, project_id: selectedProject,
-      project_name: project?.name || "", punch_in: now.toISOString(), status: "active",
+      user_id: user.id, user_name: user.full_name,
+      project_id: selectedProject, project_name: project?.name || "",
+      punch_in: now.toISOString(), status: "active",
       week_start: weekStart, work_date: format(now, "yyyy-MM-dd"),
-      group: user.group, role: user.role, lunch_break: 0, plate_number: activeEntry?.plate_number,
+      group: user.group, role: user.role, lunch_break: 0,
+      is_project_switch: true,
+      ...(plateNumber ? { plate_number: plateNumber } : activeEntry?.plate_number ? { plate_number: activeEntry.plate_number } : {}),
+      ...(company?.id ? { company_id: company.id } : {}),
     };
     if (needsMachine) newEntry.machine = machine;
+
     const created = await base44.entities.PunchEntry.create(newEntry);
     onSuccess(created);
     setLoading(false);
@@ -417,36 +351,78 @@ function ChangeProjectForm({ user, activeEntry, projects, onSuccess, onBack }) {
     <div className="min-h-screen w-full flex flex-col max-w-md mx-auto px-4 py-6">
       <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white mb-6 transition-colors"><ArrowLeft size={18} /><span className="text-sm">Retour</span></button>
       <h2 className="text-white text-2xl font-bold mb-1">Changer de projet</h2>
-      <p className="text-zinc-500 text-sm mb-2">{user.full_name}</p>
-      <div className="flex items-center gap-2 text-zinc-500 text-xs mb-6"><span>Projet actuel :</span><span className="text-zinc-300 font-semibold">{activeEntry?.project_name}</span></div>
-      <div className="mb-4">
-        <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Nouveau projet *</label>
-        <div className="flex flex-col gap-2">
-          {availableProjects.map(p => (
-            <button key={p.id} onClick={() => setSelectedProject(p.id)} className={`w-full p-4 rounded-2xl border text-left transition-all ${selectedProject === p.id ? "bg-green-900/30 border-green-600 text-white" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
-              <div className="flex items-center justify-between">
-                <div><p className="font-semibold">{p.name}</p><p className="text-xs text-zinc-500 mt-0.5">{p.project_number}</p></div>
-                {selectedProject === p.id && <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center"><div className="w-2 h-2 bg-white rounded-full" /></div>}
-              </div>
-            </button>
-          ))}
+      <p className="text-zinc-500 text-sm mb-1">{user.full_name}</p>
+      <div className="flex items-center gap-2 text-zinc-500 text-xs mb-4">
+        <span>Projet actuel :</span>
+        <span className="text-zinc-300 font-semibold">{activeEntry?.project_name}</span>
+      </div>
+
+      {/* Progress steps */}
+      <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-1.5">
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === "lunch" ? "bg-green-600 text-white" : "bg-green-800 text-green-300"}`}>1</div>
+          <span className={`text-xs ${step === "lunch" ? "text-white" : "text-green-400"}`}>Dîner</span>
+        </div>
+        <div className="flex-1 h-0.5 bg-zinc-700 rounded" />
+        <div className="flex items-center gap-1.5">
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === "project" ? "bg-green-600 text-white" : "bg-zinc-700 text-zinc-500"}`}>2</div>
+          <span className={`text-xs ${step === "project" ? "text-white" : "text-zinc-500"}`}>Projet</span>
         </div>
       </div>
-      {needsMachine && (
-        <div className="mb-4">
-          <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Machine *</label>
-          <input value={machine} onChange={e => setMachine(e.target.value)} placeholder="Machine..." className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm" />
-        </div>
+
+      {step === "lunch" && (
+        <>
+          <LunchPicker lunch={lunch} setLunch={setLunch} customLunch={customLunch} setCustomLunch={setCustomLunch} />
+          {lunch !== null && (
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 mb-4 text-center text-xs text-zinc-400">
+              <span className="text-white font-bold">{lunchMinutes === 0 ? "Aucun dîner" : `${lunchMinutes} min de dîner`}</span> appliqué à <span className="text-zinc-300 font-semibold">{activeEntry?.project_name}</span>
+            </div>
+          )}
+          <button onClick={() => setStep("project")} disabled={!canGoNext}
+            className={`mt-2 w-full h-14 rounded-2xl font-bold text-base transition-all flex items-center justify-between px-6 ${canGoNext ? "bg-green-700 hover:bg-green-600 text-white" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"}`}>
+            <span>Suivant : choisir le projet</span>
+            <ChevronRight size={20} />
+          </button>
+        </>
       )}
-      <button onClick={handleSubmit} disabled={!canSubmit || loading} className={`mt-4 w-full h-14 rounded-2xl font-bold text-base transition-all flex items-center justify-between px-6 ${canSubmit && !loading ? "bg-zinc-700 hover:bg-zinc-600 text-white" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"}`}>
-        <span>{loading ? "Changement..." : "CONFIRMER LE CHANGEMENT"}</span>
-        {!loading && <ChevronRight size={20} />}
-      </button>
+
+      {step === "project" && (
+        <>
+          <div className="mb-4">
+            <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Nouveau projet *</label>
+            <ProjectPicker projects={availableProjects} selected={selectedProject} onSelect={setSelectedProject} />
+          </div>
+          {needsMachine && (
+            <div className="mb-4">
+              <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Machine *</label>
+              <input value={machine} onChange={e => setMachine(e.target.value)} placeholder="Ex: Excavatrice 320..."
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm" />
+            </div>
+          )}
+          {needsPlate && (
+            <div className="mb-4">
+              <label className="text-zinc-400 text-xs uppercase tracking-widest mb-2 block">Numéro de plaque *</label>
+              <input value={plateNumber} onChange={e => setPlateNumber(e.target.value.toUpperCase())} placeholder="Ex: ABC-1234"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-white placeholder:text-zinc-600 focus:outline-none focus:border-green-600 text-sm font-mono" />
+            </div>
+          )}
+          <div className="flex gap-3 mt-2">
+            <button onClick={() => setStep("lunch")} className="h-14 px-5 rounded-2xl bg-zinc-800 text-zinc-300 font-semibold hover:bg-zinc-700 transition-all">
+              <ArrowLeft size={18} />
+            </button>
+            <button onClick={handleSubmit} disabled={!canSubmit || loading}
+              className={`flex-1 h-14 rounded-2xl font-bold text-base transition-all flex items-center justify-between px-6 ${canSubmit && !loading ? "bg-zinc-700 hover:bg-zinc-600 text-white" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"}`}>
+              <span>{loading ? "Changement..." : "CONFIRMER LE CHANGEMENT"}</span>
+              {!loading && <ChevronRight size={20} />}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-// ─── PUNCH DASHBOARD ─────────────────────────────────────────────────────────
+// ─── PUNCH DASHBOARD ──────────────────────────────────────────────────────────
 function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
   const company = getStoredCompany();
   const [view, setView] = useState("main");
@@ -466,18 +442,14 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
     base44.entities.Project.filter(filter).then(all => {
       const assignedProjectIds = user.assigned_projects || [];
       const assignedToUser = all.filter(p =>
-        assignedProjectIds.includes(p.id) ||
-        (p.assigned_users || []).includes(user.id)
+        assignedProjectIds.includes(p.id) || (p.assigned_users || []).includes(user.id)
       );
       setProjects(assignedToUser.length > 0 ? assignedToUser : all);
     });
   }, [user?.id]);
 
   useEffect(() => {
-    const handlePopState = () => {
-      setDirection(-1);
-      setView("main");
-    };
+    const handlePopState = () => { setDirection(-1); setView("main"); };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
@@ -490,11 +462,8 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
 
   const goBack = () => {
     setDirection(-1);
-    if (window.history.state?.view) {
-      window.history.back();
-    } else {
-      setView("main");
-    }
+    if (window.history.state?.view) window.history.back();
+    else setView("main");
   };
 
   const getElapsed = () => {
@@ -560,7 +529,13 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
               </div>
               {activeEntry && (
                 <div className="bg-green-950/40 border border-green-700/40 rounded-2xl p-4 mb-5 glow-green">
-                  <div className="flex items-center gap-2 mb-3"><div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" /><span className="text-green-400 text-sm font-semibold">EN COURS</span></div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                    <span className="text-green-400 text-sm font-semibold">EN COURS</span>
+                    {activeEntry.is_project_switch && (
+                      <span className="px-2 py-0.5 bg-blue-900/40 border border-blue-700/40 text-blue-400 text-xs rounded-full">Changement de projet</span>
+                    )}
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div><p className="text-zinc-500 text-xs mb-0.5">Projet</p><p className="text-white text-sm font-semibold">{activeEntry.project_name}</p></div>
                     <div><p className="text-zinc-500 text-xs mb-0.5">Début</p><p className="text-white text-sm font-semibold">{format(new Date(activeEntry.punch_in), "HH:mm")}</p></div>
@@ -597,29 +572,11 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
   );
 }
 
-function getStoredUser() {
-  try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
-}
-
-function getStoredCompany() {
-  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
-}
-
-function getStoredEntry() {
-  try { return JSON.parse(sessionStorage.getItem("logipunch_active_entry") || "null"); } catch { return null; }
-}
-
-function setStoredEntry(entry) {
-  if (entry) sessionStorage.setItem("logipunch_active_entry", JSON.stringify(entry));
-  else sessionStorage.removeItem("logipunch_active_entry");
-}
-
-// ─── MAIN PAGE ───────────────────────────────────────────────────────────────
+// ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function Punch() {
   const [currentUser] = useState(getStoredUser);
   const [activeEntry, setActiveEntry] = useState(getStoredEntry);
 
-  // Always re-check DB when page becomes visible (handles navigation back to page)
   useEffect(() => {
     if (!currentUser) return;
     const refresh = () => {

@@ -1,16 +1,22 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
-import { Check, X, Edit2, ChevronDown, ChevronUp, Trash2, MapPin } from "lucide-react";
+import { fr } from "date-fns/locale";
+import { Check, X, Edit2, ChevronDown, ChevronUp, Trash2, MapPin, ArrowRight, CheckCheck } from "lucide-react";
 import PullToRefresh from "@/components/PullToRefresh";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 function getStoredCompany() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
 }
-
 function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
+}
+
+function toHM(h) {
+  const hours = Math.floor(h || 0);
+  const mins = Math.round(((h || 0) - hours) * 60);
+  return `${hours}h${mins.toString().padStart(2, "0")}`;
 }
 
 function LunchDrawer({ value, onChange }) {
@@ -27,7 +33,8 @@ function LunchDrawer({ value, onChange }) {
           <DrawerHeader><DrawerTitle className="text-white text-left">Dîner</DrawerTitle></DrawerHeader>
           <div className="px-4 pb-8 space-y-2">
             {opts.map(v => (
-              <button key={v} onClick={() => { onChange(v); setOpen(false); }} className={`w-full px-4 py-3 rounded-xl text-sm font-semibold text-left transition-all border ${value === v ? "bg-green-900/30 border-green-700/50 text-green-400" : "bg-zinc-800 border-zinc-800 text-zinc-300"}`}>
+              <button key={v} onClick={() => { onChange(v); setOpen(false); }}
+                className={`w-full px-4 py-3 rounded-xl text-sm font-semibold text-left transition-all border ${value === v ? "bg-green-900/30 border-green-700/50 text-green-400" : "bg-zinc-800 border-zinc-800 text-zinc-300"}`}>
                 {v === 0 ? "Aucun" : `${v} min`}
               </button>
             ))}
@@ -39,12 +46,8 @@ function LunchDrawer({ value, onChange }) {
 }
 
 function EditEntryModal({ entry, approver, onClose, onSaved }) {
-  const [punchIn, setPunchIn] = useState(
-    entry.punch_in ? format(parseISO(entry.punch_in), "yyyy-MM-dd'T'HH:mm") : ""
-  );
-  const [punchOut, setPunchOut] = useState(
-    entry.punch_out ? format(parseISO(entry.punch_out), "yyyy-MM-dd'T'HH:mm") : ""
-  );
+  const [punchIn, setPunchIn] = useState(entry.punch_in ? format(parseISO(entry.punch_in), "yyyy-MM-dd'T'HH:mm") : "");
+  const [punchOut, setPunchOut] = useState(entry.punch_out ? format(parseISO(entry.punch_out), "yyyy-MM-dd'T'HH:mm") : "");
   const [lunch, setLunch] = useState(entry.lunch_break ?? 0);
   const [saving, setSaving] = useState(false);
 
@@ -108,6 +111,134 @@ function EditEntryModal({ entry, approver, onClose, onSaved }) {
   );
 }
 
+// A single entry row inside a day group
+function EntryRow({ entry, onApprove, onReject, onEdit, onDelete, isSwitch }) {
+  return (
+    <div className={`p-4 border-b border-zinc-800/40 last:border-0 ${isSwitch ? "bg-blue-950/10" : ""}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-2">
+            {isSwitch && (
+              <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-900/30 border border-blue-700/30 text-blue-400 text-xs rounded-full">
+                <ArrowRight size={10} /> Changement
+              </span>
+            )}
+            <span className="text-white text-sm font-semibold">{entry.project_name}</span>
+            <span className={`px-2 py-0.5 text-xs rounded-full font-semibold border ${
+              entry.status === "approved" ? "bg-green-900/40 text-green-400 border-green-700/40" :
+              entry.status === "rejected" ? "bg-red-900/40 text-red-400 border-red-700/40" :
+              entry.status === "active" ? "bg-blue-900/40 text-blue-400 border-blue-700/40" :
+              "bg-yellow-900/40 text-yellow-400 border-yellow-700/40"
+            }`}>
+              {entry.status === "completed" ? "En attente" : entry.status}
+            </span>
+          </div>
+
+          {/* Time info */}
+          <div className="flex items-center gap-3 text-sm mb-2">
+            <span className="text-zinc-300 font-mono font-semibold">
+              {entry.punch_in ? format(parseISO(entry.punch_in), "HH:mm") : "-"}
+            </span>
+            <span className="text-zinc-600">→</span>
+            <span className="text-zinc-300 font-mono font-semibold">
+              {entry.punch_out ? format(parseISO(entry.punch_out), "HH:mm") : <span className="text-blue-400">En cours</span>}
+            </span>
+            {entry.lunch_break > 0 && (
+              <span className="text-zinc-500 text-xs">· dîner {entry.lunch_break}m</span>
+            )}
+            {(2 - (entry.breaks_taken ?? 2)) > 0 && (
+              <span className="text-green-500 text-xs">+{(2 - (entry.breaks_taken ?? 2)) * 15}m</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap text-xs">
+            <span className="text-green-400 font-bold text-sm">{toHM(entry.total_hours)}</span>
+            {entry.machine && <span className="text-zinc-500">⚙ {entry.machine}</span>}
+            {entry.plate_number && <span className="text-zinc-500">🚚 {entry.plate_number}</span>}
+          </div>
+
+          {/* GPS */}
+          {(entry.on_site_in !== null && entry.on_site_in !== undefined) || (entry.on_site_out !== null && entry.on_site_out !== undefined) ? (
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              {entry.on_site_in !== null && entry.on_site_in !== undefined && (
+                <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${entry.on_site_in ? "bg-green-900/30 text-green-400" : "bg-red-900/30 text-red-400"}`}>
+                  <MapPin size={10} /> In: {entry.on_site_in ? "Site ✓" : "Hors site ✗"}
+                </span>
+              )}
+              {entry.on_site_out !== null && entry.on_site_out !== undefined && (
+                <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${entry.on_site_out ? "bg-green-900/30 text-green-400" : "bg-red-900/30 text-red-400"}`}>
+                  <MapPin size={10} /> Out: {entry.on_site_out ? "Site ✓" : "Hors site ✗"}
+                </span>
+              )}
+            </div>
+          ) : null}
+
+          {entry.approved_by && <p className="text-zinc-600 text-xs mt-1">Approuvé par {entry.approved_by}</p>}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button onClick={() => onEdit(entry)} className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all"><Edit2 size={13} className="text-zinc-400" /></button>
+          {entry.status === "completed" && (
+            <>
+              <button onClick={() => onApprove(entry)} className="p-2 bg-green-900/40 hover:bg-green-800/60 border border-green-700/40 rounded-lg transition-all"><Check size={13} className="text-green-400" /></button>
+              <button onClick={() => onReject(entry)} className="p-2 bg-red-900/40 hover:bg-red-800/60 border border-red-700/40 rounded-lg transition-all"><X size={13} className="text-red-400" /></button>
+            </>
+          )}
+          <button onClick={() => onDelete(entry.id)} className="p-2 bg-zinc-800 hover:bg-red-900/40 border border-zinc-700 hover:border-red-700/40 rounded-lg transition-all"><Trash2 size={13} className="text-zinc-500 hover:text-red-400" /></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Day group: shows all entries for a given date with a "approve all pending" button
+function DayGroup({ date, entries, onApprove, onApproveAll, onReject, onEdit, onDelete }) {
+  const pendingEntries = entries.filter(e => e.status === "completed");
+  const totalHours = entries.reduce((s, e) => s + (e.total_hours || 0), 0);
+  const dateLabel = (() => {
+    try {
+      const d = new Date(date + "T12:00:00");
+      return format(d, "EEEE d MMMM yyyy", { locale: fr });
+    } catch { return date; }
+  })();
+
+  return (
+    <div className="mb-3 border border-zinc-800/60 rounded-xl overflow-hidden">
+      {/* Day header */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-800/50">
+        <div className="flex items-center gap-2">
+          <span className="text-zinc-300 text-sm font-semibold capitalize">{dateLabel}</span>
+          <span className="text-green-400 text-sm font-bold">{toHM(totalHours)}</span>
+          {entries.length > 1 && (
+            <span className="text-zinc-500 text-xs">{entries.length} tranches</span>
+          )}
+        </div>
+        {pendingEntries.length > 0 && (
+          <button onClick={() => onApproveAll(pendingEntries)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-green-900/40 hover:bg-green-800/60 border border-green-700/40 text-green-400 text-xs font-bold rounded-lg transition-all">
+            <CheckCheck size={13} />
+            Tout approuver ({pendingEntries.length})
+          </button>
+        )}
+      </div>
+
+      {/* Entries timeline */}
+      {entries.sort((a, b) => new Date(a.punch_in) - new Date(b.punch_in)).map((entry, i) => (
+        <EntryRow
+          key={entry.id}
+          entry={entry}
+          isSwitch={!!entry.is_project_switch && i > 0}
+          onApprove={onApprove}
+          onReject={onReject}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      ))}
+    </div>
+  );
+}
+
 const APPROVE_ROLES = ["Administrateur", "Surintendant", "Chargé de projet", "Gestionnaire Chauffeur", "Gestionnaire Cour", "Gestionnaire Mécanique", "Contremaitre"];
 
 export default function Approvals() {
@@ -120,25 +251,16 @@ export default function Approvals() {
   const [expandedUser, setExpandedUser] = useState(null);
 
   useEffect(() => {
-    // Always fetch fresh user data from DB to avoid stale session data
     const storedUser = getStoredUser();
     if (!storedUser?.id) { setLoading(false); return; }
     base44.entities.AppUser.get(storedUser.id).then(freshUser => {
       const u = freshUser || storedUser;
-      const hasAccess = u && (
-        u.is_admin === true ||
-        APPROVE_ROLES.includes(u.role) ||
-        (u.allowed_pages || []).includes("Approvals")
-      );
+      const hasAccess = u && (u.is_admin === true || APPROVE_ROLES.includes(u.role) || (u.allowed_pages || []).includes("Approvals"));
       setApproverUser(hasAccess ? u : null);
       if (!hasAccess) setLoading(false);
     }).catch(() => {
       const u = storedUser;
-      const hasAccess = u && (
-        u.is_admin === true ||
-        APPROVE_ROLES.includes(u.role) ||
-        (u.allowed_pages || []).includes("Approvals")
-      );
+      const hasAccess = u && (u.is_admin === true || APPROVE_ROLES.includes(u.role) || (u.allowed_pages || []).includes("Approvals"));
       setApproverUser(hasAccess ? u : null);
       if (!hasAccess) setLoading(false);
     });
@@ -157,6 +279,7 @@ export default function Approvals() {
       ? await base44.entities.AppUser.filter({ company_id: companyId })
       : await base44.entities.AppUser.list();
     setUsers(allUsers);
+
     let allEntries = filter === "pending"
       ? await base44.entities.PunchEntry.filter({ status: "completed", ...(companyId ? { company_id: companyId } : {}) })
       : companyId
@@ -177,16 +300,13 @@ export default function Approvals() {
         const ids = allUsers.filter(u => ["Manœuvre", "Opérateur"].includes(u.role)).map(u => u.id);
         allEntries = allEntries.filter(e => ids.includes(e.user_id));
       } else {
-        // Filter to users who have this approver in their approved_by array
         const workerIds = allUsers.filter(u => {
           const approvedBy = Array.isArray(u.approved_by) ? u.approved_by : (u.approved_by ? [u.approved_by] : []);
           return approvedBy.includes(approverUser.id);
         }).map(u => u.id);
-        if (workerIds.length > 0 || approverUser.approves_users?.length > 0) {
-          const legacyIds = approverUser.approves_users || [];
-          const allIds = [...new Set([...workerIds, ...legacyIds])];
-          allEntries = allEntries.filter(e => allIds.includes(e.user_id));
-        }
+        const legacyIds = approverUser.approves_users || [];
+        const allIds = [...new Set([...workerIds, ...legacyIds])];
+        if (allIds.length > 0) allEntries = allEntries.filter(e => allIds.includes(e.user_id));
       }
     }
     setEntries(allEntries);
@@ -194,28 +314,37 @@ export default function Approvals() {
   };
 
   const handleApprove = async (entry) => {
-    // Optimistic update
     setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, status: "approved", approved_by: approverUser.full_name } : e));
     await base44.entities.PunchEntry.update(entry.id, { status: "approved", approved_by: approverUser.full_name, approved_at: new Date().toISOString() });
   };
 
+  const handleApproveAll = async (pendingEntries) => {
+    // Optimistic
+    const ids = new Set(pendingEntries.map(e => e.id));
+    setEntries(prev => prev.map(e => ids.has(e.id) ? { ...e, status: "approved", approved_by: approverUser.full_name } : e));
+    await Promise.all(pendingEntries.map(e =>
+      base44.entities.PunchEntry.update(e.id, { status: "approved", approved_by: approverUser.full_name, approved_at: new Date().toISOString() })
+    ));
+  };
+
   const handleReject = async (entry) => {
-    // Optimistic update
     setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, status: "rejected" } : e));
     await base44.entities.PunchEntry.update(entry.id, { status: "rejected" });
   };
 
   const handleDelete = async (entryId) => {
     if (!window.confirm("Supprimer cette entrée?")) return;
-    // Optimistic update
     setEntries(prev => prev.filter(e => e.id !== entryId));
     await base44.entities.PunchEntry.delete(entryId);
   };
 
+  // Group by user, then by date
   const groupedByUser = {};
   entries.forEach(e => {
-    if (!groupedByUser[e.user_id]) groupedByUser[e.user_id] = [];
-    groupedByUser[e.user_id].push(e);
+    if (!groupedByUser[e.user_id]) groupedByUser[e.user_id] = {};
+    const date = e.work_date || (e.punch_in ? e.punch_in.substring(0, 10) : "unknown");
+    if (!groupedByUser[e.user_id][date]) groupedByUser[e.user_id][date] = [];
+    groupedByUser[e.user_id][date].push(e);
   });
 
   if (!approverUser) {
@@ -228,135 +357,88 @@ export default function Approvals() {
 
   return (
     <PullToRefresh onRefresh={loadData}>
-    <div className="min-h-screen p-4 max-w-4xl mx-auto">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-white text-2xl font-bold">Approbation des heures</h1>
-          <p className="text-zinc-500 text-sm mt-0.5">{approverUser.full_name} · {approverUser.role}</p>
+      <div className="min-h-screen p-4 max-w-4xl mx-auto">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div>
+            <h1 className="text-white text-2xl font-bold">Approbation des heures</h1>
+            <p className="text-zinc-500 text-sm mt-0.5">{approverUser.full_name} · {approverUser.role}</p>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={() => setFilter("pending")} className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${filter === "pending" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400"}`}>En attente</button>
+            <button onClick={() => setFilter("all")} className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${filter === "all" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400"}`}>Tout</button>
+          </div>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={() => setFilter("pending")} className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${filter === "pending" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400"}`}>En attente</button>
-          <button onClick={() => setFilter("all")} className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${filter === "all" ? "bg-green-700 text-white" : "bg-zinc-800 text-zinc-400"}`}>Tout</button>
-        </div>
-      </div>
-      {loading && <p className="text-zinc-500 text-center py-10">Chargement...</p>}
-      {!loading && Object.keys(groupedByUser).length === 0 && (
-        <div className="text-center py-16"><Check size={40} className="text-green-600 mx-auto mb-3" /><p className="text-zinc-400">Aucune heure en attente d'approbation</p></div>
-      )}
-      <div className="space-y-3">
-        {Object.entries(groupedByUser).map(([userId, userEntries]) => {
-          const u = users.find(x => x.id === userId);
-          const name = u?.full_name || userEntries[0]?.user_name || "Inconnu";
-          const isExpanded = expandedUser === userId;
-          const pending = userEntries.filter(e => e.status === "completed").length;
-          return (
-            <div key={userId} className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-              <button onClick={() => setExpandedUser(isExpanded ? null : userId)} className="w-full flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center"><span className="text-white text-sm font-bold">{name[0]}</span></div>
-                  <div className="text-left">
-                    <p className="text-white font-semibold">{name}</p>
-                    <p className="text-zinc-500 text-xs">{u?.role} · {userEntries.length} entrée(s)</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  {pending > 0 && <span className="px-2 py-0.5 bg-yellow-900/50 border border-yellow-700/50 text-yellow-400 text-xs rounded-full font-semibold">{pending} en attente</span>}
-                  {isExpanded ? <ChevronUp size={16} className="text-zinc-500" /> : <ChevronDown size={16} className="text-zinc-500" />}
-                </div>
-              </button>
-              {isExpanded && (
-                <div className="border-t border-zinc-800">
-                  {userEntries.sort((a, b) => new Date(b.punch_in) - new Date(a.punch_in)).map(entry => (
-                    <div key={entry.id} className="p-4 border-b border-zinc-800/50 last:border-0">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-white text-sm font-semibold">{entry.project_name}</span>
-                            <span className={`px-2 py-0.5 text-xs rounded-full font-semibold ${entry.status === "approved" ? "bg-green-900/40 text-green-400 border border-green-700/40" : entry.status === "rejected" ? "bg-red-900/40 text-red-400 border border-red-700/40" : entry.status === "active" ? "bg-blue-900/40 text-blue-400 border border-blue-700/40" : "bg-yellow-900/40 text-yellow-400 border border-yellow-700/40"}`}>
-                              {entry.status === "completed" ? "En attente" : entry.status}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                            <div><span className="text-zinc-500">Date</span><p className="text-zinc-300">{entry.work_date}</p></div>
-                            <div><span className="text-zinc-500">Entrée</span><p className="text-zinc-300">{entry.punch_in ? format(parseISO(entry.punch_in), "HH:mm") : "-"}</p></div>
-                            <div><span className="text-zinc-500">Sortie</span><p className="text-zinc-300">{entry.punch_out ? format(parseISO(entry.punch_out), "HH:mm") : "-"}</p></div>
-                            <div><span className="text-zinc-500">Diner</span><p className="text-zinc-300">{entry.lunch_break ?? 0} min</p></div>
-                            <div>
-                              <span className="text-zinc-500">Pauses</span>
-                              <p className="text-zinc-300">{entry.breaks_taken ?? 2}/2
-                                {(2 - (entry.breaks_taken ?? 2)) > 0 && <span className="text-green-500 ml-1">(+{(2 - (entry.breaks_taken ?? 2)) * 15}m)</span>}
-                              </p>
-                            </div>
-                            <div><span className="text-zinc-500">Total</span><p className="text-green-400 font-bold">{entry.total_hours?.toFixed(2) || "-"}h</p></div>
-                            {entry.machine && <div><span className="text-zinc-500">Machine</span><p className="text-zinc-300">{entry.machine}</p></div>}
-                            {entry.plate_number && <div><span className="text-zinc-500">Plaque</span><p className="text-zinc-300">{entry.plate_number}</p></div>}
-                            </div>
-                            <div className="mt-4 space-y-2">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-zinc-500 text-xs uppercase tracking-widest">Localisation:</span>
-                                {(entry.on_site_in !== null && entry.on_site_in !== undefined) && (
-                                  <span className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold ${entry.on_site_in ? "bg-green-900/40 border border-green-700/40 text-green-400" : "bg-red-900/40 border border-red-700/40 text-red-400"}`}>
-                                    <MapPin size={12} /> Entrée: <strong>{entry.on_site_in ? "Sur site" : "Hors site"}</strong>
-                                  </span>
-                                )}
-                                {(entry.on_site_out !== null && entry.on_site_out !== undefined) && (
-                                  <span className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold ${entry.on_site_out ? "bg-green-900/40 border border-green-700/40 text-green-400" : "bg-red-900/40 border border-red-700/40 text-red-400"}`}>
-                                    <MapPin size={12} /> Sortie: <strong>{entry.on_site_out ? "Sur site" : "Hors site"}</strong>
-                                  </span>
-                                )}
-                                {!entry.on_site_in && !entry.on_site_out && (
-                                  <span className="text-zinc-500 text-xs italic">Non enregistré</span>
-                                )}
-                              </div>
-                              {(entry.punch_in_lat || entry.punch_out_lat) && (
-                                <div className="flex items-center gap-2 text-xs">
-                                  <span className="text-zinc-500">Cartes:</span>
-                                  {entry.punch_in_lat && (
-                                    <a
-                                      href={`https://www.google.com/maps?q=${entry.punch_in_lat},${entry.punch_in_lng}`}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="text-blue-400 hover:text-blue-300 underline transition-colors"
-                                    >
-                                      📍 Entrée
-                                    </a>
-                                  )}
-                                  {entry.punch_out_lat && (
-                                    <a
-                                      href={`https://www.google.com/maps?q=${entry.punch_out_lat},${entry.punch_out_lng}`}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="text-blue-400 hover:text-blue-300 underline transition-colors"
-                                    >
-                                      📍 Sortie
-                                    </a>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          {entry.approved_by && <p className="text-zinc-600 text-xs mt-1">Approuvé par {entry.approved_by}</p>}
-                        </div>
-                        <div className="flex items-center gap-2 ml-3">
-                          <button onClick={() => setEditEntry(entry)} className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all"><Edit2 size={14} className="text-zinc-400" /></button>
-                          {entry.status === "completed" && (
-                            <>
-                              <button onClick={() => handleApprove(entry)} className="p-2 bg-green-900/40 hover:bg-green-800/60 border border-green-700/40 rounded-lg transition-all"><Check size={14} className="text-green-400" /></button>
-                              <button onClick={() => handleReject(entry)} className="p-2 bg-red-900/40 hover:bg-red-800/60 border border-red-700/40 rounded-lg transition-all"><X size={14} className="text-red-400" /></button>
-                            </>
-                          )}
-                          <button onClick={() => handleDelete(entry.id)} className="p-2 bg-zinc-800 hover:bg-red-900/40 border border-zinc-700 hover:border-red-700/40 rounded-lg transition-all"><Trash2 size={14} className="text-zinc-500 hover:text-red-400" /></button>
-                        </div>
-                      </div>
+
+        {loading && <p className="text-zinc-500 text-center py-10">Chargement...</p>}
+        {!loading && Object.keys(groupedByUser).length === 0 && (
+          <div className="text-center py-16">
+            <Check size={40} className="text-green-600 mx-auto mb-3" />
+            <p className="text-zinc-400">Aucune heure en attente d'approbation</p>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {Object.entries(groupedByUser).map(([userId, byDate]) => {
+            const u = users.find(x => x.id === userId);
+            const userEntries = Object.values(byDate).flat();
+            const name = u?.full_name || userEntries[0]?.user_name || "Inconnu";
+            const isExpanded = expandedUser === userId;
+            const pending = userEntries.filter(e => e.status === "completed").length;
+            const totalH = userEntries.reduce((s, e) => s + (e.total_hours || 0), 0);
+            const sortedDates = Object.keys(byDate).sort().reverse();
+
+            return (
+              <div key={userId} className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+                {/* User header */}
+                <button onClick={() => setExpandedUser(isExpanded ? null : userId)} className="w-full flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">{name[0]}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
+                    <div className="text-left">
+                      <p className="text-white font-semibold">{name}</p>
+                      <p className="text-zinc-500 text-xs">{u?.role} · {sortedDates.length} jour(s) · {toHM(totalH)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {pending > 0 && (
+                      <span className="px-2 py-0.5 bg-yellow-900/50 border border-yellow-700/50 text-yellow-400 text-xs rounded-full font-semibold">{pending} en attente</span>
+                    )}
+                    {isExpanded ? <ChevronUp size={16} className="text-zinc-500" /> : <ChevronDown size={16} className="text-zinc-500" />}
+                  </div>
+                </button>
+
+                {/* Expanded: days grouped */}
+                {isExpanded && (
+                  <div className="border-t border-zinc-800 p-3">
+                    {sortedDates.map(date => (
+                      <DayGroup
+                        key={date}
+                        date={date}
+                        entries={byDate[date]}
+                        onApprove={handleApprove}
+                        onApproveAll={handleApproveAll}
+                        onReject={handleReject}
+                        onEdit={setEditEntry}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {editEntry && (
+          <EditEntryModal
+            entry={editEntry}
+            approver={approverUser}
+            onClose={() => setEditEntry(null)}
+            onSaved={() => { setEditEntry(null); loadData(); }}
+          />
+        )}
       </div>
-      {editEntry && <EditEntryModal entry={editEntry} approver={approverUser} onClose={() => setEditEntry(null)} onSaved={() => { setEditEntry(null); loadData(); }} />}
-    </div>
     </PullToRefresh>
   );
 }
