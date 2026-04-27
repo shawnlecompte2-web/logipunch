@@ -335,19 +335,23 @@ export default function TimeSheet() {
       });
 
       const sortedDates = Object.keys(byDate).sort();
-      let weekTotal = 0;
+      let weekTotalMins = 0;
+
+      // Round minutes to nearest 15
+      const roundTo15 = (mins) => Math.round(mins / 15) * 15;
 
       sortedDates.forEach(date => {
         const dayEntries = byDate[date].sort((a, b) => a.punch_in.localeCompare(b.punch_in));
-        let dayTotal = 0;
+        let dayTotalMins = 0;
         dayEntries.forEach((e, idx) => {
           const arrivee = e.punch_in ? format(parseISO(e.punch_in), "HH 'h' mm") : "-";
           const depart = e.punch_out ? format(parseISO(e.punch_out), "HH 'h' mm") : "-";
           const equip = e.machine || e.plate_number || "-";
-          const hours = e.total_hours || 0;
-          dayTotal += hours;
           const breaksTaken = e.breaks_taken ?? 2;
           const breakBonus = (2 - breaksTaken) * 15;
+          // Include break bonus in the hours
+          const hoursWithBonus = (e.total_hours || 0) + breakBonus / 60;
+          dayTotalMins += hoursWithBonus * 60;
           wsData.push([
             idx === 0 ? date : "",
             e.project_name || "-",
@@ -358,16 +362,17 @@ export default function TimeSheet() {
             e.lunch_break || 0,
             `${breaksTaken}/2`,
             breakBonus > 0 ? breakBonus : 0,
-            parseFloat(hours.toFixed(2))
+            parseFloat(hoursWithBonus.toFixed(2))
           ]);
         });
-        weekTotal += dayTotal;
-        // Day total row
-        wsData.push(["", "", "", "", "", "Total jour", "", "", "", parseFloat(dayTotal.toFixed(2))]);
+        weekTotalMins += dayTotalMins;
+        const dayRounded = roundTo15(dayTotalMins) / 60;
+        wsData.push(["", "", "", "", "", "Total jour", "", "", "", parseFloat(dayRounded.toFixed(2))]);
       });
 
-      // Week total row
-      wsData.push(["", "", "", "", "", "Total semaine", "", "", "", parseFloat(weekTotal.toFixed(2))]);
+      // Week total rounded to nearest 15 min
+      const weekTotalRounded = roundTo15(weekTotalMins) / 60;
+      wsData.push(["", "", "", "", "", "Total semaine", "", "", "", parseFloat(weekTotalRounded.toFixed(2))]);
       wsData.push([]); // blank between users
     });
 
