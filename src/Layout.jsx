@@ -17,6 +17,7 @@ const allNavItems = [
   { label: "Heures", page: "TimeSheet", icon: BarChart2, key: "TimeSheet" },
   { label: "Actifs", page: "ActiveUsers", icon: Users, key: "ActiveUsers" },
   { label: "Réglages", page: "Settings", icon: Settings, key: "Settings" },
+  { label: "Dépunch", page: "ForceCheckout", icon: LogOut, key: "ForceCheckout" },
 ];
 
 function getStoredUser() {
@@ -271,8 +272,15 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const isAdmin = currentUser && isAdminUser(currentUser);
+  const canForceCheckout = currentUser && (
+    currentUser.is_admin ||
+    ["Adjointe administrative", "Administrateur"].some(r => currentUser.role?.includes(r)) ||
+    currentUser.role?.includes("Surintendant")
+  );
+
   const navItems = (currentUser && permissionsReady) ? allNavItems.filter(item => {
     if (item.alwaysVisible) return true;
+    if (item.key === "ForceCheckout") return canForceCheckout;
     if (isAdmin) return true;
     // Check allowed_pages on user
     const allowed = Array.isArray(currentUser.allowed_pages) ? currentUser.allowed_pages : [];
