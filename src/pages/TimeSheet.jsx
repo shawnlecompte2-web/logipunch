@@ -350,8 +350,16 @@ export default function TimeSheet() {
           const breaksTaken = e.breaks_taken ?? 2;
           const breakBonus = (2 - breaksTaken) * 15;
           // Include break bonus in the hours
-          const rawMins = (e.total_hours || 0) * 60 + breakBonus;
-          const roundedMins = roundTo15(rawMins);
+          // Recalculate exact minutes from punch times to avoid float drift
+          let exactMins;
+          if (e.punch_in && e.punch_out) {
+            const diffMs = new Date(e.punch_out) - new Date(e.punch_in);
+            const lunch = e.lunch_break || 0;
+            exactMins = Math.round(diffMs / 60000) - lunch + breakBonus;
+          } else {
+            exactMins = Math.round((e.total_hours || 0) * 60) + breakBonus;
+          }
+          const roundedMins = roundTo15(exactMins);
           const hoursRounded = roundedMins / 60;
           dayTotalMins += roundedMins;
           wsData.push([
