@@ -4,6 +4,7 @@ import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, 
 import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Clock, Trash2 } from "lucide-react";
 import PullToRefresh from "@/components/PullToRefresh";
+import { calcEntryHoursRounded, calcTotalHoursRounded } from "@/utils/timeCalc";
 
 function getStoredCompany() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
@@ -40,7 +41,7 @@ export default function MyHours() {
 
   const getDayEntries = (dateStr) => entries.filter(e => e.work_date === dateStr);
 
-  const getWeekTotal = () => entries.reduce((sum, e) => sum + (e.total_hours || 0), 0);
+  const getWeekTotal = () => calcTotalHoursRounded(entries);
 
   const handleDelete = async (entryId) => {
     if (!window.confirm("Supprimer cette entrée?")) return;
@@ -92,7 +93,7 @@ export default function MyHours() {
           {days.map(day => {
             const dateStr = format(day, "yyyy-MM-dd");
             const dayEntries = getDayEntries(dateStr);
-            const dayTotal = dayEntries.reduce((sum, e) => sum + (e.total_hours || 0), 0);
+            const dayTotal = calcTotalHoursRounded(dayEntries);
 
             return (
               <div key={dateStr} className={`bg-zinc-900 border rounded-2xl overflow-hidden ${dayEntries.length > 0 ? "border-zinc-700" : "border-zinc-800"}`}>
@@ -134,7 +135,7 @@ export default function MyHours() {
                             </div>
                           </div>
                           <div className="text-right flex flex-col items-end gap-1">
-                            <p className="text-green-400 font-bold text-sm">{entry.total_hours?.toFixed(2) || "—"}h</p>
+                            <p className="text-green-400 font-bold text-sm">{calcEntryHoursRounded(entry).toFixed(2)}h</p>
                             {entry.approved_by && (
                               <p className="text-zinc-600 text-xs mt-0.5">par {entry.approved_by}</p>
                             )}

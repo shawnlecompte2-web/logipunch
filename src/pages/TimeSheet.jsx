@@ -5,6 +5,7 @@ import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Download, X, Edit2, Printer, Plus, Trash2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
+import { calcEntryHoursRounded, calcTotalHoursRounded } from "@/utils/timeCalc";
 
 function getStoredCompany() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
@@ -297,7 +298,7 @@ export default function TimeSheet() {
     if (dayEntries.length === 0) return null;
     return {
       entries: dayEntries,
-      totalHours: dayEntries.reduce((sum, e) => sum + (e.total_hours || 0), 0),
+      totalHours: calcTotalHoursRounded(dayEntries),
       firstIn: dayEntries.reduce((min, e) => e.punch_in < min ? e.punch_in : min, dayEntries[0].punch_in),
       lastOut: dayEntries.reduce((max, e) => (e.punch_out || "") > max ? (e.punch_out || "") : max, ""),
       lunch: Math.max(...dayEntries.map(e => e.lunch_break || 0)),
@@ -305,7 +306,7 @@ export default function TimeSheet() {
   };
 
   const getWeekTotal = (userId) => {
-    return getEntriesForUser(userId).reduce((sum, e) => sum + (e.total_hours || 0), 0);
+    return calcTotalHoursRounded(getEntriesForUser(userId));
   };
 
   const exportXLSX = () => {
@@ -335,33 +336,19 @@ export default function TimeSheet() {
       });
 
       const sortedDates = Object.keys(byDate).sort();
-      let weekTotalMins = 0;
-
-      // Round minutes to nearest 15
-      const roundTo15 = (mins) => Math.round(mins / 15) * 15;
+      let weekTotal = 0;
 
       sortedDates.forEach(date => {
         const dayEntries = byDate[date].sort((a, b) => a.punch_in.localeCompare(b.punch_in));
-        let dayTotalMins = 0;
+        let dayTotal = 0;
         dayEntries.forEach((e, idx) => {
           const arrivee = e.punch_in ? format(parseISO(e.punch_in), "HH 'h' mm") : "-";
           const depart = e.punch_out ? format(parseISO(e.punch_out), "HH 'h' mm") : "-";
           const equip = e.machine || e.plate_number || "-";
           const breaksTaken = e.breaks_taken ?? 2;
           const breakBonus = (2 - breaksTaken) * 15;
-          // Include break bonus in the hours
-          // Recalculate exact minutes from punch times to avoid float drift
-          let exactMins;
-          if (e.punch_in && e.punch_out) {
-            const diffMs = new Date(e.punch_out) - new Date(e.punch_in);
-            const lunch = e.lunch_break || 0;
-            exactMins = Math.round(diffMs / 60000) - lunch + breakBonus;
-          } else {
-            exactMins = Math.round((e.total_hours || 0) * 60) + breakBonus;
-          }
-          const roundedMins = roundTo15(exactMins);
-          const hoursRounded = roundedMins / 60;
-          dayTotalMins += roundedMins;
+          const hoursRounded = calcEntryHoursRounded(e);
+          dayTotal += hoursRounded;
           wsData.push([
             idx === 0 ? date : "",
             e.project_name || "-",
@@ -375,15 +362,11 @@ export default function TimeSheet() {
             parseFloat(hoursRounded.toFixed(2))
           ]);
         });
-        weekTotalMins += dayTotalMins;
-        // Day total: sum of already-rounded entries (already multiples of 15)
-        const dayRounded = dayTotalMins / 60;
-        wsData.push(["", "", "", "", "", "Total jour", "", "", "", parseFloat(dayRounded.toFixed(2))]);
+        weekTotal += dayTotal;
+        wsData.push(["", "", "", "", "", "Total jour", "", "", "", parseFloat(dayTotal.toFixed(2))]);
       });
 
-      // Week total: sum of already-rounded day totals
-      const weekTotalRounded = weekTotalMins / 60;
-      wsData.push(["", "", "", "", "", "Total semaine", "", "", "", parseFloat(weekTotalRounded.toFixed(2))]);
+      wsData.push(["", "", "", "", "", "Total semaine", "", "", "", parseFloat(weekTotal.toFixed(2))]);
       wsData.push([]); // blank between users
     });
 
