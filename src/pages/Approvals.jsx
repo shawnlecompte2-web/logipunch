@@ -304,9 +304,13 @@ export default function Approvals() {
           const approvedBy = Array.isArray(u.approved_by) ? u.approved_by : (u.approved_by ? [u.approved_by] : []);
           return approvedBy.includes(approverUser.id);
         }).map(u => u.id);
-        const legacyIds = approverUser.approves_users || [];
+        const legacyIds = Array.isArray(approverUser.approves_users) ? approverUser.approves_users : [];
         const allIds = [...new Set([...workerIds, ...legacyIds])];
-        if (allIds.length > 0) allEntries = allEntries.filter(e => allIds.includes(e.user_id));
+        // Only filter if explicit assignments exist; otherwise show all entries in the company
+        if (allIds.length > 0) {
+          allEntries = allEntries.filter(e => allIds.includes(e.user_id));
+        }
+        // If allIds is empty, the approver sees all company entries (no specific assignment configured)
       }
     }
     setEntries(allEntries);
