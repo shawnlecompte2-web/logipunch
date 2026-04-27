@@ -350,8 +350,10 @@ export default function TimeSheet() {
           const breaksTaken = e.breaks_taken ?? 2;
           const breakBonus = (2 - breaksTaken) * 15;
           // Include break bonus in the hours
-          const hoursWithBonus = (e.total_hours || 0) + breakBonus / 60;
-          dayTotalMins += hoursWithBonus * 60;
+          const rawMins = (e.total_hours || 0) * 60 + breakBonus;
+          const roundedMins = roundTo15(rawMins);
+          const hoursRounded = roundedMins / 60;
+          dayTotalMins += roundedMins;
           wsData.push([
             idx === 0 ? date : "",
             e.project_name || "-",
@@ -362,16 +364,17 @@ export default function TimeSheet() {
             e.lunch_break || 0,
             `${breaksTaken}/2`,
             breakBonus > 0 ? breakBonus : 0,
-            parseFloat(hoursWithBonus.toFixed(2))
+            parseFloat(hoursRounded.toFixed(2))
           ]);
         });
         weekTotalMins += dayTotalMins;
-        const dayRounded = roundTo15(dayTotalMins) / 60;
+        // Day total: sum of already-rounded entries (already multiples of 15)
+        const dayRounded = dayTotalMins / 60;
         wsData.push(["", "", "", "", "", "Total jour", "", "", "", parseFloat(dayRounded.toFixed(2))]);
       });
 
-      // Week total rounded to nearest 15 min
-      const weekTotalRounded = roundTo15(weekTotalMins) / 60;
+      // Week total: sum of already-rounded day totals
+      const weekTotalRounded = weekTotalMins / 60;
       wsData.push(["", "", "", "", "", "Total semaine", "", "", "", parseFloat(weekTotalRounded.toFixed(2))]);
       wsData.push([]); // blank between users
     });
