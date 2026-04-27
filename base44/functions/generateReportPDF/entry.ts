@@ -162,11 +162,12 @@ Deno.serve(async (req) => {
 
     // Table header
     const cols = [
-      { label: 'NOM',     x: M + 2,   w: 50 },
-      { label: 'ROLE',    x: M + 52,  w: 35 },
-      { label: 'ARRIVEE', x: M + 87,  w: 26 },
-      { label: 'DEPART',  x: M + 113, w: 26 },
-      { label: 'DINER',   x: M + 139, w: 18 },
+      { label: 'NOM',     x: M + 2,   w: 45 },
+      { label: 'ROLE',    x: M + 47,  w: 30 },
+      { label: 'ARRIVEE', x: M + 77,  w: 22 },
+      { label: 'DEPART',  x: M + 99,  w: 22 },
+      { label: 'DINER',   x: M + 121, w: 18 },
+      { label: 'PAUSES',  x: M + 139, w: 18 },
       { label: 'TOTAL',   x: M + 157, w: 29 },
     ];
 
@@ -206,9 +207,21 @@ Deno.serve(async (req) => {
         doc.text(fmtTime(w.punchOut), cols[3].x, y + 5);
         doc.text(w.lunchBreak > 0 ? `${w.lunchBreak}m` : '-', cols[4].x, y + 5);
 
+        // Pauses
+        const breaksTaken = w.breaksTaken ?? 2;
+        const breakBonus = (2 - breaksTaken) * 15;
+        doc.setTextColor(80, 80, 80);
+        doc.text(`${breaksTaken}/2`, cols[5].x, y + 5);
+        if (breakBonus > 0) {
+          doc.setFontSize(7);
+          doc.setTextColor(22, 163, 74);
+          doc.text(`+${breakBonus}m`, cols[5].x, y + 9.5);
+          doc.setFontSize(9);
+        }
+
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(22, 163, 74);
-        doc.text(toHM(w.totalHours), cols[5].x, y + 5);
+        doc.text(toHM(w.totalHours), cols[6].x, y + 5);
         y += 7;
       });
 
@@ -219,7 +232,7 @@ Deno.serve(async (req) => {
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
       doc.text('TOTAL HEURES:', M + 4, y + 5.5);
-      doc.text(toHM(totalHours), cols[5].x, y + 5.5);
+      doc.text(toHM(totalHours), cols[6].x, y + 5.5);
       y += 12;
     } else {
       doc.setFillColor(248, 250, 255);

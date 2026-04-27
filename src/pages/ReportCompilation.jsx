@@ -107,6 +107,7 @@ export default function ReportCompilationPage() {
         const punchOut = userEntries[userEntries.length - 1]?.punch_out;
         const lunchBreak = userEntries[0]?.lunch_break_custom || userEntries[0]?.lunch_break || 0;
         
+        const breaksTaken = userEntries.length > 0 ? Math.min(...userEntries.map(e => e.breaks_taken ?? 2)) : 2;
         workers.push({
           id: e.user_id,
           name: e.user_name,
@@ -114,7 +115,8 @@ export default function ReportCompilationPage() {
           punchIn,
           punchOut,
           totalHours: totalHours.toFixed(2),
-          lunchBreak
+          lunchBreak,
+          breaksTaken,
         });
       }
     });
@@ -242,14 +244,16 @@ export default function ReportCompilationPage() {
                                               const punchOut = userEntries[userEntries.length - 1]?.punch_out;
                                               const lunchBreak = userEntries[0]?.lunch_break_custom || userEntries[0]?.lunch_break || 0;
 
+                                              const breaksTakenWeek = userEntries.length > 0 ? Math.min(...userEntries.map(e => e.breaks_taken ?? 2)) : 2;
                                               weekWorkers.push({
-                                               id: e.user_id,
-                                               name: e.user_name,
-                                               role: e.role || '',
-                                               punchIn,
-                                               punchOut,
-                                               totalHours: totalHours.toFixed(2),
-                                               lunchBreak
+                                              id: e.user_id,
+                                              name: e.user_name,
+                                              role: e.role || '',
+                                              punchIn,
+                                              punchOut,
+                                              totalHours: totalHours.toFixed(2),
+                                              lunchBreak,
+                                              breaksTaken: breaksTakenWeek,
                                               });
                                             }
                                           });

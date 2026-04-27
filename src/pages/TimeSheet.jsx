@@ -324,7 +324,7 @@ export default function TimeSheet() {
       // User name header
       wsData.push([user.full_name]);
       // Column headers
-      wsData.push(["Date", "Projet", "No Projet", "Équipement/Plaque", "Arrivée", "Départ", "Dîner (min)", "Total (h)"]);
+      wsData.push(["Date", "Projet", "No Projet", "Équipement/Plaque", "Arrivée", "Départ", "Dîner (min)", "Pauses prises", "Bonus pauses (min)", "Total (h)"]);
 
       const userEntries = getEntriesForUser(user.id);
       // Group by date
@@ -346,6 +346,8 @@ export default function TimeSheet() {
           const equip = e.machine || e.plate_number || "-";
           const hours = e.total_hours || 0;
           dayTotal += hours;
+          const breaksTaken = e.breaks_taken ?? 2;
+          const breakBonus = (2 - breaksTaken) * 15;
           wsData.push([
             idx === 0 ? date : "",
             e.project_name || "-",
@@ -354,16 +356,18 @@ export default function TimeSheet() {
             arrivee,
             depart,
             e.lunch_break || 0,
+            `${breaksTaken}/2`,
+            breakBonus > 0 ? breakBonus : 0,
             parseFloat(hours.toFixed(2))
           ]);
         });
         weekTotal += dayTotal;
         // Day total row
-        wsData.push(["", "", "", "", "", "Total jour", "", parseFloat(dayTotal.toFixed(2))]);
+        wsData.push(["", "", "", "", "", "Total jour", "", "", "", parseFloat(dayTotal.toFixed(2))]);
       });
 
       // Week total row
-      wsData.push(["", "", "", "", "", "Total semaine", "", parseFloat(weekTotal.toFixed(2))]);
+      wsData.push(["", "", "", "", "", "Total semaine", "", "", "", parseFloat(weekTotal.toFixed(2))]);
       wsData.push([]); // blank between users
     });
 
@@ -372,7 +376,7 @@ export default function TimeSheet() {
     // Column widths
     ws["!cols"] = [
       { wch: 14 }, { wch: 20 }, { wch: 12 }, { wch: 20 },
-      { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 10 }
+      { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 18 }, { wch: 10 }
     ];
 
     XLSX.utils.book_append_sheet(wb, ws, "Heures");
