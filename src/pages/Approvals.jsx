@@ -280,11 +280,25 @@ export default function Approvals() {
       : await base44.entities.AppUser.list();
     setUsers(allUsers);
 
-    let allEntries = filter === "pending"
-      ? await base44.entities.PunchEntry.filter({ status: "completed", ...(companyId ? { company_id: companyId } : {}) })
-      : companyId
-        ? await base44.entities.PunchEntry.filter({ company_id: companyId }, "-punch_in")
-        : await base44.entities.PunchEntry.list("-punch_in");
+    // Fetch by user IDs of this company to avoid missing entries with null company_id
+    const companyUserIds = allUsers.map(u => u.id);
+    let allEntries = [];
+    if (filter === "pending") {
+      const withCompany = companyId ? await base44.entities.PunchEntry.filter({ status: "completed", company_id: companyId }) : [];
+      // Also fetch completed entries for company users that may have null company_id
+      const byUsers = companyId
+        ? (await base44.entities.PunchEntry.filter({ status: "completed" }, "-punch_in", 500)).filter(e => !e.company_id && companyUserIds.includes(e.user_id))
+        : [];
+      const seen = new Set(withCompany.map(e => e.id));
+      allEntries = [...withCompany, ...byUsers.filter(e => !seen.has(e.id))];
+    } else {
+      const withCompany = companyId ? await base44.entities.PunchEntry.filter({ company_id: companyId }, "-punch_in") : await base44.entities.PunchEntry.list("-punch_in");
+      const byUsers = companyId
+        ? (await base44.entities.PunchEntry.list("-punch_in", 500)).filter(e => !e.company_id && companyUserIds.includes(e.user_id))
+        : [];
+      const seen = new Set(withCompany.map(e => e.id));
+      allEntries = [...withCompany, ...byUsers.filter(e => !seen.has(e.id))];
+    }
 
     const isAdmin = approverUser.is_admin === true || ["Administrateur", "Surintendant", "Chargé de projet"].some(r => approverUser.role?.includes(r));
     if (!isAdmin) {
