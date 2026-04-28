@@ -28,6 +28,7 @@ export default function ForceCheckout() {
   const [confirmEntry, setConfirmEntry] = useState(null);
   const [punchOutTime, setPunchOutTime] = useState("");
   const [lunchBreak, setLunchBreak] = useState(30);
+  const [breaksTaken, setBreaksTaken] = useState(2);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(null);
 
@@ -108,6 +109,7 @@ export default function ForceCheckout() {
     const localISO = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     setPunchOutTime(localISO);
     setLunchBreak(30);
+    setBreaksTaken(2);
     setDone(null);
   };
 
@@ -119,11 +121,12 @@ export default function ForceCheckout() {
       punch_in: confirmEntry.punch_in,
       punch_out: punchOut,
       lunch_break: lunchBreak,
-      breaks_taken: confirmEntry.breaks_taken ?? 2,
+      breaks_taken: breaksTaken,
     });
     await base44.entities.PunchEntry.update(confirmEntry.id, {
       punch_out: punchOut,
       lunch_break: lunchBreak,
+      breaks_taken: breaksTaken,
       total_hours: totalHours,
       status: "completed",
       modified_by: currentUser?.full_name,
@@ -300,6 +303,17 @@ export default function ForceCheckout() {
                     <button key={v} onClick={() => setLunchBreak(v)}
                       className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${lunchBreak === v ? "bg-green-900/40 border-green-700/60 text-green-400" : "bg-zinc-800 border-zinc-700 text-zinc-400"}`}>
                       {v}m
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Pauses prises</label>
+                <div className="flex gap-2">
+                  {[0, 1, 2].map(v => (
+                    <button key={v} onClick={() => setBreaksTaken(v)}
+                      className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${breaksTaken === v ? "bg-green-900/40 border-green-700/60 text-green-400" : "bg-zinc-800 border-zinc-700 text-zinc-400"}`}>
+                      {v} pause{v > 1 ? "s" : ""}
                     </button>
                   ))}
                 </div>
