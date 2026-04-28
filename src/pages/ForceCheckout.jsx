@@ -135,7 +135,8 @@ export default function ForceCheckout() {
     loadActive();
   };
 
-  if (!canForceCheckout(currentUser)) {
+  const hasPageAccess = canForceCheckout(currentUser) || (Array.isArray(currentUser?.allowed_pages) && currentUser.allowed_pages.includes("ForceCheckout"));
+  if (!hasPageAccess) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-zinc-500">Accès non autorisé.</p>
