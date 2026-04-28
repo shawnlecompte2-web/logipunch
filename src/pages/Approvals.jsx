@@ -49,11 +49,13 @@ function EditEntryModal({ entry, approver, onClose, onSaved }) {
   const [punchIn, setPunchIn] = useState(entry.punch_in ? format(parseISO(entry.punch_in), "yyyy-MM-dd'T'HH:mm") : "");
   const [punchOut, setPunchOut] = useState(entry.punch_out ? format(parseISO(entry.punch_out), "yyyy-MM-dd'T'HH:mm") : "");
   const [lunch, setLunch] = useState(entry.lunch_break ?? 0);
+  const [breaksTaken, setBreaksTaken] = useState(entry.breaks_taken ?? 2);
   const [saving, setSaving] = useState(false);
 
   const calcTotal = () => {
     if (!punchIn || !punchOut) return null;
-    const mins = (new Date(punchOut) - new Date(punchIn)) / 60000 - lunch;
+    const breakBonus = (2 - breaksTaken) * 15;
+    const mins = (new Date(punchOut) - new Date(punchIn)) / 60000 - lunch + breakBonus;
     return Math.max(0, mins / 60).toFixed(2);
   };
 
@@ -64,6 +66,7 @@ function EditEntryModal({ entry, approver, onClose, onSaved }) {
       punch_in: new Date(punchIn).toISOString(),
       punch_out: punchOut ? new Date(punchOut).toISOString() : undefined,
       lunch_break: lunch,
+      breaks_taken: breaksTaken,
       total_hours: total ? parseFloat(total) : entry.total_hours,
       modified_by: approver.full_name,
       modified_at: new Date().toISOString(),
@@ -92,6 +95,20 @@ function EditEntryModal({ entry, approver, onClose, onSaved }) {
           <div>
             <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Dîner (minutes)</label>
             <LunchDrawer value={lunch} onChange={setLunch} />
+          </div>
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Pauses prises</label>
+            <div className="flex gap-2">
+              {[0, 1, 2].map(v => (
+                <button key={v} type="button" onClick={() => setBreaksTaken(v)}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${breaksTaken === v ? "bg-green-900/30 border-green-700/50 text-green-400" : "bg-zinc-800 border-zinc-700 text-zinc-400"}`}>
+                  {v}/2
+                </button>
+              ))}
+            </div>
+            {(2 - breaksTaken) > 0 && (
+              <p className="text-green-500 text-xs mt-1">+{(2 - breaksTaken) * 15} min bonus ajoutées</p>
+            )}
           </div>
           {calcTotal() && (
             <div className="bg-zinc-800 rounded-xl p-3 text-center">
