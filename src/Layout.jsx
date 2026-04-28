@@ -324,9 +324,9 @@ export default function Layout({ children, currentPageName }) {
 
   const navItems = (currentUser && permissionsReady) ? allNavItems.filter(item => {
     if (item.alwaysVisible) return true;
-    if (item.key === "ForceCheckout") return canForceCheckout;
     if (isAdmin) return true;
     const allowed = Array.isArray(currentUser.allowed_pages) ? currentUser.allowed_pages : [];
+    if (item.key === "ForceCheckout") return canForceCheckout || allowed.includes("ForceCheckout");
     return item.key && allowed.includes(item.key);
   }) : [];
 
