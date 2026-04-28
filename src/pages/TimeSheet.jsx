@@ -800,83 +800,76 @@ export default function TimeSheet() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-zinc-800">
-                <th className="text-left p-3 text-zinc-400 font-semibold bg-zinc-900/80 sticky left-0 min-w-[160px]">Employé</th>
-                <th className="text-left p-3 text-zinc-400 font-semibold bg-zinc-900/80 whitespace-nowrap">Rôle</th>
+                <th className="text-left px-2 py-2 text-zinc-400 font-semibold bg-zinc-900/80 sticky left-0 min-w-[130px] max-w-[130px]">Employé</th>
                 {days.map(d => (
-                  <th key={d.toISOString()} className="p-3 text-zinc-400 font-semibold bg-zinc-900/80 min-w-[120px]">
+                  <th key={d.toISOString()} className="px-1 py-2 text-zinc-400 font-semibold bg-zinc-900/80 w-[90px]">
                     <div className="text-center">
                       <p className="capitalize text-xs">{format(d, "EEE", { locale: fr })}</p>
-                      <p className="text-white">{format(d, "d/MM")}</p>
+                      <p className="text-white text-xs">{format(d, "d/MM")}</p>
                     </div>
                   </th>
                 ))}
-                <th className="p-3 text-green-400 font-bold bg-zinc-900/80 min-w-[80px] text-center">Total</th>
+                <th className="px-2 py-2 text-green-400 font-bold bg-zinc-900/80 w-[70px] text-center">Total</th>
               </tr>
             </thead>
             <tbody>
               {groupUsers.length === 0 && (
                 <tr>
-                  <td colSpan={days.length + 3} className="text-center p-8 text-zinc-600">
+                  <td colSpan={days.length + 2} className="text-center p-8 text-zinc-600">
                     Aucun utilisateur dans ce groupe
                   </td>
                 </tr>
               )}
               {groupUsers.map((user, idx) => (
                 <tr key={user.id} className={`border-b border-zinc-800/50 hover:bg-zinc-900/40 transition-colors ${idx % 2 === 0 ? "" : "bg-zinc-950/30"}`}>
-                  <td className="p-3 sticky left-0 bg-[#0a0a0a]">
-                    <p className="text-white font-semibold text-sm">{user.full_name}</p>
-                    <p className="text-zinc-600 text-xs">{user.group}</p>
-                  </td>
-                  <td className="p-3">
-                    <span className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded-full whitespace-nowrap">{user.role}</span>
+                  <td className="px-2 py-2 sticky left-0 bg-[#0a0a0a] max-w-[130px]">
+                    <p className="text-white font-semibold text-xs leading-tight truncate">{user.full_name}</p>
+                    <p className="text-zinc-600 text-xs truncate">{user.role}</p>
                   </td>
                   {days.map(d => {
                     const dateStr = format(d, "yyyy-MM-dd");
                     const day = getDayEntry(user.id, dateStr);
                     return (
-                      <td key={dateStr} className="p-3 group">
+                      <td key={dateStr} className="px-1 py-1.5 group">
                         {day ? (
                           <div className="text-center">
-                            <p className="text-green-400 font-bold text-sm">{day.totalHours.toFixed(1)}h</p>
-                            <p className="text-zinc-500 text-xs">
+                            <p className="text-green-400 font-bold text-xs">{day.totalHours.toFixed(1)}h</p>
+                            <p className="text-zinc-500 text-xs leading-tight">
                               {day.firstIn ? format(parseISO(day.firstIn), "HH:mm") : "-"}
-                              {" → "}
+                            </p>
+                            <p className="text-zinc-500 text-xs leading-tight">
                               {day.lastOut ? format(parseISO(day.lastOut), "HH:mm") : "—"}
                             </p>
-                            {day.lunch > 0 && <p className="text-zinc-600 text-xs">🍽 {day.lunch}m</p>}
-                            {day.entries.length > 1 && (
-                              <p className="text-zinc-600 text-xs">{day.entries.length} projets</p>
-                            )}
-                            <div className="flex gap-1 justify-center mt-1">
+                            <div className="flex gap-0.5 justify-center mt-1">
                               {day.entries.map(e => (
-                                <button key={e.id} onClick={() => setEditEntry(e)} className="p-1 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all">
-                                  <Edit2 size={11} className="text-zinc-500" />
+                                <button key={e.id} onClick={() => setEditEntry(e)} className="p-0.5 bg-zinc-800 hover:bg-zinc-700 rounded transition-all">
+                                  <Edit2 size={10} className="text-zinc-500" />
                                 </button>
                               ))}
-                              <button onClick={() => setAddEntry({ userId: user.id, userName: user.full_name, dateStr })} className="p-1 bg-zinc-800 hover:bg-green-700 rounded-lg transition-all">
-                                <Plus size={11} className="text-zinc-500 hover:text-white" />
+                              <button onClick={() => setAddEntry({ userId: user.id, userName: user.full_name, dateStr })} className="p-0.5 bg-zinc-800 hover:bg-green-700 rounded transition-all">
+                                <Plus size={10} className="text-zinc-500 hover:text-white" />
                               </button>
                             </div>
                           </div>
                         ) : (
                           <div className="text-center">
-                            <p className="text-zinc-800">—</p>
-                            <button onClick={() => setAddEntry({ userId: user.id, userName: user.full_name, dateStr })} className="mt-1 p-1 bg-zinc-800/50 hover:bg-green-700 rounded-lg transition-all mx-auto block opacity-0 group-hover:opacity-100">
-                              <Plus size={11} className="text-zinc-600 hover:text-white" />
+                            <p className="text-zinc-800 text-xs">—</p>
+                            <button onClick={() => setAddEntry({ userId: user.id, userName: user.full_name, dateStr })} className="mt-1 p-0.5 bg-zinc-800/50 hover:bg-green-700 rounded transition-all mx-auto block opacity-0 group-hover:opacity-100">
+                              <Plus size={10} className="text-zinc-600 hover:text-white" />
                             </button>
                           </div>
                         )}
                       </td>
                     );
                   })}
-                  <td className="p-3 text-center">
-                    <p className="text-green-400 font-bold">{getWeekTotal(user.id).toFixed(1)}h</p>
+                  <td className="px-2 py-2 text-center">
+                    <p className="text-green-400 font-bold text-xs">{getWeekTotal(user.id).toFixed(1)}h</p>
                     <button
                       onClick={() => printPaySlip(user)}
                       title="Imprimer slip de paye"
-                      className="mt-1 p-1.5 bg-zinc-800 hover:bg-blue-700 rounded-lg transition-all block mx-auto"
+                      className="mt-1 p-1 bg-zinc-800 hover:bg-blue-700 rounded transition-all block mx-auto"
                     >
-                      <Printer size={12} className="text-zinc-400 hover:text-white" />
+                      <Printer size={11} className="text-zinc-400 hover:text-white" />
                     </button>
                   </td>
                 </tr>
@@ -884,7 +877,7 @@ export default function TimeSheet() {
             </tbody>
             <tfoot>
               <tr className="border-t border-zinc-700">
-                <td colSpan={2} className="p-3 text-zinc-400 font-bold text-sm bg-zinc-900/80 sticky left-0">TOTAL ÉQUIPE</td>
+                <td className="px-2 py-2 text-zinc-400 font-bold text-xs bg-zinc-900/80 sticky left-0">TOTAL</td>
                 {days.map(d => {
                   const dateStr = format(d, "yyyy-MM-dd");
                   const total = groupUsers.reduce((sum, user) => {
@@ -892,13 +885,13 @@ export default function TimeSheet() {
                     return sum + (day?.totalHours || 0);
                   }, 0);
                   return (
-                    <td key={dateStr} className="p-3 text-center bg-zinc-900/80">
-                      <p className="text-white font-bold text-sm">{total.toFixed(1)}h</p>
+                    <td key={dateStr} className="px-1 py-2 text-center bg-zinc-900/80">
+                      <p className="text-white font-bold text-xs">{total.toFixed(1)}h</p>
                     </td>
                   );
                 })}
-                <td className="p-3 text-center bg-zinc-900/80">
-                  <p className="text-green-400 font-bold">
+                <td className="px-2 py-2 text-center bg-zinc-900/80">
+                  <p className="text-green-400 font-bold text-xs">
                     {groupUsers.reduce((sum, u) => sum + getWeekTotal(u.id), 0).toFixed(1)}h
                   </p>
                 </td>
