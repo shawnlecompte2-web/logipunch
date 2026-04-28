@@ -55,7 +55,6 @@ function PinModal({ onSuccess, company }) {
     try {
       const users = await base44.entities.AppUser.filter({ pin_code: code, is_active: true, company_id: company.id });
       if (!users || users.length === 0) { setError("Code invalide. Réessayez."); setPin(""); setLoading(false); return; }
-      // Always fetch fresh user data from DB to get latest permissions
       const freshUser = await base44.entities.AppUser.get(users[0].id);
       onSuccess(freshUser || users[0]);
     } catch { setError("Erreur. Réessayez."); setPin(""); }
@@ -72,7 +71,6 @@ function PinModal({ onSuccess, company }) {
   const handleSendSms = async () => {
     setSmsLoading(true);
     setSmsError("");
-    // Normalize phone: add +1 if no country code
     let normalizedPhone = phoneInput.replace(/\D/g, "");
     if (normalizedPhone.length === 10) normalizedPhone = "+1" + normalizedPhone;
     else normalizedPhone = "+" + normalizedPhone;
@@ -103,13 +101,13 @@ function PinModal({ onSuccess, company }) {
     <div className="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col px-4">
       <div className="flex items-start justify-between pt-6 px-6 pb-8">
         <div className="flex items-center gap-2">
-        <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
-          <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/6b809ffd5_clock_5190346.png" alt="logo" className="w-12 h-12 object-contain" style={{filter: "brightness(0) invert(1)"}} />
-        </div>
-        <div>
-          <span className="text-2xl font-black text-white tracking-tight">TapIN</span>
-          {company?.name && <p className="text-zinc-500 text-xs leading-tight">{company.name}</p>}
-        </div>
+          <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
+            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/6b809ffd5_clock_5190346.png" alt="logo" className="w-12 h-12 object-contain" style={{filter: "brightness(0) invert(1)"}} />
+          </div>
+          <div>
+            <span className="text-2xl font-black text-white tracking-tight">TapIN</span>
+            {company?.name && <p className="text-zinc-500 text-xs leading-tight">{company.name}</p>}
+          </div>
         </div>
         <div className="text-right">
           <p className="text-2xl font-black text-green-400 tracking-tight tabular-nums">{timeStr}</p>
@@ -162,27 +160,16 @@ function PinModal({ onSuccess, company }) {
             {smsError && <div className="mb-4 px-4 py-2.5 bg-red-900/30 border border-red-700/50 rounded-xl text-red-400 text-sm text-center">{smsError}</div>}
             {!smsSent ? (
               <>
-                <input
-                  type="tel"
-                  placeholder="Ex: 5141234567"
-                  value={phoneInput}
-                  onChange={e => setPhoneInput(e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-lg text-center font-mono focus:outline-none focus:border-green-600 mb-4"
-                />
+                <input type="tel" placeholder="Ex: 5141234567" value={phoneInput} onChange={e => setPhoneInput(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-lg text-center font-mono focus:outline-none focus:border-green-600 mb-4" />
                 <button onClick={handleSendSms} disabled={smsLoading || phoneInput.length < 10} className="w-full h-12 rounded-xl bg-green-700 hover:bg-green-600 text-white font-bold text-sm transition-all disabled:opacity-40">
                   {smsLoading ? "Envoi..." : "Envoyer le code"}
                 </button>
               </>
             ) : (
               <>
-                <input
-                  type="text"
-                  placeholder="Code à 6 chiffres"
-                  value={smsCode}
-                  onChange={e => setSmsCode(e.target.value)}
-                  maxLength={6}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-2xl text-center font-mono tracking-widest focus:outline-none focus:border-green-600 mb-4"
-                />
+                <input type="text" placeholder="Code à 6 chiffres" value={smsCode} onChange={e => setSmsCode(e.target.value)} maxLength={6}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-2xl text-center font-mono tracking-widest focus:outline-none focus:border-green-600 mb-4" />
                 <button onClick={handleVerifySms} disabled={smsLoading || smsCode.length < 6} className="w-full h-12 rounded-xl bg-green-700 hover:bg-green-600 text-white font-bold text-sm transition-all disabled:opacity-40">
                   {smsLoading ? "Vérification..." : "Confirmer"}
                 </button>
@@ -196,15 +183,79 @@ function PinModal({ onSuccess, company }) {
       </div>
 
       <div className="flex justify-center pb-6">
-        <button
-          onClick={() => {
-            sessionStorage.removeItem("logipunch_company");
-            window.dispatchEvent(new Event("logipunch_company_change"));
-          }}
-          className="text-zinc-700 text-xs hover:text-zinc-500 transition-colors"
-        >
+        <button onClick={() => { sessionStorage.removeItem("logipunch_company"); window.dispatchEvent(new Event("logipunch_company_change")); }}
+          className="text-zinc-700 text-xs hover:text-zinc-500 transition-colors">
           Changer de portail
         </button>
+      </div>
+    </div>
+  );
+}
+
+function DesktopSidebar({ navItems, currentPageName, currentUser, currentCompany, onLogout }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div
+      className="hidden md:flex flex-col h-screen sticky top-0 z-40 transition-all duration-200 ease-in-out shrink-0"
+      style={{ width: expanded ? 220 : 64, background: "#111214" }}
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}
+    >
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-4 pt-5 pb-4 overflow-hidden">
+        <div className="shrink-0 w-8 h-8 flex items-center justify-center">
+          <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/6b809ffd5_clock_5190346.png" alt="logo" className="w-8 h-8 object-contain" style={{filter: "brightness(0) invert(1)"}} />
+        </div>
+        {expanded && (
+          <div className="overflow-hidden">
+            <span className="text-white font-black text-lg tracking-tight whitespace-nowrap">TapIN</span>
+            {currentCompany?.name && <p className="text-zinc-500 text-xs leading-none mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis" style={{maxWidth: 140}}>{currentCompany.name}</p>}
+          </div>
+        )}
+      </div>
+
+      {/* Nav items */}
+      <nav className="flex-1 flex flex-col gap-0.5 px-2 overflow-hidden overflow-y-auto">
+        {navItems.map(({ label, page, icon: Icon }) => {
+          const isActive = currentPageName === page;
+          return (
+            <Link
+              key={page}
+              to={createPageUrl(page)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 overflow-hidden ${
+                isActive
+                  ? "bg-zinc-700/80 text-white"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+              }`}
+            >
+              <Icon size={18} className="shrink-0" />
+              {expanded && <span className="text-sm font-medium whitespace-nowrap">{label}</span>}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* User card + logout */}
+      <div className="px-2 pb-4 pt-2 overflow-hidden">
+        {expanded ? (
+          <div className="bg-zinc-900 rounded-xl p-3">
+            <div className="flex flex-col items-center mb-3">
+              <div className="w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center mb-2">
+                <span className="text-white text-sm font-bold">{currentUser.full_name?.[0]}</span>
+              </div>
+              <p className="text-white text-sm font-semibold text-center leading-tight">{currentUser.full_name}</p>
+              <p className="text-zinc-500 text-xs text-center mt-0.5">{currentUser.role}</p>
+            </div>
+            <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm transition-all">
+              <LogOut size={14} /> Quitter
+            </button>
+          </div>
+        ) : (
+          <button onClick={onLogout} className="w-full flex items-center justify-center py-2.5 rounded-xl text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all">
+            <LogOut size={18} />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -241,10 +292,7 @@ export default function Layout({ children, currentPageName }) {
     };
   }, []);
 
-  // Refresh user permissions from DB on every page change
-  useEffect(() => {
-    refreshUserFromDB();
-  }, [currentPageName]);
+  useEffect(() => { refreshUserFromDB(); }, [currentPageName]);
 
   const handleCompanySelect = (company) => {
     sessionStorage.setItem("logipunch_company", JSON.stringify(company));
@@ -253,12 +301,8 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const handleLogin = async (user) => {
-    // Always fetch fresh data from DB on login to get latest permissions
     let freshUser = user;
-    try {
-      const fetched = await base44.entities.AppUser.get(user.id);
-      if (fetched) freshUser = fetched;
-    } catch {}
+    try { const fetched = await base44.entities.AppUser.get(user.id); if (fetched) freshUser = fetched; } catch {}
     sessionStorage.setItem("logipunch_user", JSON.stringify(freshUser));
     window.dispatchEvent(new Event("logipunch_user_change"));
     setCurrentUser(freshUser);
@@ -282,12 +326,10 @@ export default function Layout({ children, currentPageName }) {
     if (item.alwaysVisible) return true;
     if (item.key === "ForceCheckout") return canForceCheckout;
     if (isAdmin) return true;
-    // Check allowed_pages on user
     const allowed = Array.isArray(currentUser.allowed_pages) ? currentUser.allowed_pages : [];
     return item.key && allowed.includes(item.key);
   }) : [];
 
-  // Step 1: No company selected → show company portal
   if (!currentCompany) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white">
@@ -297,7 +339,6 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  // Step 2: Company selected but no user → show PIN
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white">
@@ -307,9 +348,8 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  // Step 3: Fully authenticated → show app
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex">
       <style>{`
         body { background: #0a0a0a; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -318,44 +358,21 @@ export default function Layout({ children, currentPageName }) {
         ::-webkit-scrollbar-thumb:hover { background: #22c55e55; }
       `}</style>
 
-      {/* Top bar - desktop */}
-      <div className="hidden md:flex items-center justify-between px-6 py-3 bg-[#0d0d0d] border-b border-zinc-800/60">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
-            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a1d6df5ed8bd83fe0fbd65/6b809ffd5_clock_5190346.png" alt="logo" className="w-10 h-10 object-contain" style={{filter: "brightness(0) invert(1)"}} />
-          </div>
-          <div>
-            <span className="text-white font-black text-lg tracking-tight">TapIN</span>
-            {currentCompany?.name && <p className="text-zinc-500 text-xs leading-none mt-0.5">{currentCompany.name}</p>}
-          </div>
-        </div>
-        <nav className="flex items-center gap-1">
-          {navItems.map(({ label, page, icon: Icon }) => {
-            const isActive = currentPageName === page;
-            return (
-              <Link key={page} to={createPageUrl(page)} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${isActive ? "bg-green-700 text-white" : "text-zinc-400 hover:text-white hover:bg-zinc-800"}`}>
-                <Icon size={15} />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-white text-sm font-semibold">{currentUser.full_name}</p>
-            <p className="text-zinc-500 text-xs">{currentUser.role}</p>
-          </div>
-          <button onClick={handleLogout} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-zinc-500 hover:text-white hover:bg-zinc-800 text-sm transition-all">
-            <LogOut size={15} />
-            <span>Quitter</span>
-          </button>
-        </div>
-      </div>
+      {/* Desktop sidebar */}
+      <DesktopSidebar
+        navItems={navItems}
+        currentPageName={currentPageName}
+        currentUser={currentUser}
+        currentCompany={currentCompany}
+        onLogout={handleLogout}
+      />
 
       {/* Main content */}
-      <main className="flex-1 pb-20 md:pb-0">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 pb-20 md:pb-0">
+          {children}
+        </main>
+      </div>
 
       {/* Bottom nav - mobile */}
       <MobileNav navItems={navItems} currentPageName={currentPageName} />
