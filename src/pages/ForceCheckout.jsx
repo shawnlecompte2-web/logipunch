@@ -153,7 +153,7 @@ export default function ForceCheckout() {
     <div className="min-h-screen p-4 max-w-2xl mx-auto">
       <div className="flex items-start justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-white text-2xl font-bold mb-1">Dépunch forcé</h1>
+          <h1 className="text-white text-2xl font-bold mb-1">Gestion des pointages</h1>
           <p className="text-zinc-500 text-sm">Employés actuellement punchés-in — fermez leur session si oubli.</p>
         </div>
         <button
