@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Settings, X } from "lucide-react";
 
-const ADMIN_KEYS = ["TimeSheet", "ActiveUsers", "Settings"];
+const ADMIN_KEYS = ["TimeSheet", "ActiveUsers", "Settings", "DailyReports", "ProjectSummary", "ForceCheckout"];
 
 export default function MobileNav({ navItems, currentPageName }) {
   const [adminOpen, setAdminOpen] = useState(false);

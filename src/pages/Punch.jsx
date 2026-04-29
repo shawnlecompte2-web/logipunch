@@ -94,12 +94,12 @@ function LunchPicker({ lunch, setLunch, customLunch, setCustomLunch }) {
       <div className="grid grid-cols-3 gap-2 mb-3">
         {[0, 15, 30, 45, 60].map(opt => (
           <button key={opt} onClick={() => { setLunch(opt); setCustomLunch(""); }}
-            className={`py-3 rounded-xl border text-sm font-semibold transition-all ${lunch === opt ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
+            className={`py-4 rounded-xl border text-sm font-semibold transition-all ${lunch === opt ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
             {opt === 0 ? "Aucun" : `${opt} min`}
           </button>
         ))}
         <button onClick={() => setLunch("custom")}
-          className={`py-3 rounded-xl border text-sm font-semibold transition-all ${lunch === "custom" ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
+          className={`py-4 rounded-xl border text-sm font-semibold transition-all ${lunch === "custom" ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
           Autre
         </button>
       </div>
@@ -269,7 +269,7 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
         <div className="grid grid-cols-3 gap-2">
           {[0, 1, 2].map(n => (
             <button key={n} onClick={() => setBreaksTaken(n)}
-              className={`py-3 rounded-xl border text-sm font-semibold transition-all ${breaksTaken === n ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
+              className={`py-4 rounded-xl border text-sm font-semibold transition-all ${breaksTaken === n ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
               {n === 0 ? "Aucune" : n === 1 ? "1 pause" : "2 pauses"}
             </button>
           ))}
@@ -504,8 +504,8 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
         )}
         {view === "main" && (
           <motion.div key="main" custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit">
-            <div className="min-h-screen w-full flex flex-col max-w-md mx-auto px-4 py-6">
-              <div className="flex items-center justify-between mb-6">
+            <div className="min-h-screen w-full flex flex-col max-w-md mx-auto px-5 pt-6 pb-24 md:pb-6">
+              <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
                   <span className="text-white font-black text-lg tracking-tight">{company?.name || "TapIN"}</span>
                 </div>
@@ -545,21 +545,21 @@ function PunchDashboard({ user, activeEntry, setActiveEntry, onLogout }) {
                   </div>
                 </div>
               )}
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 mt-2">
                 {!activeEntry ? (
-                  <button onClick={() => navigateTo("punchin")} className="punch-btn w-full h-16 bg-green-600 hover:bg-green-500 text-white text-lg font-bold rounded-2xl flex items-center justify-between px-6 glow-green">
-                    <div className="flex items-center gap-3"><Clock size={22} /><span>PUNCH IN</span></div>
-                    <ChevronRight size={20} />
+                  <button onClick={() => navigateTo("punchin")} className="punch-btn w-full h-20 bg-green-600 hover:bg-green-500 text-white text-xl font-bold rounded-2xl flex items-center justify-between px-7 glow-green">
+                    <div className="flex items-center gap-3"><Clock size={24} /><span>PUNCH IN</span></div>
+                    <ChevronRight size={22} />
                   </button>
                 ) : (
                   <>
-                    <button onClick={() => navigateTo("changeproject")} className="punch-btn w-full h-16 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white text-lg font-bold rounded-2xl flex items-center justify-between px-6">
-                      <div className="flex items-center gap-3"><ChevronRight size={22} className="text-zinc-400" /><span>CHANGER DE PROJET</span></div>
+                    <button onClick={() => navigateTo("changeproject")} className="punch-btn w-full h-16 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white text-base font-bold rounded-2xl flex items-center justify-between px-6">
+                      <div className="flex items-center gap-3"><ChevronRight size={20} className="text-zinc-400" /><span>CHANGER DE PROJET</span></div>
                       <ChevronRight size={20} className="text-zinc-500" />
                     </button>
-                    <button onClick={() => navigateTo("punchout")} className="punch-btn w-full h-16 bg-red-700 hover:bg-red-600 text-white text-lg font-bold rounded-2xl flex items-center justify-between px-6 glow-red">
-                      <div className="flex items-center gap-3"><Clock size={22} /><span>PUNCH OUT</span></div>
-                      <ChevronRight size={20} />
+                    <button onClick={() => navigateTo("punchout")} className="punch-btn w-full h-20 bg-red-700 hover:bg-red-600 text-white text-xl font-bold rounded-2xl flex items-center justify-between px-7 glow-red">
+                      <div className="flex items-center gap-3"><Clock size={24} /><span>PUNCH OUT</span></div>
+                      <ChevronRight size={22} />
                     </button>
                   </>
                 )}
