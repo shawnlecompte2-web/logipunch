@@ -1,0 +1,75 @@
+{
+  "name": "AppUser",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string"
+    },
+    "pin_code": {
+      "type": "string",
+      "description": "4-digit PIN code"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number in E.164 format, e.g. +15145551234"
+    },
+    "group": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_admin": {
+      "type": "boolean",
+      "default": false,
+      "description": "Full admin access to all app features"
+    },
+    "has_paid_breaks": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this employee is entitled to paid 15-min breaks"
+    },
+    "allowed_pages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of page keys the user can access. Empty = only Punch + MyHours. Admins always have full access."
+    },
+    "assigned_projects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of project IDs assigned to this user"
+    },
+    "approved_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of user IDs who approve this user's hours"
+    },
+    "approves_users": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of user IDs this user can approve"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "ID of the company this user belongs to"
+    }
+  },
+  "required": [
+    "full_name",
+    "pin_code",
+    "role",
+    "group"
+  ]
+}

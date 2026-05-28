@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Users, FolderOpen, Building2, ShieldCheck, Tag, AlertTriangle, ChevronRight, LayoutGrid } from "lucide-react";
+import { Users, FolderOpen, Building2, ShieldCheck, Tag, AlertTriangle, ChevronRight, LayoutGrid, Coffee } from "lucide-react";
 import CompanySettingsTab from "@/components/company/CompanySettingsTab";
 import UsersTab from "@/components/settings/UsersTab";
 import ProjectsTab from "@/components/settings/ProjectsTab";
 import ApprovalsTab from "@/components/settings/ApprovalsTab";
 import CategoriesTab from "@/components/settings/CategoriesTab";
 import PageAccessTab from "@/components/settings/PageAccessTab";
+import PaidBreaksTab from "@/components/settings/PaidBreaksTab";
 
 function getStoredCompany() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { key: "approvals", label: "Approbations",   icon: ShieldCheck, desc: "Qui approuve qui" },
   { key: "categories",label: "Rôles & Groupes",icon: Tag,         desc: "Catégories d'employés" },
   { key: "pageaccess",label: "Accès pages",    icon: LayoutGrid,  desc: "Pages accessibles par employé" },
+  { key: "paidbreaks",label: "Pauses payées",  icon: Coffee,      desc: "Qui a droit aux pauses 15 min" },
   { key: "company",   label: "Entreprise",     icon: Building2,   desc: "Infos et logo" },
 ];
 
@@ -162,6 +164,7 @@ export default function Settings() {
             {tab === "approvals" && <ApprovalsTab users={users} onRefresh={loadAll} />}
             {tab === "categories" && <CategoriesTab users={users} companyId={company?.id} onRefresh={loadAll} />}
             {tab === "pageaccess" && <PageAccessTab users={users} onRefresh={loadAll} />}
+            {tab === "paidbreaks" && <PaidBreaksTab users={users} onRefresh={loadAll} />}
             {tab === "company" && company && <CompanySettingsTab company={company} onUpdated={(c) => setCompany(c)} />}
           </>
         )}

@@ -8,7 +8,8 @@ const LUNCH_OPTIONS = [0, 15, 30, 45, 60];
 export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const [lunch, setLunch] = useState(null);
   const [customLunch, setCustomLunch] = useState("");
-  const [breaksTaken, setBreaksTaken] = useState(2);
+  // If user has no paid breaks, default to 2 (no bonus added)
+  const [breaksTaken, setBreaksTaken] = useState(user.has_paid_breaks ? 2 : 2);
   const [loading, setLoading] = useState(false);
   const [locationData, setLocationData] = useState(null);
   const [locationStatus, setLocationStatus] = useState("idle");
@@ -29,8 +30,8 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const punchInTime = new Date(activeEntry.punch_in);
   const totalMinutes = differenceInMinutes(now, punchInTime);
   const lunchMinutes = lunch === "custom" ? parseInt(customLunch) || 0 : (lunch ?? 0);
-  // Unused breaks: 2 allowed - breaksTaken, each adds 15 min
-  const unusedBreakBonus = (2 - breaksTaken) * 15;
+  // Unused breaks bonus only applies if user has paid breaks
+  const unusedBreakBonus = user.has_paid_breaks ? (2 - breaksTaken) * 15 : 0;
   const workedMinutes = totalMinutes - lunchMinutes + unusedBreakBonus;
   const workedHours = (workedMinutes / 60).toFixed(2);
 
@@ -153,31 +154,33 @@ export default function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
         )}
       </div>
 
-      {/* Breaks */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-base">☕</span>
-          <label className="text-zinc-400 text-xs uppercase tracking-widest">Pauses prises (15 min chacune)</label>
+      {/* Breaks — only shown if user has paid breaks */}
+      {user.has_paid_breaks && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-base">☕</span>
+            <label className="text-zinc-400 text-xs uppercase tracking-widest">Pauses prises (15 min chacune)</label>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[0, 1, 2].map(n => (
+              <button
+                key={n}
+                onClick={() => setBreaksTaken(n)}
+                className={`py-3 rounded-xl border text-sm font-semibold transition-all ${
+                  breaksTaken === n
+                    ? "bg-green-900/30 border-green-600 text-green-400"
+                    : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"
+                }`}
+              >
+                {n === 0 ? "Aucune" : n === 1 ? "1 pause" : "2 pauses"}
+              </button>
+            ))}
+          </div>
+          {unusedBreakBonus > 0 && (
+            <p className="text-green-500 text-xs mt-2 text-center">+{unusedBreakBonus} min ajoutées (pauses non prises)</p>
+          )}
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {[0, 1, 2].map(n => (
-            <button
-              key={n}
-              onClick={() => setBreaksTaken(n)}
-              className={`py-3 rounded-xl border text-sm font-semibold transition-all ${
-                breaksTaken === n
-                  ? "bg-green-900/30 border-green-600 text-green-400"
-                  : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"
-              }`}
-            >
-              {n === 0 ? "Aucune" : n === 1 ? "1 pause" : "2 pauses"}
-            </button>
-          ))}
-        </div>
-        {unusedBreakBonus > 0 && (
-          <p className="text-green-500 text-xs mt-2 text-center">+{unusedBreakBonus} min ajoutées (pauses non prises)</p>
-        )}
-      </div>
+      )}
 
       {/* Total Preview */}
       {canSubmit && (
