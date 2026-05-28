@@ -331,17 +331,20 @@ export default function Approvals() {
         const ids = allUsers.filter(u => ["Manœuvre", "Opérateur"].includes(u.role)).map(u => u.id);
         allEntries = allEntries.filter(e => ids.includes(e.user_id));
       } else {
+        // Cherche les employés qui ont Marc-Antoine dans leur liste approved_by
         const workerIds = allUsers.filter(u => {
-          const approvedBy = Array.isArray(u.approved_by) ? u.approved_by : (u.approved_by ? [u.approved_by] : []);
+          let approvedBy = u.approved_by;
+          if (!approvedBy) return false;
+          if (!Array.isArray(approvedBy)) approvedBy = [approvedBy];
           return approvedBy.includes(approverUser.id);
         }).map(u => u.id);
+        // Aussi vérifier approves_users sur l'approbateur (champ legacy)
         const legacyIds = Array.isArray(approverUser.approves_users) ? approverUser.approves_users : [];
         const allIds = [...new Set([...workerIds, ...legacyIds])];
-        // Only filter if explicit assignments exist; otherwise show all entries in the company
+        // Filtrer selon les assignations — si aucune assignation, montrer toutes les entrées
         if (allIds.length > 0) {
           allEntries = allEntries.filter(e => allIds.includes(e.user_id));
         }
-        // If allIds is empty, the approver sees all company entries (no specific assignment configured)
       }
     }
     setEntries(allEntries);

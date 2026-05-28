@@ -1,18 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 
 export default function ApprovalsTab({ users, onRefresh }) {
   const activeUsers = users.filter(u => u.is_active !== false);
   const [saving, setSaving] = useState(false);
-  const [assignments, setAssignments] = useState(() => {
+  const [assignments, setAssignments] = useState({});
+
+  // Re-initialize whenever users list changes (e.g. new user added)
+  useEffect(() => {
     const map = {};
     activeUsers.forEach(u => {
       if (Array.isArray(u.approved_by)) map[u.id] = u.approved_by;
       else if (u.approved_by) map[u.id] = [u.approved_by];
       else map[u.id] = [];
     });
-    return map;
-  });
+    setAssignments(map);
+  }, [users]);
 
   const handleSave = async () => {
     setSaving(true);
