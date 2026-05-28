@@ -319,32 +319,34 @@ export default function Approvals() {
 
     const isAdmin = approverUser.is_admin === true || ["Administrateur", "Surintendant", "Chargé de projet"].some(r => approverUser.role?.includes(r));
     if (!isAdmin) {
+      // Toujours inclure les assignations manuelles (approved_by sur les workers + approves_users legacy)
+      const manualIds = allUsers.filter(u => {
+        let approvedBy = u.approved_by;
+        if (!approvedBy) return false;
+        if (!Array.isArray(approvedBy)) approvedBy = [approvedBy];
+        return approvedBy.includes(approverUser.id);
+      }).map(u => u.id);
+      const legacyIds = Array.isArray(approverUser.approves_users) ? approverUser.approves_users : [];
+
+      // IDs supplémentaires selon le rôle
+      let roleIds = [];
       if (approverUser.role === "Gestionnaire Chauffeur") {
-        const ids = allUsers.filter(u => u.role === "Chauffeur").map(u => u.id);
-        allEntries = allEntries.filter(e => ids.includes(e.user_id));
-      } else if (approverUser.role === "Gestionnaire Cour") {
-        allEntries = allEntries.filter(e => e.project_name === "Éco-Vrac");
+        roleIds = allUsers.filter(u => u.role === "Chauffeur").map(u => u.id);
       } else if (approverUser.role === "Gestionnaire Mécanique") {
-        const ids = allUsers.filter(u => u.role === "Mécano").map(u => u.id);
-        allEntries = allEntries.filter(e => ids.includes(e.user_id));
+        roleIds = allUsers.filter(u => u.role === "Mécano").map(u => u.id);
       } else if (approverUser.role === "Contremaitre") {
-        const ids = allUsers.filter(u => ["Manœuvre", "Opérateur"].includes(u.role)).map(u => u.id);
-        allEntries = allEntries.filter(e => ids.includes(e.user_id));
-      } else {
-        // Cherche les employés qui ont Marc-Antoine dans leur liste approved_by
-        const workerIds = allUsers.filter(u => {
-          let approvedBy = u.approved_by;
-          if (!approvedBy) return false;
-          if (!Array.isArray(approvedBy)) approvedBy = [approvedBy];
-          return approvedBy.includes(approverUser.id);
-        }).map(u => u.id);
-        // Aussi vérifier approves_users sur l'approbateur (champ legacy)
-        const legacyIds = Array.isArray(approverUser.approves_users) ? approverUser.approves_users : [];
-        const allIds = [...new Set([...workerIds, ...legacyIds])];
-        // Filtrer selon les assignations — si aucune assignation, montrer toutes les entrées
-        if (allIds.length > 0) {
-          allEntries = allEntries.filter(e => allIds.includes(e.user_id));
-        }
+        roleIds = allUsers.filter(u => ["Manœuvre", "Opérateur"].includes(u.role)).map(u => u.id);
+      }
+
+      const allIds = [...new Set([...manualIds, ...legacyIds, ...roleIds])];
+
+      if (approverUser.role === "Gestionnaire Cour") {
+        const courEntries = allEntries.filter(e => e.project_name === "Éco-Vrac");
+        const manualEntries = allEntries.filter(e => [...new Set([...manualIds, ...legacyIds])].includes(e.user_id));
+        const seen = new Set(courEntries.map(e => e.id));
+        allEntries = [...courEntries, ...manualEntries.filter(e => !seen.has(e.id))];
+      } else if (allIds.length > 0) {
+        allEntries = allEntries.filter(e => allIds.includes(e.user_id));
       }
     }
     setEntries(allEntries);
