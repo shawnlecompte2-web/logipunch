@@ -217,7 +217,7 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
   const punchInTime = new Date(activeEntry.punch_in);
   const totalMinutes = differenceInMinutes(punchOutTime, punchInTime);
   const lunchMinutes = lunch === "custom" ? parseInt(customLunch) || 0 : (lunch ?? 0);
-  const unusedBreakBonus = (2 - breaksTaken) * 15;
+  const unusedBreakBonus = user.has_paid_breaks ? (2 - breaksTaken) * 15 : 0;
   const workedHours = (Math.max(0, totalMinutes - lunchMinutes + unusedBreakBonus) / 60).toFixed(2);
   const canSubmit = lunch !== null && locationStatus !== "loading";
 
@@ -264,18 +264,20 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
       <div className="mb-6">
         <LunchPicker lunch={lunch} setLunch={setLunch} customLunch={customLunch} setCustomLunch={setCustomLunch} />
       </div>
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3"><span className="text-base">☕</span><label className="text-zinc-400 text-xs uppercase tracking-widest">Pauses prises (15 min chacune)</label></div>
-        <div className="grid grid-cols-3 gap-2">
-          {[0, 1, 2].map(n => (
-            <button key={n} onClick={() => setBreaksTaken(n)}
-              className={`py-4 rounded-xl border text-sm font-semibold transition-all ${breaksTaken === n ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
-              {n === 0 ? "Aucune" : n === 1 ? "1 pause" : "2 pauses"}
-            </button>
-          ))}
+      {user.has_paid_breaks && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3"><span className="text-base">☕</span><label className="text-zinc-400 text-xs uppercase tracking-widest">Pauses prises (15 min chacune)</label></div>
+          <div className="grid grid-cols-3 gap-2">
+            {[0, 1, 2].map(n => (
+              <button key={n} onClick={() => setBreaksTaken(n)}
+                className={`py-4 rounded-xl border text-sm font-semibold transition-all ${breaksTaken === n ? "bg-green-900/30 border-green-600 text-green-400" : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-600"}`}>
+                {n === 0 ? "Aucune" : n === 1 ? "1 pause" : "2 pauses"}
+              </button>
+            ))}
+          </div>
+          {unusedBreakBonus > 0 && <p className="text-green-500 text-xs mt-2 text-center">+{unusedBreakBonus} min ajoutées (pauses non prises)</p>}
         </div>
-        {unusedBreakBonus > 0 && <p className="text-green-500 text-xs mt-2 text-center">+{unusedBreakBonus} min ajoutées (pauses non prises)</p>}
-      </div>
+      )}
       {canSubmit && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-6">
           <div className="grid grid-cols-4 gap-2 text-center">
