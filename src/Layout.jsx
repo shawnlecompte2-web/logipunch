@@ -25,7 +25,13 @@ function getStoredUser() {
 }
 
 function getStoredCompany() {
-  try { return JSON.parse(sessionStorage.getItem("logipunch_company") || "null"); } catch { return null; }
+  try {
+    const s = sessionStorage.getItem("logipunch_company");
+    if (s) return JSON.parse(s);
+    const l = localStorage.getItem("logipunch_company");
+    if (l) { sessionStorage.setItem("logipunch_company", l); return JSON.parse(l); }
+    return null;
+  } catch { return null; }
 }
 
 function PinModal({ onSuccess, company }) {
@@ -183,7 +189,7 @@ function PinModal({ onSuccess, company }) {
       </div>
 
       <div className="flex justify-center pb-6">
-        <button onClick={() => { sessionStorage.removeItem("logipunch_company"); window.dispatchEvent(new Event("logipunch_company_change")); }}
+        <button onClick={() => { sessionStorage.removeItem("logipunch_company"); localStorage.removeItem("logipunch_company"); window.dispatchEvent(new Event("logipunch_company_change")); }}
           className="text-zinc-700 text-xs hover:text-zinc-500 transition-colors">
           Changer de portail
         </button>
@@ -296,6 +302,7 @@ export default function Layout({ children, currentPageName }) {
 
   const handleCompanySelect = (company) => {
     sessionStorage.setItem("logipunch_company", JSON.stringify(company));
+    localStorage.setItem("logipunch_company", JSON.stringify(company));
     window.dispatchEvent(new Event("logipunch_company_change"));
     setCurrentCompany(company);
   };
