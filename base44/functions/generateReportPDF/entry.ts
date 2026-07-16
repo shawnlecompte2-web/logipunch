@@ -89,7 +89,7 @@ function drawCell(doc, x, y, w, h, label, value) {
 Deno.serve(async (req) => {
   try {
     const body = await req.json();
-     const { type, projectName, projectAddress, date, weekStart, reports, workers, totalHours, companyName, companyLogo } = body;
+     const { type, projectName, projectNumber, projectAddress, date, weekStart, reports, workers, totalHours, companyName, companyLogo } = body;
 
      const doc = new jsPDF();
      const PW = 210;
@@ -158,7 +158,8 @@ Deno.serve(async (req) => {
     drawCell(doc, M,       y, w2, cellH, 'DATE', type === 'day' ? frDate(date) : dateLabel);
     drawCell(doc, M+w2+2,  y, w2, cellH, 'CONTREMAITRE', foreman);
     y += cellH + 2;
-    drawCell(doc, M,       y, CW, cellH, 'MÉTÉO', (report && report.weather) || '-');
+    drawCell(doc, M,       y, w2, cellH, 'NUMÉRO DE PROJET', projectNumber || '-');
+    drawCell(doc, M+w2+2,  y, w2, cellH, 'MÉTÉO', (report && report.weather) || '-');
     y += cellH + 5;
 
     // =====================================================================

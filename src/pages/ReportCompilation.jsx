@@ -132,6 +132,7 @@ export default function ReportCompilationPage() {
 
       const payload = {
         type, projectId, projectName,
+        projectNumber: projectObj?.project_number || "",
         projectAddress: projectObj?.address || "",
         date, weekStart, reports: dayReports, workers, totalHours,
         companyName: company?.name || currentCompany?.name || "",
