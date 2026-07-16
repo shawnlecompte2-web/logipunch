@@ -294,8 +294,10 @@ Deno.serve(async (req) => {
     if (trucks && trucks.length > 0) {
       equipText += (equipText ? '\n\nCAMIONS:\n' : 'CAMIONS:\n');
       trucks.forEach(t => {
-        if (t && t.type && t.plate) {
-          equipText += `- ${sanitize(t.type)} (${sanitize(t.plate)}): ${t.trips || 0} voyage${t.trips !== 1 ? 's' : ''}\n`;
+        if (t && t.type) {
+          const mat = t.material ? ` [${sanitize(t.material)}]` : '';
+          const plate = t.plate ? ` (${sanitize(t.plate)})` : '';
+          equipText += `- ${sanitize(t.type)}${plate}${mat}: ${t.trips || 0} voyage${t.trips !== 1 ? 's' : ''}\n`;
         }
       });
     }
