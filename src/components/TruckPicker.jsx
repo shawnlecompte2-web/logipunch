@@ -21,17 +21,15 @@ export default function TruckPicker({ value, onChange }) {
   })();
 
   const [selectedType, setSelectedType] = useState("");
-  const [plateNumber, setPlateNumber] = useState("");
   const [trips, setTrips] = useState("");
   const [material, setMaterial] = useState("");
 
   const addTruck = () => {
-    if (!selectedType || !plateNumber.trim() || !trips) return;
+    if (!selectedType || !trips) return;
     
     const newTruck = {
       id: Date.now(),
       type: selectedType,
-      plate: plateNumber.trim(),
       trips: parseInt(trips),
       material: material.trim()
     };
@@ -40,7 +38,6 @@ export default function TruckPicker({ value, onChange }) {
     onChange(JSON.stringify(updated));
     
     setSelectedType("");
-    setPlateNumber("");
     setTrips("");
     setMaterial("");
   };
@@ -54,9 +51,9 @@ export default function TruckPicker({ value, onChange }) {
     <div className="space-y-3">
       {/* Add truck form */}
       <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger className="bg-zinc-800 border-zinc-700">
+            <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
               <SelectValue placeholder="Type de camion" />
             </SelectTrigger>
             <SelectContent>
@@ -65,15 +62,7 @@ export default function TruckPicker({ value, onChange }) {
               ))}
             </SelectContent>
           </Select>
-          
-          <Input
-            type="text"
-            placeholder="Plaque (ex: ABC-123)"
-            value={plateNumber}
-            onChange={(e) => setPlateNumber(e.target.value)}
-            className="bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500"
-          />
-          
+
           <Input
             type="number"
             min="1"
@@ -94,7 +83,7 @@ export default function TruckPicker({ value, onChange }) {
             <Button
               type="button"
               onClick={addTruck}
-              disabled={!selectedType || !plateNumber.trim() || !trips}
+              disabled={!selectedType || !trips}
               size="sm"
               className="bg-green-700 hover:bg-green-600 shrink-0">
               <Plus size={16} />
@@ -114,7 +103,7 @@ export default function TruckPicker({ value, onChange }) {
                 className="flex items-center justify-between bg-zinc-800/60 border border-zinc-700/60 rounded-lg px-3 py-2">
                 <div className="flex-1">
                   <p className="text-white text-sm font-medium">{truck.type}</p>
-                  <p className="text-zinc-400 text-xs">{truck.plate} • {truck.trips} voyage{truck.trips > 1 ? 's' : ''}{truck.material ? ` • ${truck.material}` : ''}</p>
+                  <p className="text-zinc-400 text-xs">{truck.trips} voyage{truck.trips > 1 ? 's' : ''}{truck.material ? ` • ${truck.material}` : ''}</p>
                 </div>
                 <button
                   type="button"
