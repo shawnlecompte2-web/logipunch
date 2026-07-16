@@ -1,0 +1,57 @@
+{
+  "name": "Project",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "project_number": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude of the project location"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude of the project location"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "assigned_users": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of AppUser IDs assigned to this project"
+    },
+    "approver_assignments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "worker_id": {
+            "type": "string"
+          },
+          "approver_id": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Who approves hours for whom on this project"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "ID of the company this project belongs to"
+    }
+  },
+  "required": [
+    "name",
+    "project_number"
+  ]
+}

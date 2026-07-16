@@ -1,0 +1,71 @@
+{
+  "name": "DailyReport",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "project_name": {
+      "type": "string"
+    },
+    "project_address": {
+      "type": "string",
+      "description": "Address of the project"
+    },
+    "report_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "week_start": {
+      "type": "string",
+      "description": "ISO date of week start (Monday)"
+    },
+    "weather": {
+      "type": "string",
+      "description": "Weather conditions during the day"
+    },
+    "machine": {
+      "type": "string",
+      "description": "Equipements et machinerie utilises (comma-separated)"
+    },
+    "machine_hours": {
+      "type": "string",
+      "description": "JSON: heures par equipement { \"nom\": heures }"
+    },
+    "trucks": {
+      "type": "string",
+      "description": "JSON array: trucks info [{ type, plate, trips }, ...]"
+    },
+    "truck_count": {
+      "type": "number",
+      "description": "Number of trucks on site (legacy field)"
+    },
+    "subcontractor": {
+      "type": "string",
+      "description": "Sous-traitants sur le chantier"
+    },
+    "work_description": {
+      "type": "string",
+      "description": "Description des travaux effectues"
+    },
+    "other_notes": {
+      "type": "string",
+      "description": "Retards, problemes ou observations"
+    },
+    "company_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "project_id",
+    "report_date",
+    "work_description"
+  ]
+}

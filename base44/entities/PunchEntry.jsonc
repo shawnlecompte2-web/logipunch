@@ -1,0 +1,119 @@
+{
+  "name": "PunchEntry",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "project_name": {
+      "type": "string"
+    },
+    "punch_in": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "punch_out": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lunch_break": {
+      "type": "number",
+      "description": "Lunch break in minutes (0,15,30,45,60)",
+      "default": 0
+    },
+    "lunch_break_custom": {
+      "type": "number",
+      "description": "Custom lunch break in minutes"
+    },
+    "breaks_taken": {
+      "type": "number",
+      "description": "Number of 15-min breaks taken (0, 1 or 2). Unused breaks add 15 min each to total.",
+      "default": 2
+    },
+    "total_hours": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "approved",
+        "rejected"
+      ],
+      "default": "active"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "machine": {
+      "type": "string",
+      "description": "Machine used by operator"
+    },
+    "plate_number": {
+      "type": "string",
+      "description": "Truck plate for drivers"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "week_start": {
+      "type": "string",
+      "description": "ISO date of week start (Monday)"
+    },
+    "work_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "group": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "modified_by": {
+      "type": "string"
+    },
+    "modified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "ID of the company this entry belongs to"
+    },
+    "punch_in_lat": {
+      "type": "number"
+    },
+    "punch_in_lng": {
+      "type": "number"
+    },
+    "punch_out_lat": {
+      "type": "number"
+    },
+    "punch_out_lng": {
+      "type": "number"
+    },
+    "on_site_in": {
+      "type": "boolean"
+    },
+    "on_site_out": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "user_id",
+    "project_id",
+    "punch_in"
+  ]
+}

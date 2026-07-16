@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, Plus, X } from "lucide-react";
+import { ChevronLeft, Plus, X, GripVertical, Trash2, FolderPlus } from "lucide-react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import TruckPicker from "@/components/TruckPicker";
 
 const DEFAULT_EQUIPMENT = {
@@ -85,6 +86,12 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
   const [custom, setCustom] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [equipList, setEquipList] = useState(getEquipmentList);
+  const [newCategory, setNewCategory] = useState("");
+
+  const commit = (next) => {
+    setEquipList(next);
+    saveEquipmentList(next);
+  };
 
   const setHours = (item, h) => {
     const next = { ...hours, [item]: h };
@@ -140,6 +147,44 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
     onHoursChange(JSON.stringify(nextHours));
   };
 
+  const addCategory = () => {
+    const name = newCategory.trim();
+    if (!name || equipList[name]) { setNewCategory(""); return; }
+    commit({ ...equipList, [name]: [] });
+    setNewCategory("");
+  };
+
+  const deleteCategory = (cat) => {
+    const items = equipList[cat] || [];
+    if (items.length > 0 && !window.confirm(`Supprimer la catégorie "${cat}" ? Les ${items.length} équipement(s) seront retirés de la liste.`)) return;
+    const next = { ...equipList };
+    delete next[cat];
+    commit(next);
+    onChange(selected.filter(s => !items.includes(s)).join(", "));
+    const nextHours = { ...hours };
+    items.forEach(i => delete nextHours[i]);
+    onHoursChange(JSON.stringify(nextHours));
+  };
+
+  const renameCategory = (cat, newNameRaw) => {
+    const newName = newNameRaw.trim();
+    if (!newName || newName === cat || equipList[newName]) return;
+    const next = {};
+    Object.entries(equipList).forEach(([k, v]) => { next[k === cat ? newName : k] = v; });
+    commit(next);
+  };
+
+  const onDragEnd = (result) => {
+    const { source, destination, draggableId } = result;
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+    const next = {};
+    Object.keys(equipList).forEach(cat => { next[cat] = [...(equipList[cat] || [])]; });
+    next[source.droppableId].splice(source.index, 1);
+    next[destination.droppableId].splice(destination.index, 0, draggableId);
+    commit(next);
+  };
+
   return (
     <div className="space-y-3">
       {/* Header with edit toggle */}
@@ -153,43 +198,89 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
       </div>
 
       {/* Chips by Category */}
-      <div className="space-y-3">
-        {Object.entries(equipList).map(([category, items]) => (
-          <div key={category}>
-            <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">{category}</p>
-            <div className="flex flex-wrap gap-2">
-              {items.map((eq) => {
-                const isSelected = selected.includes(eq);
-                if (editMode) {
+      {editMode ? (
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="space-y-3">
+            {Object.entries(equipList).map(([category, items]) => (
+              <Droppable key={category} droppableId={category} direction="horizontal">
+                {(provided, snapshot) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps}
+                    className={`rounded-xl border p-2.5 transition-colors ${snapshot.isDraggingOver ? "border-green-600 bg-green-900/10" : "border-zinc-800 bg-zinc-900/40"}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <input
+                        defaultValue={category}
+                        onBlur={(e) => renameCategory(category, e.target.value)}
+                        className="bg-transparent text-xs text-zinc-300 uppercase tracking-widest font-semibold focus:outline-none focus:text-white border-b border-transparent focus:border-green-600"
+                      />
+                      <button type="button" onClick={() => deleteCategory(category)}
+                        className="text-zinc-600 hover:text-red-400 transition-colors">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 min-h-[36px]">
+                      {items.map((eq, idx) => (
+                        <Draggable key={eq} draggableId={eq} index={idx}>
+                          {(p, s) => (
+                            <div ref={p.innerRef} {...p.draggableProps} {...p.dragHandleProps}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${s.isDragging ? "bg-green-800 border-green-600 text-white shadow-lg" : "bg-zinc-800 border-zinc-700 text-zinc-300"}`}>
+                              <GripVertical size={11} className="text-zinc-500" />
+                              {eq}
+                              <button type="button" onClick={() => removeFromList(eq)} className="ml-0.5 text-zinc-500 hover:text-red-400">
+                                <X size={11} />
+                              </button>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                      {items.length === 0 && <span className="text-xs text-zinc-600 italic self-center">Glissez des équipements ici</span>}
+                    </div>
+                  </div>
+                )}
+              </Droppable>
+            ))}
+            <div className="flex gap-2 pt-1">
+              <input
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCategory(); } }}
+                placeholder="Nouvelle catégorie..."
+                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-green-600"
+              />
+              <button type="button" onClick={addCategory}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm hover:border-green-600 hover:text-white transition-all">
+                <FolderPlus size={14} /> Catégorie
+              </button>
+            </div>
+          </div>
+        </DragDropContext>
+      ) : (
+        <div className="space-y-3">
+          {Object.entries(equipList).map(([category, items]) => (
+            <div key={category}>
+              <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">{category}</p>
+              <div className="flex flex-wrap gap-2">
+                {items.map((eq) => {
+                  const isSelected = selected.includes(eq);
                   return (
                     <button
                       key={eq}
                       type="button"
-                      onClick={() => removeFromList(eq)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/60">
+                      onClick={() => toggle(eq)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                        isSelected ?
+                        "bg-green-700 border-green-600 text-white hover:bg-green-600" :
+                        "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}>
                       {eq}
-                      <X size={11} />
+                      {isSelected && <X size={11} className="opacity-80" />}
                     </button>
                   );
-                }
-                return (
-                  <button
-                    key={eq}
-                    type="button"
-                    onClick={() => toggle(eq)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                      isSelected ?
-                      "bg-green-700 border-green-600 text-white hover:bg-green-600" :
-                      "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}>
-                    {eq}
-                    {isSelected && <X size={11} className="opacity-80" />}
-                  </button>
-                );
-              })}
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Custom tags (not in predefined list) */}
       {selected.filter((s) => !getAllEquipment(equipList).includes(s)).length > 0 &&
@@ -254,7 +345,7 @@ function EquipmentPicker({ value, onChange, hoursValue, onHoursChange }) {
         </div>
       }
       {editMode &&
-        <p className="text-xs text-red-400/70 text-center">Cliquez sur un equipement pour le supprimer de la liste</p>
+        <p className="text-xs text-zinc-500 text-center">Glissez les équipements entre les catégories · ✎ pour renommer · 🗑 pour supprimer une catégorie</p>
       }
     </div>
   );

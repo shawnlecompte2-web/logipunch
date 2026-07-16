@@ -1,0 +1,27 @@
+{
+  "name": "Company",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "join_code": {
+      "type": "string",
+      "description": "Unique 6-character code for employees to join this company portal"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "URL of the company logo, shown on PDF pay slips"
+    },
+    "address": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "join_code"
+  ]
+}
