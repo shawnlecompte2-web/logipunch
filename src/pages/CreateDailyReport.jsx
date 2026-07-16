@@ -476,7 +476,7 @@ export default function CreateDailyReportPage() {
                     <SelectValue placeholder="Sélectionnez un projet" />
                   </SelectTrigger>
                   <SelectContent>
-                    {projects.map((p) =>
+                    {[...projects].sort((a, b) => (a.project_number || "").localeCompare(b.project_number || "", undefined, { numeric: true })).map((p) =>
                     <SelectItem key={p.id} value={p.id}>
                         {p.name} ({p.project_number})
                       </SelectItem>
