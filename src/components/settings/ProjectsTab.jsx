@@ -7,7 +7,9 @@ export default function ProjectsTab({ projects, users, companyId, onRefresh }) {
   const [showForm, setShowForm] = useState(false);
   const [editProject, setEditProject] = useState(null);
 
-  const activeProjects = projects.filter(p => p.is_active !== false);
+  const activeProjects = projects
+    .filter(p => p.is_active !== false)
+    .sort((a, b) => (a.project_number || "").localeCompare(b.project_number || "", undefined, { numeric: true }));
 
   const handleDelete = async (pid) => {
     if (!window.confirm("Désactiver ce projet?")) return;
