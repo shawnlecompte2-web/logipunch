@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, ChevronLeft, Download, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronLeft, Download, Trash2, Pencil } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 
@@ -323,13 +323,22 @@ export default function ReportCompilationPage() {
                                                 <p><span className="text-zinc-500">Travaux:</span> {report.work_description}</p>
                                                 {report.other_notes && <p><span className="text-zinc-500">Notes:</span> {report.other_notes}</p>}
                                               </div>
-                                              <button
-                                                onClick={() => deleteReport(report.id)}
-                                                className="ml-2 p-1 hover:bg-red-900/30 rounded transition-colors text-red-400 hover:text-red-300"
-                                                title="Supprimer le rapport"
-                                              >
-                                                <Trash2 className="w-3 h-3" />
-                                              </button>
+                                              <div className="flex items-center gap-1 ml-2">
+                                                <button
+                                                  onClick={() => navigate(createPageUrl("CreateDailyReport") + `?edit=${report.id}`)}
+                                                  className="p-1 hover:bg-blue-900/30 rounded transition-colors text-blue-400 hover:text-blue-300"
+                                                  title="Modifier le rapport"
+                                                >
+                                                  <Pencil className="w-3 h-3" />
+                                                </button>
+                                                <button
+                                                  onClick={() => deleteReport(report.id)}
+                                                  className="p-1 hover:bg-red-900/30 rounded transition-colors text-red-400 hover:text-red-300"
+                                                  title="Supprimer le rapport"
+                                                >
+                                                  <Trash2 className="w-3 h-3" />
+                                                </button>
+                                              </div>
                                             </div>
                                           ))}
                                         </div>

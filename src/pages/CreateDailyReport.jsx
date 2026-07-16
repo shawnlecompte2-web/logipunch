@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
@@ -385,6 +385,10 @@ export default function CreateDailyReportPage() {
   const currentUser = getStoredUser();
   const currentCompany = getStoredCompany();
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const editId = urlParams.get("edit");
+  const isEditing = !!editId;
+
   const [selectedProject, setSelectedProject] = useState("");
   const [reportDate, setReportDate] = useState(new Date().toISOString().split("T")[0]);
   const [formData, setFormData] = useState({
@@ -397,6 +401,7 @@ export default function CreateDailyReportPage() {
     other_notes: ""
   });
   const [loading, setLoading] = useState(false);
+  const [loadingReport, setLoadingReport] = useState(isEditing);
 
   const { data: projects } = useQuery({
     queryKey: ['projects', currentCompany?.id],
@@ -404,6 +409,25 @@ export default function CreateDailyReportPage() {
     enabled: !!currentCompany?.id,
     initialData: []
   });
+
+  useEffect(() => {
+    if (!editId) return;
+    base44.entities.DailyReport.get(editId).then(report => {
+      if (report) {
+        setSelectedProject(report.project_id || "");
+        setReportDate(report.report_date || new Date().toISOString().split("T")[0]);
+        setFormData({
+          weather: report.weather || "",
+          subcontractor: report.subcontractor || "",
+          machine: report.machine || "",
+          machine_hours: report.machine_hours || "",
+          trucks: report.trucks || "[]",
+          work_description: report.work_description || "",
+          other_notes: report.other_notes || ""
+        });
+      }
+    }).catch(() => alert("Impossible de charger le rapport.")).finally(() => setLoadingReport(false));
+  }, [editId]);
 
   const selectedProjectObj = projects.find((p) => p.id === selectedProject);
 
@@ -417,11 +441,11 @@ export default function CreateDailyReportPage() {
     try {
       const project = projects.find((p) => p.id === selectedProject);
       const weekStart = new Date(reportDate + "T12:00:00");
-      const day = weekStart.getDay(); // 0=Dim, 1=Lun, ..., 6=Sam
-      weekStart.setDate(weekStart.getDate() - day); // Recule au dimanche de la même semaine
+      const day = weekStart.getDay();
+      weekStart.setDate(weekStart.getDate() - day);
       const weekStartStr = weekStart.toISOString().split("T")[0];
 
-      await base44.entities.DailyReport.create({
+      const payload = {
         user_id: currentUser.id,
         user_name: currentUser.full_name,
         project_id: selectedProject,
@@ -437,10 +461,17 @@ export default function CreateDailyReportPage() {
         work_description: formData.work_description,
         other_notes: formData.other_notes,
         company_id: currentCompany?.id
-      });
+      };
 
-      alert("Rapport cree avec succes!");
-      navigate(createPageUrl("DailyReports"));
+      if (isEditing) {
+        await base44.entities.DailyReport.update(editId, payload);
+        alert("Rapport modifié avec succès!");
+      } else {
+        await base44.entities.DailyReport.create(payload);
+        alert("Rapport cree avec succes!");
+      }
+
+      navigate(createPageUrl("ReportCompilation"));
     } catch (error) {
       alert("Erreur: " + error.message);
     } finally {
@@ -448,11 +479,21 @@ export default function CreateDailyReportPage() {
     }
   };
 
+  if (loadingReport) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
+        <div className="max-w-2xl mx-auto flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-zinc-700 border-t-green-500 rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
       <div className="max-w-2xl mx-auto">
         <button
-          onClick={() => navigate(createPageUrl("DailyReports"))}
+          onClick={() => navigate(createPageUrl(isEditing ? "ReportCompilation" : "DailyReports"))}
           className="flex items-center gap-2 text-zinc-400 hover:text-white mb-6 transition-colors">
 
           <ChevronLeft className="w-4 h-4" />
@@ -461,8 +502,8 @@ export default function CreateDailyReportPage() {
 
         <Card className="bg-zinc-900/50 border-zinc-800">
           <CardHeader>
-            <CardTitle className="text-slate-50 text-xl font-semibold tracking-tight">Rapport journalier de chantier</CardTitle>
-            <CardDescription>Remplissez les informations du chantier</CardDescription>
+            <CardTitle className="text-slate-50 text-xl font-semibold tracking-tight">{isEditing ? "Modifier le rapport" : "Rapport journalier de chantier"}</CardTitle>
+            <CardDescription>{isEditing ? "Modifiez les informations du rapport" : "Remplissez les informations du chantier"}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -587,7 +628,7 @@ export default function CreateDailyReportPage() {
                   disabled={loading}
                   className="flex-1 bg-green-700 hover:bg-green-600">
 
-                  {loading ? "Creation..." : "Creer le rapport"}
+                  {loading ? (isEditing ? "Modification..." : "Creation...") : (isEditing ? "Enregistrer" : "Creer le rapport")}
                 </Button>
               </div>
             </form>
