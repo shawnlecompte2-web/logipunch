@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Plus, FileText } from "lucide-react";
+import { Plus, FileText, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function DailyReportsPage() {
@@ -13,7 +13,7 @@ export default function DailyReportsPage() {
           <p className="text-zinc-500">Gérez vos rapports de travail quotidiens</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Create Report */}
           <Link to={createPageUrl("CreateDailyReport")} className="block">
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-8 hover:border-green-600/50 hover:bg-zinc-900/60 transition-all cursor-pointer h-full">
@@ -37,6 +37,19 @@ export default function DailyReportsPage() {
                 <h2 className="text-xl font-bold">Compilations</h2>
               </div>
               <p className="text-zinc-400 text-sm">Consultez tous les rapports créés organisés par projet et semaine</p>
+            </div>
+          </Link>
+
+          {/* Excel Report */}
+          <Link to={createPageUrl("ProjectExcelReport")} className="block">
+            <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-8 hover:border-green-600/50 hover:bg-zinc-900/60 transition-all cursor-pointer h-full">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-lg bg-green-600/20 flex items-center justify-center">
+                  <FileSpreadsheet className="w-6 h-6 text-green-400" />
+                </div>
+                <h2 className="text-xl font-bold">Tableau Excel</h2>
+              </div>
+              <p className="text-zinc-400 text-sm">Génère un tableau Excel automatisé par projet à partir des rapports</p>
             </div>
           </Link>
         </div>
