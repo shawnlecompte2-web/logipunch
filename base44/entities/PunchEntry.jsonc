@@ -109,6 +109,14 @@
     },
     "on_site_out": {
       "type": "boolean"
+    },
+    "drive_time_in_min": {
+      "type": "number",
+      "description": "Driving time in minutes from punch-in location to project site"
+    },
+    "drive_time_out_min": {
+      "type": "number",
+      "description": "Driving time in minutes from punch-out location to project site"
     }
   },
   "required": [

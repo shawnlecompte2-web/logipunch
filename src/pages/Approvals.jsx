@@ -174,17 +174,17 @@ function EntryRow({ entry, onApprove, onReject, onEdit, onDelete, isSwitch }) {
             {entry.plate_number && <span className="text-zinc-500">🚚 {entry.plate_number}</span>}
           </div>
 
-          {/* GPS */}
-          {(entry.on_site_in !== null && entry.on_site_in !== undefined) || (entry.on_site_out !== null && entry.on_site_out !== undefined) ? (
+          {/* GPS & drive time */}
+          {(entry.on_site_in !== null && entry.on_site_in !== undefined) || (entry.on_site_out !== null && entry.on_site_out !== undefined) || entry.drive_time_in_min != null || entry.drive_time_out_min != null ? (
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               {entry.on_site_in !== null && entry.on_site_in !== undefined && (
-                <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${entry.on_site_in ? "bg-green-900/30 text-green-400" : "bg-red-900/30 text-red-400"}`}>
-                  <MapPin size={10} /> In: {entry.on_site_in ? "Site ✓" : "Hors site ✗"}
+                <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${entry.on_site_in ? "bg-green-900/30 text-green-400" : "bg-orange-900/30 text-orange-400"}`}>
+                  <MapPin size={10} /> In: {entry.on_site_in ? "Site ✓" : (entry.drive_time_in_min != null ? `${entry.drive_time_in_min} min du site` : "Hors site ✗")}
                 </span>
               )}
               {entry.on_site_out !== null && entry.on_site_out !== undefined && (
-                <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${entry.on_site_out ? "bg-green-900/30 text-green-400" : "bg-red-900/30 text-red-400"}`}>
-                  <MapPin size={10} /> Out: {entry.on_site_out ? "Site ✓" : "Hors site ✗"}
+                <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${entry.on_site_out ? "bg-green-900/30 text-green-400" : "bg-orange-900/30 text-orange-400"}`}>
+                  <MapPin size={10} /> Out: {entry.on_site_out ? "Site ✓" : (entry.drive_time_out_min != null ? `${entry.drive_time_out_min} min du site` : "Hors site ✗")}
                 </span>
               )}
             </div>

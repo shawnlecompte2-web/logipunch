@@ -157,6 +157,17 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
       entry.punch_in_lng = location.lng;
       const isOnSite = calculateOnSite(location.lat, location.lng, project);
       if (isOnSite !== null) entry.on_site_in = isOnSite;
+      if (project?.latitude && project?.longitude) {
+        try {
+          const res = await base44.functions.invoke("calculateDriveTime", {
+            origin: location,
+            destination: { lat: project.latitude, lng: project.longitude },
+          });
+          if (res.data?.success && typeof res.data.minutes === "number") {
+            entry.drive_time_in_min = res.data.minutes;
+          }
+        } catch {}
+      }
     }
     const created = await base44.entities.PunchEntry.create(entry);
     sessionStorage.setItem("logipunch_active_entry", JSON.stringify(created));
@@ -241,6 +252,17 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
       const project = await base44.entities.Project.get(activeEntry.project_id);
       const isOnSite = calculateOnSite(location.lat, location.lng, project);
       if (isOnSite !== null) updateData.on_site_out = isOnSite;
+      if (project?.latitude && project?.longitude) {
+        try {
+          const res = await base44.functions.invoke("calculateDriveTime", {
+            origin: location,
+            destination: { lat: project.latitude, lng: project.longitude },
+          });
+          if (res.data?.success && typeof res.data.minutes === "number") {
+            updateData.drive_time_out_min = res.data.minutes;
+          }
+        } catch {}
+      }
     }
     await base44.entities.PunchEntry.update(activeEntry.id, updateData);
     sessionStorage.removeItem("logipunch_active_entry");
