@@ -189,11 +189,17 @@ function EntryRow({ entry, onApprove, onReject, onEdit, onDelete, isSwitch }) {
                   </span>
                 )}
               </div>
-              {entry.on_site_in === false && entry.punch_in_address && (
-                <p className="text-zinc-500 text-xs pl-0.5 truncate" title={entry.punch_in_address}>📍 {entry.punch_in_address}</p>
+              {entry.on_site_in === false && entry.punch_in_lat && (
+                <a href={`https://www.google.com/maps?q=${entry.punch_in_lat},${entry.punch_in_lng}`} target="_blank" rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 text-xs pl-0.5 truncate flex items-center gap-1 transition-colors" title={entry.punch_in_address || "Voir sur la carte"}>
+                  📍 {entry.punch_in_address || "Voir sur la carte"}
+                </a>
               )}
-              {entry.on_site_out === false && entry.punch_out_address && (
-                <p className="text-zinc-500 text-xs pl-0.5 truncate" title={entry.punch_out_address}>📍 {entry.punch_out_address}</p>
+              {entry.on_site_out === false && entry.punch_out_lat && (
+                <a href={`https://www.google.com/maps?q=${entry.punch_out_lat},${entry.punch_out_lng}`} target="_blank" rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 text-xs pl-0.5 truncate flex items-center gap-1 transition-colors" title={entry.punch_out_address || "Voir sur la carte"}>
+                  📍 {entry.punch_out_address || "Voir sur la carte"}
+                </a>
               )}
             </div>
           ) : null}
