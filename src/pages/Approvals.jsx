@@ -176,16 +176,24 @@ function EntryRow({ entry, onApprove, onReject, onEdit, onDelete, isSwitch }) {
 
           {/* GPS & drive time */}
           {(entry.on_site_in !== null && entry.on_site_in !== undefined) || (entry.on_site_out !== null && entry.on_site_out !== undefined) || entry.drive_time_in_min != null || entry.drive_time_out_min != null ? (
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
-              {entry.on_site_in !== null && entry.on_site_in !== undefined && (
-                <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${entry.on_site_in ? "bg-green-900/30 text-green-400" : "bg-orange-900/30 text-orange-400"}`}>
-                  <MapPin size={10} /> In: {entry.on_site_in ? "Site ✓" : (entry.drive_time_in_min != null ? `${entry.drive_time_in_min} min du site` : "Hors site ✗")}
-                </span>
+            <div className="mt-2 space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                {entry.on_site_in !== null && entry.on_site_in !== undefined && (
+                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${entry.on_site_in ? "bg-green-900/30 text-green-400" : "bg-orange-900/30 text-orange-400"}`}>
+                    <MapPin size={10} /> In: {entry.on_site_in ? "Site ✓" : (entry.drive_time_in_min != null ? `${entry.drive_time_in_min} min du site` : "Hors site ✗")}
+                  </span>
+                )}
+                {entry.on_site_out !== null && entry.on_site_out !== undefined && (
+                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${entry.on_site_out ? "bg-green-900/30 text-green-400" : "bg-orange-900/30 text-orange-400"}`}>
+                    <MapPin size={10} /> Out: {entry.on_site_out ? "Site ✓" : (entry.drive_time_out_min != null ? `${entry.drive_time_out_min} min du site` : "Hors site ✗")}
+                  </span>
+                )}
+              </div>
+              {entry.on_site_in === false && entry.punch_in_address && (
+                <p className="text-zinc-500 text-xs pl-0.5 truncate" title={entry.punch_in_address}>📍 {entry.punch_in_address}</p>
               )}
-              {entry.on_site_out !== null && entry.on_site_out !== undefined && (
-                <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${entry.on_site_out ? "bg-green-900/30 text-green-400" : "bg-orange-900/30 text-orange-400"}`}>
-                  <MapPin size={10} /> Out: {entry.on_site_out ? "Site ✓" : (entry.drive_time_out_min != null ? `${entry.drive_time_out_min} min du site` : "Hors site ✗")}
-                </span>
+              {entry.on_site_out === false && entry.punch_out_address && (
+                <p className="text-zinc-500 text-xs pl-0.5 truncate" title={entry.punch_out_address}>📍 {entry.punch_out_address}</p>
               )}
             </div>
           ) : null}
@@ -351,6 +359,49 @@ export default function Approvals() {
     }
     setEntries(allEntries);
     setLoading(false);
+
+    // Backfill drive time & address for off-site entries missing them
+    const projects = companyId
+      ? await base44.entities.Project.filter({ company_id: companyId })
+      : await base44.entities.Project.list();
+    const projectMap = {};
+    projects.forEach(p => { projectMap[p.id] = p; });
+
+    allEntries.forEach(entry => {
+      const project = projectMap[entry.project_id];
+      if (!project?.latitude || !project?.longitude) return;
+      const needsIn = entry.punch_in_lat && entry.on_site_in === false && entry.drive_time_in_min == null;
+      const needsOut = entry.punch_out_lat && entry.on_site_out === false && entry.drive_time_out_min == null;
+      if (!needsIn && !needsOut) return;
+
+      (async () => {
+        const updates = {};
+        if (needsIn) {
+          try {
+            const res = await base44.functions.invoke("calculateDriveTime", {
+              origin: { lat: entry.punch_in_lat, lng: entry.punch_in_lng },
+              destination: { lat: project.latitude, lng: project.longitude },
+            });
+            if (res.data?.success && typeof res.data.minutes === "number") updates.drive_time_in_min = res.data.minutes;
+            if (res.data?.address) updates.punch_in_address = res.data.address;
+          } catch {}
+        }
+        if (needsOut) {
+          try {
+            const res = await base44.functions.invoke("calculateDriveTime", {
+              origin: { lat: entry.punch_out_lat, lng: entry.punch_out_lng },
+              destination: { lat: project.latitude, lng: project.longitude },
+            });
+            if (res.data?.success && typeof res.data.minutes === "number") updates.drive_time_out_min = res.data.minutes;
+            if (res.data?.address) updates.punch_out_address = res.data.address;
+          } catch {}
+        }
+        if (Object.keys(updates).length > 0) {
+          await base44.entities.PunchEntry.update(entry.id, updates);
+          setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, ...updates } : e));
+        }
+      })();
+    });
   };
 
   const handleApprove = async (entry) => {

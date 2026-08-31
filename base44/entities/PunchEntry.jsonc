@@ -117,6 +117,14 @@
     "drive_time_out_min": {
       "type": "number",
       "description": "Driving time in minutes from punch-out location to project site"
+    },
+    "punch_in_address": {
+      "type": "string",
+      "description": "Reverse-geocoded address of punch-in location"
+    },
+    "punch_out_address": {
+      "type": "string",
+      "description": "Reverse-geocoded address of punch-out location"
     }
   },
   "required": [

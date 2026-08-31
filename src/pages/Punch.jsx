@@ -166,6 +166,7 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
           if (res.data?.success && typeof res.data.minutes === "number") {
             entry.drive_time_in_min = res.data.minutes;
           }
+          if (res.data?.address) entry.punch_in_address = res.data.address;
         } catch {}
       }
     }
@@ -261,6 +262,7 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
           if (res.data?.success && typeof res.data.minutes === "number") {
             updateData.drive_time_out_min = res.data.minutes;
           }
+          if (res.data?.address) updateData.punch_out_address = res.data.address;
         } catch {}
       }
     }
