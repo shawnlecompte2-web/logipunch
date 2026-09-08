@@ -17,7 +17,9 @@ function getStoredUser() {
   try { return JSON.parse(sessionStorage.getItem("logipunch_user") || "null"); } catch { return null; }
 }
 
-function EditEntryModal({ entry, onClose, onSaved }) {
+function EditEntryModal({ entry, onClose, onSaved, projects, users }) {
+  const [projectId, setProjectId] = useState(entry.project_id || "");
+  const [userId, setUserId] = useState(entry.user_id || "");
   const [punchIn, setPunchIn] = useState(entry.punch_in ? format(parseISO(entry.punch_in), "yyyy-MM-dd'T'HH:mm") : "");
   const [punchOut, setPunchOut] = useState(entry.punch_out ? format(parseISO(entry.punch_out), "yyyy-MM-dd'T'HH:mm") : "");
   const [lunch, setLunch] = useState(entry.lunch_break ?? 0);
@@ -25,6 +27,9 @@ function EditEntryModal({ entry, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const selectedProject = projects.find(p => p.id === projectId);
+  const selectedUser = users.find(u => u.id === userId);
 
   const calcTotal = () => {
     if (!punchIn || !punchOut) return null;
@@ -38,6 +43,10 @@ function EditEntryModal({ entry, onClose, onSaved }) {
     const total = calcTotal();
     const currentUser = getStoredUser();
     await base44.entities.PunchEntry.update(entry.id, {
+      project_id: projectId,
+      project_name: selectedProject?.name || "",
+      user_id: userId,
+      user_name: selectedUser?.full_name || entry.user_name,
       punch_in: new Date(punchIn).toISOString(),
       punch_out: punchOut ? new Date(punchOut).toISOString() : undefined,
       lunch_break: lunch,
@@ -65,7 +74,20 @@ function EditEntryModal({ entry, onClose, onSaved }) {
           <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors"><X size={18} /></button>
         </div>
         <div className="p-5 space-y-4">
-          <div><label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Projet</label><p className="text-white text-sm font-semibold">{entry.project_name}</p></div>
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Employé</label>
+            <select value={userId} onChange={e => setUserId(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600">
+              <option value="">— Choisir un employé —</option>
+              {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Projet</label>
+            <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600">
+              <option value="">— Choisir un projet —</option>
+              {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
           <div>
             <label className="text-zinc-400 text-xs uppercase tracking-widest mb-1.5 block">Punch In</label>
             <input type="datetime-local" value={punchIn} onChange={e => setPunchIn(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-600" />
@@ -900,7 +922,7 @@ export default function TimeSheet() {
           </table>
         </div>
       )}
-      {editEntry && <EditEntryModal entry={editEntry} onClose={() => setEditEntry(null)} onSaved={() => { setEditEntry(null); loadData(); }} />}
+      {editEntry && <EditEntryModal entry={editEntry} projects={projects} users={users} onClose={() => setEditEntry(null)} onSaved={() => { setEditEntry(null); loadData(); }} />}
       {addEntry && <AddEntryModal userId={addEntry.userId} userName={addEntry.userName} dateStr={addEntry.dateStr} projects={projects} company={company} onClose={() => setAddEntry(null)} onSaved={() => { setAddEntry(null); loadData(); }} />}
     </div>
   );
