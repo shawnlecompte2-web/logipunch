@@ -322,6 +322,7 @@ export default function ReportCompilationPage() {
                                                 {report.subcontractor && <p><span className="text-zinc-500">Sous-traitant:</span> {report.subcontractor}</p>}
                                                 <p><span className="text-zinc-500">Travaux:</span> {report.work_description}</p>
                                                 {report.other_notes && <p><span className="text-zinc-500">Notes:</span> {report.other_notes}</p>}
+                                                {(() => { try { const ph = JSON.parse(report.personnel_hours || "[]"); if (!ph.length) return null; return ph.map((p, i) => <p key={i}><span className="text-zinc-500">Personnel (rapport):</span> {p.name} — {p.hours}h</p>); } catch { return null; } })()}
                                               </div>
                                               <div className="flex items-center gap-1 ml-2">
                                                 <button

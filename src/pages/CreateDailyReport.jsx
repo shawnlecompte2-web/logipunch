@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ChevronLeft, Plus, X, GripVertical, Trash2, FolderPlus } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import TruckPicker from "@/components/TruckPicker";
+import PersonnelHoursPicker from "@/components/PersonnelHoursPicker";
 
 const DEFAULT_EQUIPMENT = {
   "Chargeur sur roue": [
@@ -398,7 +399,8 @@ export default function CreateDailyReportPage() {
     machine_hours: "",
     trucks: "[]",
     work_description: "",
-    other_notes: ""
+    other_notes: "",
+    personnel_hours: "[]"
   });
   const [loading, setLoading] = useState(false);
   const [loadingReport, setLoadingReport] = useState(isEditing);
@@ -423,7 +425,8 @@ export default function CreateDailyReportPage() {
           machine_hours: report.machine_hours || "",
           trucks: report.trucks || "[]",
           work_description: report.work_description || "",
-          other_notes: report.other_notes || ""
+          other_notes: report.other_notes || "",
+          personnel_hours: report.personnel_hours || "[]"
         });
       }
     }).catch(() => alert("Impossible de charger le rapport.")).finally(() => setLoadingReport(false));
@@ -460,6 +463,7 @@ export default function CreateDailyReportPage() {
         trucks: formData.trucks || "[]",
         work_description: formData.work_description,
         other_notes: formData.other_notes,
+        personnel_hours: formData.personnel_hours || "[]",
         company_id: currentCompany?.id
       };
 
@@ -584,6 +588,15 @@ export default function CreateDailyReportPage() {
                 <TruckPicker
                   value={formData.trucks}
                   onChange={(val) => setFormData({ ...formData, trucks: val })} />
+              </Field>
+
+              {/* PERSONNEL (RAPPORT SEULEMENT) */}
+              <SectionTitle label="Heures de personnel (rapport seulement)" />
+
+              <Field label="Employés et heures (non payé)" hint="Ces heures apparaissent uniquement dans le rapport, pas dans la paie">
+                <PersonnelHoursPicker
+                  value={formData.personnel_hours}
+                  onChange={(val) => setFormData({ ...formData, personnel_hours: val })} />
               </Field>
 
               {/* TRAVAUX */}

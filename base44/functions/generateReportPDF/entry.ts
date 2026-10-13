@@ -255,6 +255,57 @@ Deno.serve(async (req) => {
     }
 
     // =====================================================================
+    // 2b. PERSONNEL SUPPLEMENTAIRE (RAPPORT SEULEMENT - NON PAYE)
+    // =====================================================================
+    let personnelHours = [];
+    allReports.forEach(r => {
+      try {
+        const ph = JSON.parse(r?.personnel_hours || '[]');
+        if (Array.isArray(ph)) personnelHours = personnelHours.concat(ph);
+      } catch (e) {}
+    });
+    if (personnelHours.length > 0) {
+      if (y > 245) { doc.addPage(); y = 14; }
+      doc.setFillColor(235, 245, 235);
+      doc.setDrawColor(150, 200, 150);
+      doc.setLineWidth(0.3);
+      doc.rect(M, y, CW, 7, 'F');
+      doc.rect(M, y, CW, 7, 'S');
+      doc.setFontSize(7.5);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 101, 52);
+      doc.text('PERSONNEL SUPPLEMENTAIRE (RAPPORT SEULEMENT - NON PAYE)', M + 4, y + 5);
+      y += 7;
+      personnelHours.forEach((p, i) => {
+        doc.setFillColor(i % 2 === 0 ? 248 : 240, i % 2 === 0 ? 252 : 246, i % 2 === 0 ? 245 : 240);
+        doc.setDrawColor(200, 220, 200);
+        doc.setLineWidth(0.2);
+        doc.rect(M, y, CW, 6.5, 'F');
+        doc.line(M, y + 6.5, M + CW, y + 6.5);
+        doc.setFontSize(8.5);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(20, 20, 20);
+        doc.text(sanitize((p.name || '-').substring(0, 40)), M + 4, y + 4.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(80, 80, 80);
+        if (p.role) doc.text(sanitize(p.role.substring(0, 20)), M + 80, y + 4.5);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(22, 163, 74);
+        doc.text(`${parseFloat(p.hours || 0).toFixed(2)}h`, M + CW - 4, y + 4.5, { align: 'right' });
+        y += 6.5;
+      });
+      const phTotal = personnelHours.reduce((s, p) => s + (parseFloat(p.hours) || 0), 0);
+      doc.setFillColor(200, 230, 200);
+      doc.rect(M, y, CW, 7, 'F');
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 101, 52);
+      doc.text('SOUS-TOTAL PERSONNEL:', M + 4, y + 5);
+      doc.text(`${phTotal.toFixed(2)}h`, M + CW - 4, y + 5, { align: 'right' });
+      y += 11;
+    }
+
+    // =====================================================================
     // 3. SOUS-TRAITANTS
     // =====================================================================
     y = drawSectionBar(doc, M, y, CW, '3.  SOUS-TRAITANTS');

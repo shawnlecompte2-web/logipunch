@@ -58,6 +58,10 @@
       "type": "string",
       "description": "Retards, problemes ou observations"
     },
+    "personnel_hours": {
+      "type": "string",
+      "description": "JSON array: heures de personnel pour le rapport seulement (non paye) [{ name, hours, role }]"
+    },
     "company_id": {
       "type": "string"
     }
