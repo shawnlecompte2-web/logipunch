@@ -165,6 +165,10 @@ function PunchInForm({ user, projects, onSuccess, onBack }) {
           });
           if (res.data?.success && typeof res.data.minutes === "number") {
             entry.drive_time_in_min = res.data.minutes;
+            // Hors site : ajuste l'heure d'arrivée au chantier (punch_in + temps de route)
+            if (isOnSite === false) {
+              entry.punch_in = new Date(now.getTime() + res.data.minutes * 60000).toISOString();
+            }
           }
           if (res.data?.address) entry.punch_in_address = res.data.address;
         } catch {}
@@ -261,6 +265,13 @@ function PunchOutForm({ user, activeEntry, onSuccess, onBack }) {
           });
           if (res.data?.success && typeof res.data.minutes === "number") {
             updateData.drive_time_out_min = res.data.minutes;
+            // Hors site : ajuste l'heure de départ du chantier (punch_out - temps de route)
+            if (isOnSite === false) {
+              const adjustedOut = new Date(punchOutTime.getTime() - res.data.minutes * 60000);
+              updateData.punch_out = adjustedOut.toISOString();
+              const adjustedTotal = differenceInMinutes(adjustedOut, punchInTime);
+              updateData.total_hours = parseFloat(Math.max(0, (adjustedTotal - finalLunch + bonus) / 60).toFixed(2));
+            }
           }
           if (res.data?.address) updateData.punch_out_address = res.data.address;
         } catch {}
