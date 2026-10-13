@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Edit2, Trash2, X, Search, Users } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Search, Users, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import UserFormDrawer from "./UserFormDrawer";
 
 export default function UsersTab({ users, projects, companyId, onRefresh }) {
@@ -12,6 +13,24 @@ export default function UsersTab({ users, projects, companyId, onRefresh }) {
     if (!window.confirm("Désactiver cet utilisateur?")) return;
     await base44.entities.AppUser.update(userId, { is_active: false });
     onRefresh();
+  };
+
+  const exportExcel = () => {
+    const rows = activeUsers
+      .slice()
+      .sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""))
+      .map(u => ({
+        "Nom": u.full_name || "",
+        "Code": u.pin_code || "",
+        "Rôle": u.role || "",
+        "Groupe": u.group || "",
+        "Actif": u.is_active === false ? "Non" : "Oui"
+      }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = [{ wch: 30 }, { wch: 8 }, { wch: 32 }, { wch: 18 }, { wch: 6 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Employés");
+    XLSX.writeFile(wb, `codes_employes_${new Date().toISOString().split("T")[0]}.xlsx`);
   };
 
   const activeUsers = users.filter(u => u.is_active !== false);
@@ -39,12 +58,20 @@ export default function UsersTab({ users, projects, companyId, onRefresh }) {
         <Users size={16} className="text-green-400" />
         <span className="text-white font-bold text-lg">{activeUsers.length}</span>
         <span className="text-zinc-500 text-sm">utilisateurs actifs</span>
-        <button
-          onClick={() => { setEditUser(null); setShowForm(true); }}
-          className="ml-auto flex items-center gap-2 px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm font-semibold rounded-xl transition-all"
-        >
-          <Plus size={15} /> Ajouter
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={exportExcel}
+            className="flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 text-sm font-semibold rounded-xl transition-all"
+          >
+            <Download size={15} /> Excel
+          </button>
+          <button
+            onClick={() => { setEditUser(null); setShowForm(true); }}
+            className="flex items-center gap-2 px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm font-semibold rounded-xl transition-all"
+          >
+            <Plus size={15} /> Ajouter
+          </button>
+        </div>
       </div>
 
       {/* Search */}
