@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Clock, CheckSquare, BarChart2, Users, Settings, User, Delete, LogOut, Phone } from "lucide-react";
+import { Clock, CheckSquare, BarChart2, Users, Settings, User, Delete, LogOut, Phone, CalendarDays } from "lucide-react";
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import CompanyPortalOverlay from "@/components/company/CompanyPortalOverlay";
@@ -11,6 +11,7 @@ const isAdminUser = (user) => user?.is_admin === true;
 const allNavItems = [
   { label: "Punch", page: "Punch", icon: Clock, alwaysVisible: true },
   { label: "Mes heures", page: "MyHours", icon: User, alwaysVisible: true },
+  { label: "Congés", page: "LeaveRequests", icon: CalendarDays, alwaysVisible: true },
   { label: "Approbation", page: "Approvals", icon: CheckSquare, key: "Approvals" },
   { label: "Gestion pointages", page: "ForceCheckout", icon: LogOut, key: "ForceCheckout" },
   { label: "Heures", page: "TimeSheet", icon: BarChart2, key: "TimeSheet" },

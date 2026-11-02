@@ -7,6 +7,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ForceCheckout from './pages/ForceCheckout';
+import LeaveRequests from './pages/LeaveRequests';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -59,6 +60,7 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/ForceCheckout" element={<LayoutWrapper currentPageName="ForceCheckout"><ForceCheckout /></LayoutWrapper>} />
+      <Route path="/LeaveRequests" element={<LayoutWrapper currentPageName="LeaveRequests"><LeaveRequests /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

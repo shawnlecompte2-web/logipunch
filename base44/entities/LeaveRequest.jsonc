@@ -1,0 +1,61 @@
+{
+  "name": "LeaveRequest",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "First day of the leave (inclusive)"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Last day of the leave (inclusive)"
+    },
+    "leave_type": {
+      "type": "string",
+      "enum": [
+        "Vacances",
+        "Maladie",
+        "Cong\u00e9 personnel",
+        "Sans solde",
+        "Autre"
+      ],
+      "default": "Vacances"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "ID of the company this request belongs to"
+    }
+  },
+  "required": [
+    "user_id",
+    "start_date",
+    "end_date"
+  ]
+}

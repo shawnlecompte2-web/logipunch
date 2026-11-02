@@ -18,6 +18,13 @@
     },
     "phone": {
       "type": "string"
+    },
+    "leave_approvers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of AppUser IDs allowed to approve leave requests"
     }
   },
   "required": [
