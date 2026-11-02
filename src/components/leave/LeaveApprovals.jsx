@@ -7,7 +7,7 @@ export default function LeaveApprovals({ requests, user, onChanged }) {
   const [busyId, setBusyId] = useState(null);
 
   const pending = requests
-    .filter((r) => r.status === "pending" && r.user_id !== user.id)
+    .filter((r) => r.status === "pending")
     .sort((a, b) => a.start_date.localeCompare(b.start_date));
 
   const decide = async (request, status) => {
@@ -37,6 +37,9 @@ export default function LeaveApprovals({ requests, user, onChanged }) {
               </p>
               <div className="flex items-center gap-1.5 mt-1.5">
                 <span className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-[11px] rounded-full">{r.leave_type}</span>
+                {r.user_id === user.id && (
+                  <span className="px-2 py-0.5 bg-blue-900/40 border border-blue-800/40 text-blue-300 text-[11px] rounded-full">vous</span>
+                )}
                 {r.reason && <span className="text-zinc-500 text-[11px] truncate">{r.reason}</span>}
               </div>
             </div>
