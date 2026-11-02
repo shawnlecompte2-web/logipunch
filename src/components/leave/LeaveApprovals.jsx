@@ -34,17 +34,15 @@ export default function LeaveApprovals({ requests, user, companyId, onChanged })
     />
   );
 
-  if (pending.length === 0) {
-    return (
-      <>
-        <p className="text-zinc-600 text-sm text-center py-6">Aucune demande en attente.</p>
-        {form}
-      </>
-    );
-  }
+  const approved = requests
+    .filter((r) => r.status === "approved")
+    .sort((a, b) => b.start_date.localeCompare(a.start_date));
 
   return (
     <div className="space-y-2">
+      {pending.length === 0 && (
+        <p className="text-zinc-600 text-sm text-center py-6">Aucune demande en attente.</p>
+      )}
       {pending.map((r) => (
         <div key={r.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-3">
           <div className="flex items-start justify-between gap-3">
@@ -86,6 +84,42 @@ export default function LeaveApprovals({ requests, user, companyId, onChanged })
           </div>
         </div>
       ))}
+
+      {approved.length > 0 && (
+        <>
+          <p className="text-zinc-400 text-xs uppercase tracking-widest font-bold pt-4">
+            Déjà approuvées
+          </p>
+          {approved.map((r) => (
+            <div
+              key={r.id}
+              className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 flex items-start justify-between gap-3"
+            >
+              <div className="min-w-0">
+                <p className="text-white font-semibold text-sm truncate">{r.user_name}</p>
+                <p className="text-zinc-400 text-xs mt-0.5">
+                  {formatRange(r.start_date, r.end_date)} · {dayCount(r.start_date, r.end_date)} j
+                </p>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <span className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-[11px] rounded-full">
+                    {r.leave_type}
+                  </span>
+                  {r.approved_by && (
+                    <span className="text-zinc-500 text-[11px] truncate">par {r.approved_by}</span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setEditing(r)}
+                className="p-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all shrink-0"
+              >
+                <Pencil size={15} className="text-zinc-300" />
+              </button>
+            </div>
+          ))}
+        </>
+      )}
+
       {form}
     </div>
   );
