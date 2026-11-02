@@ -95,18 +95,6 @@ export default function LeaveRequests() {
         </button>
       </div>
 
-      <div className="flex items-center justify-between mb-3">
-        <button onClick={() => moveMonth(-1)} className="p-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all">
-          <ChevronLeft size={16} className="text-zinc-400" />
-        </button>
-        <p className="text-white font-bold text-sm md:text-base capitalize">
-          {MONTHS[cursor.getMonth()]} {cursor.getFullYear()}
-        </p>
-        <button onClick={() => moveMonth(1)} className="p-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all">
-          <ChevronRight size={16} className="text-zinc-400" />
-        </button>
-      </div>
-
       {loading ? (
         <div className="flex items-center gap-2 text-zinc-500 text-sm py-10 justify-center">
           <div className="w-4 h-4 border-2 border-zinc-700 border-t-green-500 rounded-full animate-spin" />
@@ -114,24 +102,42 @@ export default function LeaveRequests() {
         </div>
       ) : (
         <>
-          <LeaveCalendar
-            year={cursor.getFullYear()}
-            month={cursor.getMonth()}
-            requests={visibleRequests}
-            currentUserId={user.id}
-            onDayClick={openForm}
-          />
-          <p className="text-zinc-600 text-[11px] mt-2 mb-6">
-            Touchez une journée pour faire une demande à cette date.
-          </p>
+          {isApprover ? (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <button onClick={() => moveMonth(-1)} className="p-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all">
+                  <ChevronLeft size={16} className="text-zinc-400" />
+                </button>
+                <p className="text-white font-bold text-sm md:text-base capitalize">
+                  {MONTHS[cursor.getMonth()]} {cursor.getFullYear()}
+                </p>
+                <button onClick={() => moveMonth(1)} className="p-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all">
+                  <ChevronRight size={16} className="text-zinc-400" />
+                </button>
+              </div>
 
-          {isApprover && (
-            <section className="mb-7">
-              <h2 className="text-zinc-400 text-xs uppercase tracking-widest font-bold mb-2">
-                Demandes à approuver
-              </h2>
-              <LeaveApprovals requests={requests} user={user} companyId={companyId} onChanged={load} />
-            </section>
+              <LeaveCalendar
+                year={cursor.getFullYear()}
+                month={cursor.getMonth()}
+                requests={visibleRequests}
+                currentUserId={user.id}
+                onDayClick={openForm}
+              />
+              <p className="text-zinc-600 text-[11px] mt-2 mb-6">
+                Touchez une journée pour faire une demande à cette date.
+              </p>
+
+              <section className="mb-7">
+                <h2 className="text-zinc-400 text-xs uppercase tracking-widest font-bold mb-2">
+                  Demandes à approuver
+                </h2>
+                <LeaveApprovals requests={requests} user={user} companyId={companyId} onChanged={load} />
+              </section>
+            </>
+          ) : (
+            <p className="text-zinc-500 text-sm mb-6">
+              Le calendrier de l'équipe est réservé aux approbateurs. Vous pouvez faire une demande avec le bouton « Demande ».
+            </p>
           )}
 
           <section>
