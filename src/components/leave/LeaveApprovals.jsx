@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Check, X, Pencil } from "lucide-react";
+import { Check, X, Pencil, Trash2 } from "lucide-react";
 import { formatRange, dayCount } from "@/utils/leaveDates";
 import LeaveRequestForm from "@/components/leave/LeaveRequestForm";
 
@@ -19,6 +19,14 @@ export default function LeaveApprovals({ requests, user, companyId, onChanged })
       approved_by: user.full_name,
       approved_at: new Date().toISOString(),
     });
+    setBusyId(null);
+    onChanged();
+  };
+
+  const remove = async (request) => {
+    if (!window.confirm("Supprimer cette demande approuvée?")) return;
+    setBusyId(request.id);
+    await base44.entities.LeaveRequest.delete(request.id);
     setBusyId(null);
     onChanged();
   };
@@ -109,12 +117,21 @@ export default function LeaveApprovals({ requests, user, companyId, onChanged })
                   )}
                 </div>
               </div>
-              <button
-                onClick={() => setEditing(r)}
-                className="p-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all shrink-0"
-              >
-                <Pencil size={15} className="text-zinc-300" />
-              </button>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={() => setEditing(r)}
+                  className="p-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all"
+                >
+                  <Pencil size={15} className="text-zinc-300" />
+                </button>
+                <button
+                  onClick={() => remove(r)}
+                  disabled={busyId === r.id}
+                  className="p-2 bg-red-900/20 hover:bg-red-900/40 border border-red-800/30 rounded-lg transition-all disabled:opacity-40"
+                >
+                  <Trash2 size={15} className="text-red-400" />
+                </button>
+              </div>
             </div>
           ))}
         </>

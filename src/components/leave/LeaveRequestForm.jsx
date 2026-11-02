@@ -43,12 +43,18 @@ export default function LeaveRequestForm({ open, defaultDate, user, companyId, e
     setError("");
     try {
       if (editRequest) {
-        await base44.entities.LeaveRequest.update(editRequest.id, {
+        const payload = {
           start_date: start,
           end_date: end,
           leave_type: leaveType,
           reason: reason.trim(),
-        });
+        };
+        if (editRequest.status === "approved") {
+          payload.status = "pending";
+          payload.approved_by = "";
+          payload.approved_at = null;
+        }
+        await base44.entities.LeaveRequest.update(editRequest.id, payload);
       } else {
         await base44.entities.LeaveRequest.create({
           user_id: user.id,
@@ -137,6 +143,12 @@ export default function LeaveRequestForm({ open, defaultDate, user, companyId, e
             {total} jour{total > 1 ? "s" : ""}
           </span>
         </div>
+
+        {editRequest?.status === "approved" && (
+          <div className="mb-3 px-3 py-2 bg-amber-900/20 border border-amber-800/40 rounded-xl text-amber-300 text-xs">
+            Cette demande est approuvée : la modification la remettra en attente d'approbation.
+          </div>
+        )}
 
         {error && (
           <div className="mb-3 px-3 py-2 bg-red-900/30 border border-red-700/50 rounded-xl text-red-400 text-sm">
