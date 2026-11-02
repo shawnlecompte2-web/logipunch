@@ -130,7 +130,7 @@ export default function LeaveRequests() {
               <h2 className="text-zinc-400 text-xs uppercase tracking-widest font-bold mb-2">
                 Demandes à approuver
               </h2>
-              <LeaveApprovals requests={requests} user={user} onChanged={load} />
+              <LeaveApprovals requests={requests} user={user} companyId={companyId} onChanged={load} />
             </section>
           )}
 

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Check, X } from "lucide-react";
+import { Check, X, Pencil } from "lucide-react";
 import { formatRange, dayCount } from "@/utils/leaveDates";
+import LeaveRequestForm from "@/components/leave/LeaveRequestForm";
 
-export default function LeaveApprovals({ requests, user, onChanged }) {
+export default function LeaveApprovals({ requests, user, companyId, onChanged }) {
   const [busyId, setBusyId] = useState(null);
+  const [editing, setEditing] = useState(null);
 
   const pending = requests
     .filter((r) => r.status === "pending")
@@ -21,8 +23,24 @@ export default function LeaveApprovals({ requests, user, onChanged }) {
     onChanged();
   };
 
+  const form = (
+    <LeaveRequestForm
+      open={!!editing}
+      editRequest={editing}
+      user={user}
+      companyId={companyId}
+      onClose={() => setEditing(null)}
+      onSaved={() => { setEditing(null); onChanged(); }}
+    />
+  );
+
   if (pending.length === 0) {
-    return <p className="text-zinc-600 text-sm text-center py-6">Aucune demande en attente.</p>;
+    return (
+      <>
+        <p className="text-zinc-600 text-sm text-center py-6">Aucune demande en attente.</p>
+        {form}
+      </>
+    );
   }
 
   return (
@@ -45,6 +63,12 @@ export default function LeaveApprovals({ requests, user, onChanged }) {
             </div>
             <div className="flex gap-2 shrink-0">
               <button
+                onClick={() => setEditing(r)}
+                className="p-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all"
+              >
+                <Pencil size={15} className="text-zinc-300" />
+              </button>
+              <button
                 onClick={() => decide(r, "approved")}
                 disabled={busyId === r.id}
                 className="p-2 bg-green-900/30 hover:bg-green-900/50 border border-green-800/40 rounded-lg transition-all disabled:opacity-40"
@@ -62,6 +86,7 @@ export default function LeaveApprovals({ requests, user, onChanged }) {
           </div>
         </div>
       ))}
+      {form}
     </div>
   );
 }

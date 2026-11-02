@@ -5,7 +5,7 @@ import { toDateKey, dayCount } from "@/utils/leaveDates";
 
 const TYPES = ["Vacances", "Maladie", "Congé personnel", "Sans solde", "Autre"];
 
-export default function LeaveRequestForm({ open, defaultDate, user, companyId, onClose, onSaved }) {
+export default function LeaveRequestForm({ open, defaultDate, user, companyId, editRequest, onClose, onSaved }) {
   const initial = defaultDate || toDateKey(new Date());
   const [leaveType, setLeaveType] = useState("Vacances");
   const [start, setStart] = useState(initial);
@@ -16,14 +16,21 @@ export default function LeaveRequestForm({ open, defaultDate, user, companyId, o
 
   useEffect(() => {
     if (open) {
-      const d = defaultDate || toDateKey(new Date());
-      setStart(d);
-      setEnd(d);
-      setLeaveType("Vacances");
-      setReason("");
+      if (editRequest) {
+        setStart(editRequest.start_date);
+        setEnd(editRequest.end_date);
+        setLeaveType(editRequest.leave_type || "Vacances");
+        setReason(editRequest.reason || "");
+      } else {
+        const d = defaultDate || toDateKey(new Date());
+        setStart(d);
+        setEnd(d);
+        setLeaveType("Vacances");
+        setReason("");
+      }
       setError("");
     }
-  }, [open, defaultDate]);
+  }, [open, defaultDate, editRequest]);
 
   if (!open) return null;
 
@@ -35,16 +42,25 @@ export default function LeaveRequestForm({ open, defaultDate, user, companyId, o
     setSaving(true);
     setError("");
     try {
-      await base44.entities.LeaveRequest.create({
-        user_id: user.id,
-        user_name: user.full_name,
-        start_date: start,
-        end_date: end,
-        leave_type: leaveType,
-        reason: reason.trim(),
-        status: "pending",
-        company_id: companyId,
-      });
+      if (editRequest) {
+        await base44.entities.LeaveRequest.update(editRequest.id, {
+          start_date: start,
+          end_date: end,
+          leave_type: leaveType,
+          reason: reason.trim(),
+        });
+      } else {
+        await base44.entities.LeaveRequest.create({
+          user_id: user.id,
+          user_name: user.full_name,
+          start_date: start,
+          end_date: end,
+          leave_type: leaveType,
+          reason: reason.trim(),
+          status: "pending",
+          company_id: companyId,
+        });
+      }
       onSaved();
     } catch (e) {
       setError("Erreur lors de l'envoi. Réessayez.");
@@ -57,7 +73,7 @@ export default function LeaveRequestForm({ open, defaultDate, user, companyId, o
       <div className="absolute inset-0 bg-black/70" onClick={onClose} />
       <div className="relative w-full md:max-w-md bg-zinc-900 border border-zinc-800 rounded-t-2xl md:rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-white font-bold text-lg">Demande de congé</h2>
+          <h2 className="text-white font-bold text-lg">{editRequest ? "Modifier la demande" : "Demande de congé"}</h2>
           <button onClick={onClose} className="p-1.5 text-zinc-500 hover:text-white">
             <X size={18} />
           </button>
@@ -133,7 +149,8 @@ export default function LeaveRequestForm({ open, defaultDate, user, companyId, o
           disabled={saving}
           className="w-full flex items-center justify-center gap-2 py-3 bg-green-700 hover:bg-green-600 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50"
         >
-          <Send size={15} /> {saving ? "Envoi..." : "Envoyer la demande"}
+          <Send size={15} />{" "}
+          {saving ? "Enregistrement..." : editRequest ? "Enregistrer" : "Envoyer la demande"}
         </button>
       </div>
     </div>
